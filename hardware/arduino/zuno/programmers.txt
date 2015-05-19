@@ -1,0 +1,6 @@
+zprog.name=Zuno Programmer
+zprog.communication=usb
+zprog.protocol=usb
+zprog.program.protocol=usb
+zprog.program.tool=zprog
+zprog.program.extra_params=prog -d {serial.port} -f "{build.path}/{build.project_name}.ihex"
