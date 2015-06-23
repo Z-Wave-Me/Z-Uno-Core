@@ -1,16 +1,9 @@
 #include "Core_arduino.h"
 
-#define SEND_DEBUG(V)     \
-	    __asm \
-	    	MOV   R7,V \
-	        LCALL 0x00FF40 \
-	    __endasm;
-
 __xdata __at (ZUNO_STACK_ADDRESS) unsigned char zunoStack[ZUNO_STACK_SIZE]; //
 __xdata __at (ZUNO_STACK_TOP_ADDRESS) unsigned char zunoStackTop; //
 __xdata __at (ZUNO_DELAY_SAFE_STACK_ADDRESS) unsigned char stack_pointer_outside;
 __data __at (ZUNO_DELAY_USER_STACK_POINTER_ADDRESS) unsigned char user_stack_pointer;
-
 
 void zunoPushByte(BYTE value) {
 	if (zunoStackTop >= ZUNO_STACK_SIZE) {
@@ -219,8 +212,8 @@ BYTE zunoAddSwitchMultilevelChannel(void) {
 	return zunoPopByte();
 }
 
-BYTE zunoAddAssociationGroup(BYTE type) {
-	zunoPushByte(type);
+BYTE zunoAddAssociationGroups(BYTE group_number) {
+	zunoPushByte(group_number);
 	zunoPushByte(ZUNO_FUNC_ADD_ASSOCIATION_GROUP);
 	zunoCall();
 	return zunoPopByte();

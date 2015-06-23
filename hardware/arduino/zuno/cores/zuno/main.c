@@ -8,6 +8,12 @@ SERIAL_DESCRIPTOR Serial;
 void InitArduinoEnvironment(void);
 void initSerial0(void);
 
+ZUNO_SETUP_CHANNELS(ZUNO_SWITCH_BINARY(setterSwitchBinary,getterSwitchBinary),
+                    ZUNO_SWITCH_MULTILEVEL(setterSwitchMultilevel,getterSwitchMultilevel),
+                    ZUNO_SENSOR_BINARY(ZUNO_SENSOR_BINARY_TYPE_SMOKE,getterSensorBinary),
+                    ZUNO_SENSOR_MULTILEVEL_TEMPERATURE(getterSensorMultilevel))
+
+
 // DO NOT REMOVE THIS LINE - void other_functions_here(...)
 void begin_setup_code(void) __naked {
     __asm
