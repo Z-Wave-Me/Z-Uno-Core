@@ -5,6 +5,7 @@ __xdata __at (ZUNO_STACK_TOP_ADDRESS) unsigned char zunoStackTop; //
 __xdata __at (ZUNO_DELAY_SAFE_STACK_ADDRESS) unsigned char stack_pointer_outside;
 __data __at (ZUNO_DELAY_USER_STACK_POINTER_ADDRESS) unsigned char user_stack_pointer;
 
+
 void zunoPushByte(BYTE value) {
 	if (zunoStackTop >= ZUNO_STACK_SIZE) {
 		return;
@@ -182,47 +183,6 @@ void SerialWrite(BYTE value) {
 -------------------------------------------------------------------------------*/
 
 
-/* ----------------------------------------------------------------------------
-									Z-Wave
-Must be called in ArduinoInit function
--------------------------------------------------------------------------------*/
-BYTE zunoAddSensorBinaryChannel(BYTE type) {
-	zunoPushByte(type);
-	zunoPushByte(ZUNO_FUNC_ADD_SENSOR_BINARY_CHANNEL);
-	zunoCall();
-	return zunoPopByte();
-}
-
-BYTE zunoAddSensorMultilevelChannel(BYTE type) {
-	zunoPushByte(type);
-	zunoPushByte(ZUNO_FUNC_ADD_SENSOR_MULTILEVEL_CHANNEL);
-	zunoCall();
-	return zunoPopByte();
-}
-
-BYTE zunoAddSwitchBinaryChannel(void) {
-	zunoPushByte(ZUNO_FUNC_ADD_SWITCH_BINARY_CHANNEL);
-	zunoCall();
-	return zunoPopByte();
-}
-
-BYTE zunoAddSwitchMultilevelChannel(void) {
-	zunoPushByte(ZUNO_FUNC_ADD_SWITCH_MULTILEVEL_CHANNEL);
-	zunoCall();
-	return zunoPopByte();
-}
-
-BYTE zunoAddAssociationGroups(BYTE group_number) {
-	zunoPushByte(group_number);
-	zunoPushByte(ZUNO_FUNC_ADD_ASSOCIATION_GROUP);
-	zunoCall();
-	return zunoPopByte();
-}
-
-/* ----------------------------------------------------------------------------
-									Z-Wave
--------------------------------------------------------------------------------*/
-
 
 /* ----------------------------------------------------------------------------
 							Z-Wave communication
@@ -234,6 +194,38 @@ void zunoSendUncolicitedReport(BYTE channel,BYTE value) {
 	zunoCall();
 }
 
+
+void zunoCallback(void) {
+	BYTE channel = zunoPopByte();
+
+	switch (zunoPopByte()) { 
+		case ZUNO_SENSOR_BINARY_GETTER:
+			//zunoPushByte(getterSensorBinary(channel));
+			break;
+
+		case ZUNO_SENSOR_MULTILEVEL_GETTER:
+			//zunoPushByte(getterSensorMultilevel(channel));
+			break;
+
+		case ZUNO_SWITCH_BINARY_GETTER:
+			//zunoPushByte(getterSwitchBinary(channel));
+			break;
+
+		case ZUNO_SWITCH_BINARY_SETTER:
+			//setterSwitchBinary(channel, zunoPopByte());
+			break;
+
+		case ZUNO_SWITCH_MULTILEVEL_GETTER:
+			//zunoPushByte(getterSwitchMultilevel(channel));
+			break;
+
+		case ZUNO_SWITCH_MULTILEVEL_SETTER:
+			//setterSwitchMultilevel(channel, zunoPopByte());
+			break;
+		default:
+			break;
+	}
+}
 /* ----------------------------------------------------------------------------
 							Z-Wave communication
 -------------------------------------------------------------------------------*/
@@ -245,35 +237,31 @@ void begin_callback_code(void) __naked {
     __endasm;
 }
 
-void zunoCallback(void) {
-	BYTE channel = zunoPopByte();
+void zunoJumpTable(void) {
+	BYTE requested_function = zunoPopByte();
 
-	switch (zunoPopByte()) {
-		case ZUNO_SENSOR_BINARY_GETTER:
-			zunoPushByte(getterSensorBinary(channel));
-			break;
+	switch(requested_function) {
+		case ZUNO_JUMP_TABLE_SETUP:
+		InitArduinoEnvironment();
+		break;
 
-		case ZUNO_SENSOR_MULTILEVEL_GETTER:
-			zunoPushByte(getterSensorMultilevel(channel));
-			break;
+		case ZUNO_JUMP_TABLE_LOOP:
+		loop();
+		break;
 
-		case ZUNO_SWITCH_BINARY_GETTER:
-			zunoPushByte(getterSwitchBinary(channel));
-			break;
+		case ZUNO_JUMP_TABLE_CALLBACK:
+		zunoCallback();
+		break;
 
-		case ZUNO_SWITCH_BINARY_SETTER:
-			setterSwitchBinary(channel, zunoPopByte());
-			break;
+		case ZUNO_GET_CHANNELS_ADDRESS:
+		{
+			BYTE __code * p_code_space = (BYTE __code *) zunoChannelSetupArray;
+			zunoPushWord((WORD)p_code_space);
+		}
+		break;
 
-		case ZUNO_SWITCH_MULTILEVEL_GETTER:
-			zunoPushByte(getterSwitchMultilevel(channel));
-			break;
-
-		case ZUNO_SWITCH_MULTILEVEL_SETTER:
-			setterSwitchMultilevel(channel, zunoPopByte());
-			break;
 		default:
-			break;
+		break;
 	}
 }
 

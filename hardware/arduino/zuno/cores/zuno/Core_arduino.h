@@ -25,11 +25,10 @@ typedef struct _ZUNO_CHANNEL_PROPERTIES_DESCRIPTION
 	GENERIC_POINTER getter;
 } ZUNO_CHANNEL_PROPERTIES_DESCRIPTION;
 
-
 //#define XBYTE  _xdata BYTE /* External data byte */
 
 #define ZUNO_CORES_SW_VERSION_MAJOR 		0
-#define ZUNO_CORES_SW_VERSION_MINOR 		1 			
+#define ZUNO_CORES_SW_VERSION_MINOR 		2 			
 
 
 #define ZUNO_PIN_STATE_HIGH 				1
@@ -57,13 +56,7 @@ enum {
 	ZUNO_FUNC_PIN_MODE,
 	ZUNO_FUNC_DIGITAL_WRITE,
 	ZUNO_FUNC_DIGITAL_READ,
-	ZUNO_FUNC_ADD_SENSOR_BINARY_CHANNEL,
-	ZUNO_FUNC_ADD_SENSOR_MULTILEVEL_CHANNEL,
-	ZUNO_FUNC_ADD_METER_CHANNEL,
-	ZUNO_FUNC_ADD_SWITCH_BINARY_CHANNEL,
-	ZUNO_FUNC_ADD_SWITCH_MULTILEVEL_CHANNEL,
 	ZUNO_FUNC_UNSOLICITED_REPORT,
-	ZUNO_FUNC_ADD_ASSOCIATION_GROUP,
 	ZUNO_FUNC_ASSOCIATION_SEND,
 	ZUNO_FUNC_DELAY_MS,
 	ZUNO_FUNC_ANALOG_READ,
@@ -83,6 +76,13 @@ enum {
 	ZUNO_SWITCH_MULTILEVEL_GETTER,
 	ZUNO_SWITCH_MULTILEVEL_SETTER,
 	ZUNO_METER_GETTER,
+};
+
+enum {
+	ZUNO_JUMP_TABLE_SETUP, 		//0
+	ZUNO_JUMP_TABLE_LOOP, 		//1
+	ZUNO_JUMP_TABLE_CALLBACK,	//2
+	ZUNO_GET_CHANNELS_ADDRESS, 	//3
 };
 
 #define ZUNO_SWITCH_BINARY_CHANNEL_NUMBER 				0x01
@@ -107,39 +107,39 @@ enum {
 #define ZUNO_SENSOR_BINARY_TYPE_DEFAULT 				0xff
 
 // Sensor Multilevel types
-#define SENSOR_MULTILEVEL_TYPE_TEMPERATURE		                                   	0x01
-#define SENSOR_MULTILEVEL_TYPE_GENERAL_PURPOSE_VALUE		                        0x02
-#define SENSOR_MULTILEVEL_TYPE_LUMINANCE		                                    0x03
-#define SENSOR_MULTILEVEL_TYPE_POWER		                                        0x04
-#define SENSOR_MULTILEVEL_TYPE_RELATIVE_HUMIDITY		                            0x05
-#define SENSOR_MULTILEVEL_TYPE_VELOCITY		                                      	0x06
-#define SENSOR_MULTILEVEL_TYPE_DIRECTION		                                    0x07
-#define SENSOR_MULTILEVEL_TYPE_ATMOSPHERIC_PRESSURE		                          	0x08
-#define SENSOR_MULTILEVEL_TYPE_BAROMETRIC_PRESSURE		                           	0x09
-#define SENSOR_MULTILEVEL_TYPE_SOLAR_RADIATION		                               	0x0A
-#define SENSOR_MULTILEVEL_TYPE_DEW_POINT		                                    0x0B
-#define SENSOR_MULTILEVEL_TYPE_RAIN_RATE		                                    0x0C
-#define SENSOR_MULTILEVEL_TYPE_TIDE_LEVEL		                                    0x0D
-#define SENSOR_MULTILEVEL_TYPE_WEIGHT		                                        0x0E
-#define SENSOR_MULTILEVEL_TYPE_VOLTAGE		                                       	0x0F
-#define SENSOR_MULTILEVEL_TYPE_CURRENT		                                       	0x10
-#define SENSOR_MULTILEVEL_TYPE_CO2_LEVEL		                                    0x11
-#define SENSOR_MULTILEVEL_TYPE_AIR_FLOW		                                      	0x12
-#define SENSOR_MULTILEVEL_TYPE_TANK_CAPACITY		                                0x13
-#define SENSOR_MULTILEVEL_TYPE_DISTANCE		                                      	0x14
-#define SENSOR_MULTILEVEL_TYPE_ANGLE_POSITION		                                0x15
-#define SENSOR_MULTILEVEL_TYPE_ROTATION                                             0x16
-#define SENSOR_MULTILEVEL_TYPE_WATER_TEMPERATURE                                    0x17
-#define SENSOR_MULTILEVEL_TYPE_SOIL_TEMPERATURE                                     0x18
-#define SENSOR_MULTILEVEL_TYPE_SEISMIC_INTENSITY                                    0x19
-#define SENSOR_MULTILEVEL_TYPE_SEISMIC_MAGNITUDE                                    0x1A
-#define SENSOR_MULTILEVEL_TYPE_ULTRAVIOLET                                          0x1B
-#define SENSOR_MULTILEVEL_TYPE_ELECTRICAL_RESISTIVITY                               0x1C
-#define SENSOR_MULTILEVEL_TYPE_ELECTRICAL_CONDUCTIVITY                              0x1D
-#define SENSOR_MULTILEVEL_TYPE_LOUDNESS                                             0x1E
-#define SENSOR_MULTILEVEL_TYPE_MOISTURE                                             0x1F
-#define SENSOR_MULTILEVEL_TYPE_FREQUENCY                                            0x20
-#define SENSOR_MULTILEVEL_TYPE_TIME                                                 0x21
+#define ZUNO_SENSOR_MULTILEVEL_TYPE_TEMPERATURE		                                   	0x01
+#define ZUNO_SENSOR_MULTILEVEL_TYPE_GENERAL_PURPOSE_VALUE		                        0x02
+#define ZUNO_SENSOR_MULTILEVEL_TYPE_LUMINANCE		                                    0x03
+#define ZUNO_SENSOR_MULTILEVEL_TYPE_POWER		                                        0x04
+#define ZUNO_SENSOR_MULTILEVEL_TYPE_RELATIVE_HUMIDITY		                            0x05
+#define ZUNO_SENSOR_MULTILEVEL_TYPE_VELOCITY		                                    0x06
+#define ZUNO_SENSOR_MULTILEVEL_TYPE_DIRECTION		                                    0x07
+#define ZUNO_SENSOR_MULTILEVEL_TYPE_ATMOSPHERIC_PRESSURE		                        0x08
+#define ZUNO_SENSOR_MULTILEVEL_TYPE_BAROMETRIC_PRESSURE		                           	0x09
+#define ZUNO_SENSOR_MULTILEVEL_TYPE_SOLAR_RADIATION		                               	0x0A
+#define ZUNO_SENSOR_MULTILEVEL_TYPE_DEW_POINT		                                    0x0B
+#define ZUNO_SENSOR_MULTILEVEL_TYPE_RAIN_RATE		                                    0x0C
+#define ZUNO_SENSOR_MULTILEVEL_TYPE_TIDE_LEVEL		                                    0x0D
+#define ZUNO_SENSOR_MULTILEVEL_TYPE_WEIGHT		                                        0x0E
+#define ZUNO_SENSOR_MULTILEVEL_TYPE_VOLTAGE		                                       	0x0F
+#define ZUNO_SENSOR_MULTILEVEL_TYPE_CURRENT		                                       	0x10
+#define ZUNO_SENSOR_MULTILEVEL_TYPE_CO2_LEVEL		                                    0x11
+#define ZUNO_SENSOR_MULTILEVEL_TYPE_AIR_FLOW		                                    0x12
+#define ZUNO_SENSOR_MULTILEVEL_TYPE_TANK_CAPACITY		                                0x13
+#define ZUNO_SENSOR_MULTILEVEL_TYPE_DISTANCE		                                    0x14
+#define ZUNO_SENSOR_MULTILEVEL_TYPE_ANGLE_POSITION		                                0x15
+#define ZUNO_SENSOR_MULTILEVEL_TYPE_ROTATION                                            0x16
+#define ZUNO_SENSOR_MULTILEVEL_TYPE_WATER_TEMPERATURE                                   0x17
+#define ZUNO_SENSOR_MULTILEVEL_TYPE_SOIL_TEMPERATURE                                    0x18
+#define ZUNO_SENSOR_MULTILEVEL_TYPE_SEISMIC_INTENSITY                                   0x19
+#define ZUNO_SENSOR_MULTILEVEL_TYPE_SEISMIC_MAGNITUDE                                   0x1A
+#define ZUNO_SENSOR_MULTILEVEL_TYPE_ULTRAVIOLET                                         0x1B
+#define ZUNO_SENSOR_MULTILEVEL_TYPE_ELECTRICAL_RESISTIVITY                              0x1C
+#define ZUNO_SENSOR_MULTILEVEL_TYPE_ELECTRICAL_CONDUCTIVITY                             0x1D
+#define ZUNO_SENSOR_MULTILEVEL_TYPE_LOUDNESS                                            0x1E
+#define ZUNO_SENSOR_MULTILEVEL_TYPE_MOISTURE                                            0x1F
+#define ZUNO_SENSOR_MULTILEVEL_TYPE_FREQUENCY                                           0x20
+#define ZUNO_SENSOR_MULTILEVEL_TYPE_TIME                                                0x21
 
 
 //Sensor Multilevel scales,sizes,precisions
@@ -185,16 +185,16 @@ enum {
 #define MACRO_CAST_POINTER_TO_VOID(FUNCTION) 										((VOID_FUNC_POINTER_VOID) FUNCTION)
 
 //
-#define ZUNO_SWITCH_BINARY(GETTER, SETTER)   								{ZUNO_SWITCH_BINARY_CHANNEL_NUMBER, 1, 1, GETTER, SETTER}
-#define ZUNO_SWITCH_MULTILEVEL(GETTER, SETTER) 								{ZUNO_SWITCH_MULTILEVEL_CHANNEL_NUMBER, 1, 1, GETTER, SETTER}
-#define ZUNO_SENSOR_BINARY(TYPE, GETTER) 									{ZUNO_SENSOR_BINARY_CHANNEL_NUMBER, TYPE, 1, GETTER, MACRO_CAST_POINTER_TO_VOID(0)}
+#define ZUNO_SWITCH_BINARY(GETTER, SETTER)   								{ZUNO_SWITCH_BINARY_CHANNEL_NUMBER, 0, 0, GETTER, SETTER}
+#define ZUNO_SWITCH_MULTILEVEL(GETTER, SETTER) 								{ZUNO_SWITCH_MULTILEVEL_CHANNEL_NUMBER, 0, 0, GETTER, SETTER}
+#define ZUNO_SENSOR_BINARY(TYPE, GETTER) 									{ZUNO_SENSOR_BINARY_CHANNEL_NUMBER, TYPE, 0, GETTER, MACRO_CAST_POINTER_TO_VOID(0)}
 #define ZUNO_SENSOR_MULTILEVEL(TYPE, SCALE, SIZE, PRECISION, GETTER) 		{ZUNO_SENSOR_MULTILEVEL_CHANNEL_NUMBER, TYPE, SENSOR_MULTILEVEL_PROPERTIES_COMBINER(SCALE, SIZE, PRECISION), GETTER, MACRO_CAST_POINTER_TO_VOID(0)}
 
-#define ZUNO_SENSOR_MULTILEVEL_TEMPERATURE(GETTER) 							ZUNO_SENSOR_MULTILEVEL(SENSOR_MULTILEVEL_TYPE_TEMPERATURE, SENSOR_MULTILEVEL_SCALE_CELSIUS, SENSOR_MULTILEVEL_SIZE_ONE_BYTE, SENSOR_MULTILEVEL_PRECISION_ZERO_DECIMALS, GETTER)	
-#define ZUNO_SENSOR_MULTILEVEL_GENERAL_PURPOSE(GETTER) 						ZUNO_SENSOR_MULTILEVEL(SENSOR_MULTILEVEL_TYPE_TEMPERATURE, SENSOR_MULTILEVEL_SCALE_PERCENTAGE_VALUE, SENSOR_MULTILEVEL_SIZE_ONE_BYTE, SENSOR_MULTILEVEL_PRECISION_ZERO_DECIMALS, GETTER)
-#define ZUNO_SENSOR_MULTILEVEL_LUMINANCE(GETTER) 							ZUNO_SENSOR_MULTILEVEL(SENSOR_MULTILEVEL_TYPE_TEMPERATURE, SENSOR_MULTILEVEL_SCALE_LUX, SENSOR_MULTILEVEL_SIZE_ONE_BYTE, SENSOR_MULTILEVEL_PRECISION_ZERO_DECIMALS, GETTER)
-#define ZUNO_SENSOR_MULTILEVEL_POWER(GETTER) 								ZUNO_SENSOR_MULTILEVEL(SENSOR_MULTILEVEL_TYPE_TEMPERATURE, SENSOR_MULTILEVEL_SCALE_WATT, SENSOR_MULTILEVEL_SIZE_ONE_BYTE, SENSOR_MULTILEVEL_PRECISION_ZERO_DECIMALS, GETTER)
-#define ZUNO_SENSOR_MULTILEVEL_HUMIDITY(GETTER) 							ZUNO_SENSOR_MULTILEVEL(SENSOR_MULTILEVEL_TYPE_TEMPERATURE, SENSOR_MULTILEVEL_SCALE_PERCENTAGE_VALUE, SENSOR_MULTILEVEL_SIZE_ONE_BYTE, SENSOR_MULTILEVEL_PRECISION_ZERO_DECIMALS, GETTER)
+#define ZUNO_SENSOR_MULTILEVEL_TEMPERATURE(GETTER) 							ZUNO_SENSOR_MULTILEVEL(ZUNO_SENSOR_MULTILEVEL_TYPE_TEMPERATURE, SENSOR_MULTILEVEL_SCALE_CELSIUS, SENSOR_MULTILEVEL_SIZE_ONE_BYTE, SENSOR_MULTILEVEL_PRECISION_ZERO_DECIMALS, GETTER)	
+#define ZUNO_SENSOR_MULTILEVEL_GENERAL_PURPOSE(GETTER) 						ZUNO_SENSOR_MULTILEVEL(ZUNO_SENSOR_MULTILEVEL_TYPE_TEMPERATURE, SENSOR_MULTILEVEL_SCALE_PERCENTAGE_VALUE, SENSOR_MULTILEVEL_SIZE_ONE_BYTE, SENSOR_MULTILEVEL_PRECISION_ZERO_DECIMALS, GETTER)
+#define ZUNO_SENSOR_MULTILEVEL_LUMINANCE(GETTER) 							ZUNO_SENSOR_MULTILEVEL(ZUNO_SENSOR_MULTILEVEL_TYPE_TEMPERATURE, SENSOR_MULTILEVEL_SCALE_LUX, SENSOR_MULTILEVEL_SIZE_ONE_BYTE, SENSOR_MULTILEVEL_PRECISION_ZERO_DECIMALS, GETTER)
+#define ZUNO_SENSOR_MULTILEVEL_POWER(GETTER) 								ZUNO_SENSOR_MULTILEVEL(ZUNO_SENSOR_MULTILEVEL_TYPE_TEMPERATURE, SENSOR_MULTILEVEL_SCALE_WATT, SENSOR_MULTILEVEL_SIZE_ONE_BYTE, SENSOR_MULTILEVEL_PRECISION_ZERO_DECIMALS, GETTER)
+#define ZUNO_SENSOR_MULTILEVEL_HUMIDITY(GETTER) 							ZUNO_SENSOR_MULTILEVEL(ZUNO_SENSOR_MULTILEVEL_TYPE_TEMPERATURE, SENSOR_MULTILEVEL_SCALE_PERCENTAGE_VALUE, SENSOR_MULTILEVEL_SIZE_ONE_BYTE, SENSOR_MULTILEVEL_PRECISION_ZERO_DECIMALS, GETTER)
 /*
 TODO: finish all types
 #define ZUNO_SENSOR_MULTILEVEL_VELOCITY(GETTER)
@@ -229,16 +229,27 @@ TODO: finish all types
 /**/
 
 #define ZUNO_SETUP_CHANNELS(...) 	\
-								__code __at (ZUNO_CHANNEL_SETUP_ARRAY_ADDRESS) ZUNO_CHANNEL_PROPERTIES_DESCRIPTION zunoChannelSetupArray[]= \
+								__code ZUNO_CHANNEL_PROPERTIES_DESCRIPTION zunoChannelSetupArray[]= \
 								{ \
 									{0x42, 0x42, 0x42, 0x4242, 0x4242}, \
 									__VA_ARGS__, \
-									{0, 0, 0, 0, 0} \
+									{0x43, 0x43, 0x43, 0x4343, 0x4343} \
 								};
+
+
+#define ZUNO_MAX_MULTI_CHANNEL_NUMBER 					5
+#define ZUNO_CHANNEL_PROPERTIES_DESCRIPTION_SIZE 		sizeof(ZUNO_CHANNEL_PROPERTIES_DESCRIPTION)
+#define ZUNO_MAX_CHANNEL_ARRAY_SIZE 					(ZUNO_MAX_MULTI_CHANNEL_NUMBER*ZUNO_CHANNEL_PROPERTIES_DESCRIPTION_SIZE)
+
+
+
+
 
 
 //Debug///
 BYTE zunoPopByte(void);
+WORD zunoPopWord(void);
+DWORD zunoPopDWORD(void);
 void zunoPushByte(BYTE value);
 void zunoPushWord(WORD value);
 void zunoPushDWORD(DWORD value);
@@ -255,42 +266,33 @@ void SerialEnd(void);
 BYTE SerialAvailable(void);
 BYTE SerialRead(void);
 void SerialWrite(BYTE value);
-BYTE zunoAddSensorBinaryChannel(BYTE type);
-BYTE zunoAddSensorMultilevelChannel(BYTE type);
-BYTE zunoAddSwitchBinaryChannel(void);
-BYTE zunoAddSwitchMultilevelChannel(void);
-BYTE zunoAddAssociationGroups(BYTE group_number);
+//**********************************************
+void setup(void);
+void loop(void);
+void InitArduinoEnvironment(void);
 
+#if 0
 void setterSwitchBinary(BYTE channel, BYTE value);
 BYTE getterSwitchBinary(BYTE channel);
 void setterSwitchMultilevel(BYTE channel, BYTE value);
 BYTE getterSwitchMultilevel(BYTE channel);
 BYTE getterSensorBinary(BYTE channel);
 BYTE getterSensorMultilevel(BYTE channel);
+#endif
 void zunoSendUncolicitedReport(BYTE channel,BYTE value);
 
 
+
+/************************************************
+			Variables
+************************************************/
+extern __code ZUNO_CHANNEL_PROPERTIES_DESCRIPTION zunoChannelSetupArray[];
+
+
+
+/************************************************
+			end of Variables
+************************************************/
 __sfr __at (0x81) SP;
 
 
-
-
-
-
-
-
-
-/*
-void begin_init_code(void) __naked {
-    __asm
-      .area ABSCODE (ABS,CODE)
-      .org 0x8300        // YOUR FUNCTION'S DESIRED ADDRESS HERE.
-    __endasm;
-}
-// DO NOT REMOVE THIS LINE - void init(void) {}
-void end_init_code(void) __naked {
-    __asm
-        .area CSEG (REL,CODE)
-    __endasm;
-}
-*/
