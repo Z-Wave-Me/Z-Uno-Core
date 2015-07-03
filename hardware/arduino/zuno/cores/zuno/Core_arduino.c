@@ -22,7 +22,7 @@ void zunoPushWord(WORD value) {
 	zunoStack[++zunoStackTop] = (BYTE)(value & 0xFF);
 }
 
-void zunoPushDWORD(DWORD value) {
+void zunoPushDword(DWORD value) {
 	if (zunoStackTop >= (ZUNO_STACK_SIZE - 3)) {
 		return;
 	}
@@ -126,7 +126,7 @@ void delay(DWORD value) {
     __endasm;
     //
 
-	zunoPushDWORD(value);
+	zunoPushDword(value);
 	zunoPushByte(ZUNO_FUNC_DELAY_MS);
 	zunoCall();
 	result = zunoPopByte();
@@ -196,34 +196,53 @@ void zunoSendUncolicitedReport(BYTE channel,BYTE value) {
 
 
 void zunoCallback(void) {
-	BYTE channel = zunoPopByte();
+	BYTE channel_and_cmd_type = zunoPopByte();
+	BYTE channel = channel_and_cmd_type / 2;
 
-	switch (zunoPopByte()) { 
-		case ZUNO_SENSOR_BINARY_GETTER:
-			//zunoPushByte(getterSensorBinary(channel));
-			break;
+	if ((channel_and_cmd_type % 2) == 0) { //we got a getter
+		BYTE size = zunoPopByte();
+		if (channel_and_cmd_type == 0) {
+			return;
+		}
+		if (channel == 3) {
+			digitalWrite(5,HIGH);
+		} else if (channel == 2) {
+			digitalWrite(5,LOW);
+		}
+		//no shift, vecause channels start from 1 both in Z-Wave and in our storage array
+		if ((zunoChannelSetupArray[channel].getter != NULL) && (channel_and_cmd_type != 0)) {
+			switch(size) {
+				case 1:
+				{
+					BYTE ret_value = (*((BYTE_FUNC_POINTER_VOID)zunoChannelSetupArray[channel].getter))();
+					zunoPushByte(ret_value);
+					break;
+				}
 
-		case ZUNO_SENSOR_MULTILEVEL_GETTER:
-			//zunoPushByte(getterSensorMultilevel(channel));
-			break;
+				case 2:
+				{
+					WORD ret_value = (*((WORD_FUNC_POINTER_VOID)zunoChannelSetupArray[channel].getter))();
+					zunoPushWord(ret_value);
+					break;
+				}
 
-		case ZUNO_SWITCH_BINARY_GETTER:
-			//zunoPushByte(getterSwitchBinary(channel));
-			break;
-
-		case ZUNO_SWITCH_BINARY_SETTER:
-			//setterSwitchBinary(channel, zunoPopByte());
-			break;
-
-		case ZUNO_SWITCH_MULTILEVEL_GETTER:
-			//zunoPushByte(getterSwitchMultilevel(channel));
-			break;
-
-		case ZUNO_SWITCH_MULTILEVEL_SETTER:
-			//setterSwitchMultilevel(channel, zunoPopByte());
-			break;
-		default:
-			break;
+				case 4:
+				{
+					DWORD ret_value = (*((DWORD_FUNC_POINTER_VOID)zunoChannelSetupArray[channel].getter))();
+					zunoPushDword(ret_value);
+					break;
+				}
+			}
+		} else {
+			zunoPushByte(0);
+		}
+	} else { //we got a setter
+		BYTE value = zunoPopByte();
+		//TODO maybe we have additional parameters
+		//no shift, vecause channels start from 1 both in Z-Wave and in our storage array
+		if ((zunoChannelSetupArray[channel].setter != NULL) && (channel_and_cmd_type != 1)) {
+			(*((VOID_FUNC_POINTER_BYTE)zunoChannelSetupArray[channel].setter))(value);
+		}
 	}
 }
 /* ----------------------------------------------------------------------------

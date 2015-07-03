@@ -3,9 +3,11 @@ typedef unsigned char   BYTE;
 typedef unsigned short  WORD;
 typedef unsigned long   DWORD;
 typedef __code void (*VOID_FUNC_POINTER_VOID) (void);
-typedef void (*VOID_FUNC_POINTER_BYTE) (BYTE value);
-typedef void (*VOID_FUNC_POINTER_DW0RD) (DWORD value);
-typedef BYTE (*BYTE_FUNC_POINTER_VOID) (void);
+typedef __code void (*VOID_FUNC_POINTER_BYTE) (BYTE value);
+typedef __code void (*VOID_FUNC_POINTER_DW0RD) (DWORD value);
+typedef __code BYTE (*BYTE_FUNC_POINTER_VOID) (void);
+typedef __code WORD (*WORD_FUNC_POINTER_VOID) (void);
+typedef __code DWORD (*DWORD_FUNC_POINTER_VOID) (void);
 typedef __code void * GENERIC_POINTER;
 typedef struct _SERIAL_DESCRIPTOR
 {
@@ -21,8 +23,8 @@ typedef struct _ZUNO_CHANNEL_PROPERTIES_DESCRIPTION
 	BYTE channel_cmd_class;
 	BYTE channel_sensor_type;
 	BYTE channel_multilevel_properties;
-	GENERIC_POINTER setter;
 	GENERIC_POINTER getter;
+	GENERIC_POINTER setter;
 } ZUNO_CHANNEL_PROPERTIES_DESCRIPTION;
 
 //#define XBYTE  _xdata BYTE /* External data byte */
@@ -51,6 +53,7 @@ typedef struct _ZUNO_CHANNEL_PROPERTIES_DESCRIPTION
 #define ZUNO_PIN_MODE_INPUT_WITH_PULLUP  	2
 #define OUTPUT 								ZUNO_PIN_MODE_OUTPUT
 #define INPUT 								ZUNO_PIN_MODE_INPUT
+#define NULL 								0
 
 enum {
 	ZUNO_FUNC_PIN_MODE,
@@ -237,9 +240,7 @@ TODO: finish all types
 								};
 
 
-#define ZUNO_MAX_MULTI_CHANNEL_NUMBER 					5
-#define ZUNO_CHANNEL_PROPERTIES_DESCRIPTION_SIZE 		sizeof(ZUNO_CHANNEL_PROPERTIES_DESCRIPTION)
-#define ZUNO_MAX_CHANNEL_ARRAY_SIZE 					(ZUNO_MAX_MULTI_CHANNEL_NUMBER*ZUNO_CHANNEL_PROPERTIES_DESCRIPTION_SIZE)
+#define ZUNO_MAX_MULTI_CHANNEL_NUMBER 					10
 
 
 
@@ -252,7 +253,7 @@ WORD zunoPopWord(void);
 DWORD zunoPopDWORD(void);
 void zunoPushByte(BYTE value);
 void zunoPushWord(WORD value);
-void zunoPushDWORD(DWORD value);
+void zunoPushDword(DWORD value);
 void zunoCall(void);
 //********************************
 void pinMode(BYTE pin, BYTE mode);
