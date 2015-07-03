@@ -187,8 +187,8 @@ void SerialWrite(BYTE value) {
 /* ----------------------------------------------------------------------------
 							Z-Wave communication
 -------------------------------------------------------------------------------*/
-void zunoSendUncolicitedReport(BYTE channel,BYTE value) {
-	zunoPushByte(value);
+void zunoSendUncolicitedReport(BYTE channel,WORD value) {
+	zunoPushWord(value);
 	zunoPushByte(channel);
 	zunoPushByte(ZUNO_FUNC_UNSOLICITED_REPORT);
 	zunoCall();

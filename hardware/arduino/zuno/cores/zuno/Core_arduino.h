@@ -30,7 +30,7 @@ typedef struct _ZUNO_CHANNEL_PROPERTIES_DESCRIPTION
 //#define XBYTE  _xdata BYTE /* External data byte */
 
 #define ZUNO_CORES_SW_VERSION_MAJOR 		0
-#define ZUNO_CORES_SW_VERSION_MINOR 		2 			
+#define ZUNO_CORES_SW_VERSION_MINOR 		3 			
 
 
 #define ZUNO_PIN_STATE_HIGH 				1
@@ -272,15 +272,10 @@ void setup(void);
 void loop(void);
 void InitArduinoEnvironment(void);
 
-#if 0
-void setterSwitchBinary(BYTE channel, BYTE value);
-BYTE getterSwitchBinary(BYTE channel);
-void setterSwitchMultilevel(BYTE channel, BYTE value);
-BYTE getterSwitchMultilevel(BYTE channel);
-BYTE getterSensorBinary(BYTE channel);
-BYTE getterSensorMultilevel(BYTE channel);
-#endif
-void zunoSendUncolicitedReport(BYTE channel,BYTE value);
+
+#define ZUNO_REPORT_NO_IMMEDIATE_VALUE 		0xffff
+#define zunoSendZWaveReport(CHANNEL)  zunoSendUncolicitedReport(CHANNEL,ZUNO_REPORT_NO_IMMEDIATE_VALUE)
+void zunoSendUncolicitedReport(BYTE channel,WORD value);
 
 
 
