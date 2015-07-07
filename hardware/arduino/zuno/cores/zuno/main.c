@@ -9,10 +9,14 @@ void InitArduinoEnvironment(void);
 void initSerial0(void);
 
 #if 0
-ZUNO_SETUP_CHANNELS(ZUNO_SWITCH_BINARY(setterSwitchBinary,getterSwitchBinary),
-                    ZUNO_SWITCH_MULTILEVEL(setterSwitchMultilevel,getterSwitchMultilevel),
-                    ZUNO_SENSOR_BINARY(ZUNO_SENSOR_BINARY_TYPE_SMOKE,getterSensorBinary),
-                    ZUNO_SENSOR_MULTILEVEL_TEMPERATURE(getterSensorMultilevel))
+__code ZUNO_ASSOCIATION_PROPERTIES_DESCRIPTION zunoAssociationSetupArray[]= 
+                { 
+                  {0x42, 0x42},
+                  ZUNO_ASSOCIATION_GROUP_SET_VALUE,
+                  ZUNO_ASSOCIATION_GROUP_SET_VALUE_AND_DIM,
+                  ZUNO_ASSOCIATION_GROUP_SCENE_CONTROL,
+                  {0x43, 0x43} 
+                };
 #endif
 
 

@@ -27,6 +27,13 @@ typedef struct _ZUNO_CHANNEL_PROPERTIES_DESCRIPTION
 	GENERIC_POINTER setter;
 } ZUNO_CHANNEL_PROPERTIES_DESCRIPTION;
 
+
+typedef struct _ZUNO_ASSOCIATION_PROPERTIES_DESCRIPTION
+{
+	BYTE association_type;
+	BYTE association_param;
+} ZUNO_ASSOCIATION_PROPERTIES_DESCRIPTION;
+
 //#define XBYTE  _xdata BYTE /* External data byte */
 
 #define ZUNO_CORES_SW_VERSION_MAJOR 		0
@@ -86,12 +93,16 @@ enum {
 	ZUNO_JUMP_TABLE_LOOP, 		//1
 	ZUNO_JUMP_TABLE_CALLBACK,	//2
 	ZUNO_GET_CHANNELS_ADDRESS, 	//3
+	ZUNO_GET_ASSOCIATIONS_ADDRESS, //4
 };
 
-#define ZUNO_SWITCH_BINARY_CHANNEL_NUMBER 				0x01
-#define ZUNO_SWITCH_MULTILEVEL_CHANNEL_NUMBER 			0x02
-#define ZUNO_SENSOR_BINARY_CHANNEL_NUMBER 				0x03
-#define ZUNO_SENSOR_MULTILEVEL_CHANNEL_NUMBER 			0x04
+enum {
+	ZUNO_SWITCH_BINARY_CHANNEL_NUMBER = 1, 				//0x01
+	ZUNO_SWITCH_MULTILEVEL_CHANNEL_NUMBER, 			//0x02
+	ZUNO_SENSOR_BINARY_CHANNEL_NUMBER, 				//0x03
+	ZUNO_SENSOR_MULTILEVEL_CHANNEL_NUMBER, 			//0x04
+	ZUNO_END_OF_SUPPORTED_CC_NUM,
+};
 
 //Sensor Binary types
 #define ZUNO_SENSOR_BINARY_TYPE_GENERAL_PURPOSE 		0x01
@@ -240,6 +251,34 @@ TODO: finish all types
 								};
 
 
+
+
+
+enum {
+	ZUNO_ASSOC_BASIC_SET_NUMBER = 1, 						//0x01
+	ZUNO_ASSOC_BASIC_SET_AND_DIM_NUMBER,				//0x02
+	ZUNO_ASSOC_SCENE_ACTIVATION_NUMBER, 				//0x03
+	ZUNO_END_OF_SUPPORTED_ASSOC_NUM,
+};
+
+#define ZUNO_ASSOC_NO_PARAMS 							0x00
+
+#define ZUNO_ASSOCIATION_GROUP_SET_VALUE 				{ZUNO_ASSOC_BASIC_SET_NUMBER, ZUNO_ASSOC_NO_PARAMS}
+#define ZUNO_ASSOCIATION_GROUP_SET_VALUE_AND_DIM 		{ZUNO_ASSOC_BASIC_SET_AND_DIM_NUMBER, ZUNO_ASSOC_NO_PARAMS}
+#define ZUNO_ASSOCIATION_GROUP_SCENE_CONTROL 			{ZUNO_ASSOC_SCENE_ACTIVATION_NUMBER, ZUNO_ASSOC_NO_PARAMS}
+//TODO #define ZUNO_ASSOCIATION_GROUP_COLOR_CONTROL 		 		{}
+//TODO #define ZUNO_ASSOCIATION_GROUP_THERMOSTAT_CONTROL 		 	{}
+//TODO #define ZUNO_ASSOCIATION_GROUP_DOOR_LOCK_CONTROL 		 	{}
+
+#define ZUNO_SETUP_ASSOCIATIONS(...)	\
+								__code ZUNO_ASSOCIATION_PROPERTIES_DESCRIPTION zunoAssociationSetupArray[]= \
+								{ \
+									{0x42, 0x42}, \
+									__VA_ARGS__, \
+									{0x43, 0x43} \
+								};
+
+
 #define ZUNO_MAX_MULTI_CHANNEL_NUMBER 					10
 
 
@@ -277,12 +316,23 @@ void InitArduinoEnvironment(void);
 #define zunoSendZWaveReport(CHANNEL)  zunoSendUncolicitedReport(CHANNEL,ZUNO_REPORT_NO_IMMEDIATE_VALUE)
 void zunoSendUncolicitedReport(BYTE channel,WORD value);
 
+#define ZUNO_DIMMING_UP				0
+#define ZUNO_DIMMING_DOWN 			1
+#define ZUNO_DIMMING_START			1
+#define ZUNO_DIMMING_STOP 			0
+
+#define zunoSendToGroupSetValueCommand(GROUP,VALUE) 					zunoSendAssociationCommand(GROUP,ZUNO_ASSOC_BASIC_SET_NUMBER,VALUE,0)
+#define zunoSendToGroupDimmingCommand(GROUP,DIRECTION,START_STOP) 		zunoSendAssociationCommand(GROUP,ZUNO_ASSOC_BASIC_SET_AND_DIM_NUMBER,DIRECTION,START_STOP)
+#define zunoSendToGroupScene(GROUP,SCENE_NUMBER) 						zunoSendAssociationCommand(GROUP,ZUNO_ASSOC_SCENE_ACTIVATION_NUMBER,SCENE_NUMBER,0)
+
+void zunoSendAssociationCommand(BYTE group, BYTE assoc_type, BYTE param1, BYTE param2);
 
 
 /************************************************
 			Variables
 ************************************************/
 extern __code ZUNO_CHANNEL_PROPERTIES_DESCRIPTION zunoChannelSetupArray[];
+extern __code ZUNO_ASSOCIATION_PROPERTIES_DESCRIPTION zunoAssociationSetupArray[];
 
 
 

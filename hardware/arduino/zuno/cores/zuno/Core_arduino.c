@@ -194,6 +194,15 @@ void zunoSendUncolicitedReport(BYTE channel,WORD value) {
 	zunoCall();
 }
 
+void zunoSendAssociationCommand(BYTE group, BYTE assoc_type, BYTE param1, BYTE param2) {
+	zunoPushByte(param2);
+	zunoPushByte(param1);
+	zunoPushByte(assoc_type);
+	zunoPushByte(group);
+	zunoPushByte(ZUNO_FUNC_ASSOCIATION_SEND);
+	zunoCall();
+}
+
 
 void zunoCallback(void) {
 	BYTE channel_and_cmd_type = zunoPopByte();
@@ -275,6 +284,13 @@ void zunoJumpTable(void) {
 		case ZUNO_GET_CHANNELS_ADDRESS:
 		{
 			BYTE __code * p_code_space = (BYTE __code *) zunoChannelSetupArray;
+			zunoPushWord((WORD)p_code_space);
+		}
+		break; 
+
+		case ZUNO_GET_ASSOCIATIONS_ADDRESS:
+		{
+			BYTE __code * p_code_space = (BYTE __code *) zunoAssociationSetupArray;
 			zunoPushWord((WORD)p_code_space);
 		}
 		break;
