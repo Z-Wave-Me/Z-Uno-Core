@@ -30,7 +30,7 @@ typedef struct _ZUNO_CHANNEL_PROPERTIES_DESCRIPTION
 //#define XBYTE  _xdata BYTE /* External data byte */
 
 #define ZUNO_CORES_SW_VERSION_MAJOR 		0
-#define ZUNO_CORES_SW_VERSION_MINOR 		3 			
+#define ZUNO_CORES_SW_VERSION_MINOR 		32 			
 
 
 #define ZUNO_PIN_STATE_HIGH 				1
