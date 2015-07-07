@@ -3,17 +3,30 @@
 menu.cpu=Processor
 
 ##############################################################
+zuno.name=Z-Wave>ME Z-Uno
 
-zuno.name=Arduino ZUno
+zuno.vid.0=0x0658
+zuno.pid.0=0x0200
+zuno.vid.1=0x0658
+zuno.pid.1=0x0000
+
 zuno.upload.tool=zprog
 zuno.upload.protocol=usb
-#zuno.upload.maximum_size=32256
+zuno.upload.maximum_size=32256
 zuno.upload.maximum_data_size=0
 zuno.upload.speed=115200
 
+zuno.bootloader.tool=zprog
+zuno.bootloader.low_fuses=0xFF
+zuno.bootloader.high_fuses=0xDE
+zuno.bootloader.extended_fuses=0x05
+zuno.bootloader.unlock_bits=0x3F
+zuno.bootloader.lock_bits=0x0F
+zuno.bootloader.file=none
 
-zuno.build.mcu=i686
+zuno.build.mcu=zuno
 zuno.build.f_cpu=16000000L
+zuno.build.board=zuno
 zuno.build.core=zuno
 zuno.build.variant=
 zuno.build.vid=0x2341
@@ -21,5 +34,3 @@ zuno.build.pid=0x8039
 zuno.build.usb_product="Z-UNO"
 zuno.build.extra_flags=
 
-zuno.vid.0=0x0658
-zuno.pid.0=0x0200

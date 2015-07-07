@@ -1,4 +1,4 @@
-zprog.name=Zuno Programmer
+zprog.name=Z-Uno Programmer
 zprog.communication=usb
 zprog.protocol=usb
 zprog.program.protocol=usb

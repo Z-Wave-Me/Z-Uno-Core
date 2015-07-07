@@ -1,28 +1,34 @@
 
-# Arduino ZUNO Core and platform.
+# ZUNO Core and platform.
 # ------------------------------
 
 # For more info:
 # https://github.com/arduino/Arduino/wiki/Arduino-IDE-1.5---3rd-party-Hardware-specification
 
-name=Arduino ZUNO Boards
+name=Z-Wave>ME Z-Uno Boards
 version=1.6.1
 
 # ZUNO compile variables
 # ---------------------
-#sdcc options '-mmcs51 --out-fmt-ihx --model-large --verbose --debug --use-stdout --code-loc 0x8000 --xram-loc 0x3000'
+compiler.sdccOptions='-mmcs51 --out-fmt-ihx --model-large --verbose --debug --use-stdout --code-loc 0x8000 --xram-loc 0x3000'
 
-#Windows x86
-tools.zprog.upload.pattern={runtime.ide.path}\hardware\tools\zuno\compiler.exe prog "{build.path}\{build.project_name}" -p "{runtime.ide.path}\hardware\tools\sdcc\bin\" -d {serial.port} -r {runtime.ide.path} -o '-mmcs51 --out-fmt-ihx --model-large --verbose --debug --use-stdout --code-loc 0x8000 --xram-loc 0x3000'
+compiler.app=compiler
+compiler.app.windows=compiler.exe
+
+compiler.sdccPath={runtime.tools.zuno_toolchain.path}/zuno_toolchain/sdcc/bin/
+tools.zprog.cmd.path={runtime.tools.zuno_toolchain.path}/zuno_toolchain/compiler
+tools.zprog.cmd.path.windows={runtime.tools.zuno_toolchain.path}/zuno_toolchain/compiler.exe
+
+tools.zprog.upload.pattern="{cmd.path}" prog "{build.path}/{build.project_name}" -p "{runtime.tools.zuno_toolchain.path}/zuno_toolchain/sdcc/bin/" -d {serial.port} -r {runtime.platform.path} -o '-mmcs51 --out-fmt-ihx --model-large --verbose --debug --use-stdout --code-loc 0x8000 --xram-loc 0x3000' -t
 
 # Default "compiler.path" is correct, change only if you want to overidde the initial value
-compiler.path={runtime.ide.path}\hardware\tools\zuno\
+compiler.path={runtime.tools.zuno_toolchain.path}/zuno_toolchain/
 
 # ZUNO compile patterns
 # --------------------
-
 recipe.c.o.pattern=
-recipe.cpp.o.pattern={runtime.ide.path}\hardware\tools\zuno\compiler.exe size "{build.path}\{build.project_name}" -r {runtime.ide.path} -p {runtime.ide.path}\hardware\tools\sdcc\bin\ -o '-mmcs51 --out-fmt-ihx --model-large --verbose --debug --use-stdout --code-loc 0x8000 --xram-loc 0x3000'
+recipe.cpp.o.pattern={runtime.tools.zuno_toolchain.path}/zuno_toolchain/compiler size "{build.path}/{build.project_name}" -r {runtime.platform.path} -p {runtime.tools.zuno_toolchain.path}/zuno_toolchain/sdcc/bin/ -o '-mmcs51 --out-fmt-ihx --model-large --verbose --debug --use-stdout --code-loc 0x8000 --xram-loc 0x3000'
+recipe.cpp.o.pattern.windows={runtime.tools.zuno_toolchain.path}/zuno_toolchain/compiler.exe size "{build.path}\{build.project_name}" -r {runtime.platform.path} -p {runtime.tools.zuno_toolchain.path}\zuno_toolchain\sdcc\bin\ -o '-mmcs51 --out-fmt-ihx --model-large --verbose --debug --use-stdout --code-loc 0x8000 --xram-loc 0x3000'
 recipe.S.o.pattern=
 recipe.ar.pattern=
 recipe.c.combine.pattern=
@@ -40,12 +46,21 @@ recipe.size.regex.eeprom=
 tools.zprog.config.path=
 
 upload.params.verbose=
-tools.zprog.upload.params.verbose=
-tools.zprog.upload.params.quiet=
+tools.zprog.upload.params.verbose=-v
+tools.zprog.upload.params.quiet=-q
 
-tools.zprog.program.params.verbose=
-tools.zprog.program.params.quiet=
+tools.zprog.program.params.verbose=-v
+tools.zprog.program.params.quiet=-q
 tools.zprog.program.pattern=
+
+tools.zprog.erase.params.verbose=-v
+tools.zprog.erase.params.quiet=-q -q
+tools.zprog.erase.pattern="{cmd.path}" erase -d {serial.port}
+
+tools.zprog.bootloader.params.verbose=-v
+tools.zprog.bootloader.params.quiet=-q
+tools.zprog.bootloader.pattern="{cmd.path}" boot -p {runtime.platform.path}/bootloaders/ -d {serial.port}
+
 
 # USB Default Flags
 # Default blank usb manufacturer will be filled it at compile time
