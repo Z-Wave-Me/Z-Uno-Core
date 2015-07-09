@@ -44,7 +44,7 @@ typedef struct _ZUNO_SLEEPING_MODE_PROPERTIES_DESCRIPTION
 //#define XBYTE  _xdata BYTE /* External data byte */
 
 #define ZUNO_CORES_SW_VERSION_MAJOR 		0
-#define ZUNO_CORES_SW_VERSION_MINOR 		32 			
+#define ZUNO_CORES_SW_VERSION_MINOR 		45 			
 
 
 #define ZUNO_PIN_STATE_HIGH 				1
