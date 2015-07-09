@@ -140,6 +140,11 @@ void delay(DWORD value) {
 	}
 }
 
+void zunoSendTheDeviceToSleep(void) {
+	zunoPushByte(ZUNO_FUNC_GO_SLEEP);
+	zunoCall();
+}
+
 /* ----------------------------------------------------------------------------
 									Service
 -------------------------------------------------------------------------------*/
@@ -293,6 +298,10 @@ void zunoJumpTable(void) {
 			BYTE __code * p_code_space = (BYTE __code *) zunoAssociationSetupArray;
 			zunoPushWord((WORD)p_code_space);
 		}
+		break;
+
+		case ZUNO_GET_SLEEPING_MODE:
+		zunoPushByte(zunoSleepingModeSetupStruct.current_mode);
 		break;
 
 		default:

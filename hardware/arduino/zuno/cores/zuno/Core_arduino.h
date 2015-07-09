@@ -34,6 +34,13 @@ typedef struct _ZUNO_ASSOCIATION_PROPERTIES_DESCRIPTION
 	BYTE association_param;
 } ZUNO_ASSOCIATION_PROPERTIES_DESCRIPTION;
 
+typedef struct _ZUNO_SLEEPING_MODE_PROPERTIES_DESCRIPTION
+{
+	BYTE current_mode;
+	BYTE parameter;
+	GENERIC_POINTER handler;
+} ZUNO_SLEEPING_MODE_PROPERTIES_DESCRIPTION;
+
 //#define XBYTE  _xdata BYTE /* External data byte */
 
 #define ZUNO_CORES_SW_VERSION_MAJOR 		0
@@ -76,6 +83,7 @@ enum {
 	ZUNO_FUNC_SERIAL0_AVAILABLE,
 	ZUNO_FUNC_SERIAL0_READ,
 	ZUNO_FUNC_SERIAL0_WRITE,
+	ZUNO_FUNC_GO_SLEEP,
 };
 
 enum {
@@ -89,11 +97,12 @@ enum {
 };
 
 enum {
-	ZUNO_JUMP_TABLE_SETUP, 		//0
-	ZUNO_JUMP_TABLE_LOOP, 		//1
-	ZUNO_JUMP_TABLE_CALLBACK,	//2
-	ZUNO_GET_CHANNELS_ADDRESS, 	//3
-	ZUNO_GET_ASSOCIATIONS_ADDRESS, //4
+	ZUNO_JUMP_TABLE_SETUP, 			//0
+	ZUNO_JUMP_TABLE_LOOP, 			//1
+	ZUNO_JUMP_TABLE_CALLBACK,		//2
+	ZUNO_GET_CHANNELS_ADDRESS, 		//3
+	ZUNO_GET_ASSOCIATIONS_ADDRESS,  //4
+	ZUNO_GET_SLEEPING_MODE, 		//5
 };
 
 enum {
@@ -279,8 +288,20 @@ enum {
 								};
 
 
-#define ZUNO_MAX_MULTI_CHANNEL_NUMBER 					10
+enum {
+	ZUNO_MODE_ALWAYS_LISTENING_NUMBER,				//0
+	ZUNO_MODE_WAKE_UP_NUMBER,						//1
+	ZUNO_MODE_FLIRS_NUMBER,							//2
+};
 
+#define ZUNO_SLEEPING_MODE_ALWAYS_AWAKE 			{ZUNO_MODE_ALWAYS_LISTENING_NUMBER, 0, 0}
+#define ZUNO_SLEEPING_MODE_SLEEPING			 		{ZUNO_MODE_WAKE_UP_NUMBER, 0, 0}
+#define ZUNO_SLEEPING_MODE_FREQUENTLY_AWAKE 		{ZUNO_MODE_FLIRS_NUMBER, 0, 0}
+#define ZUNO_SETUP_SLEEPING_MODE(VALUE) 		\
+								__code ZUNO_SLEEPING_MODE_PROPERTIES_DESCRIPTION zunoSleepingModeSetupStruct = VALUE;
+
+
+#define ZUNO_MAX_MULTI_CHANNEL_NUMBER 					10
 
 
 
@@ -327,12 +348,15 @@ void zunoSendUncolicitedReport(BYTE channel,WORD value);
 
 void zunoSendAssociationCommand(BYTE group, BYTE assoc_type, BYTE param1, BYTE param2);
 
+void zunoSendTheDeviceToSleep(void);
+
 
 /************************************************
 			Variables
 ************************************************/
 extern __code ZUNO_CHANNEL_PROPERTIES_DESCRIPTION zunoChannelSetupArray[];
 extern __code ZUNO_ASSOCIATION_PROPERTIES_DESCRIPTION zunoAssociationSetupArray[];
+extern __code ZUNO_SLEEPING_MODE_PROPERTIES_DESCRIPTION zunoSleepingModeSetupStruct;
 
 
 
