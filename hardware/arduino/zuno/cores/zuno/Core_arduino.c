@@ -140,7 +140,7 @@ void delay(DWORD value) {
 	}
 }
 
-void zunoSendTheDeviceToSleep(void) {
+void zunoSendDeviceToSleep(void) {
 	zunoPushByte(ZUNO_FUNC_GO_SLEEP);
 	zunoCall();
 }
@@ -182,9 +182,96 @@ void SerialWrite(BYTE value) {
 	zunoPushByte(ZUNO_FUNC_SERIAL0_WRITE);
 	zunoCall();
 }
-//
+
+void SerialPrintln(const char* bufPointer) {
+	BYTE i = 0;
+	while ((bufPointer[i] != 0) && (i < 100)) {
+		SerialWrite(bufPointer[i]);
+		i++;
+	}
+	SerialWrite('\n');
+}
+
+void SerialPrint(const char* bufPointer, BYTE size) {
+	BYTE i = 0;
+	while (i < size) {
+		SerialWrite(bufPointer[i]);
+		i++;
+	}
+}
+
+void SerialPrint_char(BYTE value) {
+	BYTE character;
+	BYTE i = 100;
+	for (; i >= 10; i /= 10)
+	{
+		character = value / i;
+		if (character > 0) {
+			SerialWrite(character + 0x30);
+		}
+		value %= i;
+	}
+	SerialWrite(value + 0x30);
+}
+
 /* ----------------------------------------------------------------------------
 									Serial
+-------------------------------------------------------------------------------*/
+
+
+/* ----------------------------------------------------------------------------
+									Serial1
+-------------------------------------------------------------------------------*/
+//Serial (UART)
+void Serial1_Begin(DWORD baudrate) {
+	WORD correct_dbrt = (WORD)(baudrate / 100);
+	zunoPushWord(correct_dbrt);
+	zunoPushByte(ZUNO_FUNC_SERIAL1_BEGIN);
+	zunoCall();
+}
+
+void Serial1_End(void) {
+	zunoPushByte(ZUNO_FUNC_SERIAL1_END);
+	zunoCall();
+}
+
+BYTE Serial1_Available(void) {
+	zunoPushByte(ZUNO_FUNC_SERIAL1_AVAILABLE);
+	zunoCall();
+	return zunoPopByte();
+}
+
+BYTE Serial1_Read(void) {
+	zunoPushByte(ZUNO_FUNC_SERIAL1_READ);
+	zunoCall();
+	return zunoPopByte();
+}
+
+void Serial1_Write(BYTE value) {
+	zunoPushByte(value);
+	zunoPushByte(ZUNO_FUNC_SERIAL1_WRITE);
+	zunoCall();
+}
+
+void Serial1_Println(const char* bufPointer) {
+	BYTE i = 0;
+	while ((bufPointer[i] != 0) && (i < 100)) {
+		Serial1_Write(bufPointer[i]);
+		i++;
+	}
+	Serial1_Write('\n');
+}
+
+void Serial1_Print(const char* bufPointer, BYTE size) {
+	BYTE i = 0;
+	while (i < size) {
+		Serial1_Write(bufPointer[i]);
+		i++;
+	}
+}
+//
+/* ----------------------------------------------------------------------------
+									Serial1
 -------------------------------------------------------------------------------*/
 
 
@@ -272,7 +359,6 @@ void begin_callback_code(void) __naked {
 
 void zunoJumpTable(void) {
 	BYTE requested_function = zunoPopByte();
-
 	switch(requested_function) {
 		case ZUNO_JUMP_TABLE_SETUP:
 		InitArduinoEnvironment();
@@ -302,6 +388,10 @@ void zunoJumpTable(void) {
 
 		case ZUNO_GET_SLEEPING_MODE:
 		zunoPushByte(zunoSleepingModeSetupStruct.current_mode);
+		break;
+
+		case ZUNO_GET_CURRENT_FREQUENCY:
+		zunoPushByte(zunoCurrentFrequency);
 		break;
 
 		default:

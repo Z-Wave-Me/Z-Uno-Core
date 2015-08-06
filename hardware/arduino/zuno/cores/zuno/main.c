@@ -4,9 +4,11 @@
 __code __at (0x8000) char lookupString[] = "LOOK UP ARDUINO HEX CODE";
 
 SERIAL_DESCRIPTOR Serial;
+SERIAL_1_DESCRIPTOR Serial1;
 
 void InitArduinoEnvironment(void);
 void initSerial0(void);
+void initSerial1(void);
 
 #if 0
 __code ZUNO_ASSOCIATION_PROPERTIES_DESCRIPTION zunoAssociationSetupArray[]= 
@@ -40,6 +42,7 @@ void main(void) {
 void InitArduinoEnvironment(void) {
   //TODO add initialization call C51STARTUP
   initSerial0();
+  initSerial1();
   setup();
 }
 
@@ -49,6 +52,19 @@ void initSerial0(void) {
   Serial.available = &SerialAvailable;
   Serial.read = &SerialRead;
   Serial.write = &SerialWrite;
+  Serial.println = &SerialPrintln;
+  Serial.print = &SerialPrint;
+  Serial.printChar = &SerialPrint_char;
+}
+
+void initSerial1(void) {
+  Serial1.begin = &Serial1_Begin;
+  Serial1.end = &Serial1_End;
+  Serial1.available = &Serial1_Available;
+  Serial1.read = &Serial1_Read;
+  Serial1.write = &Serial1_Write;
+  Serial1.println = &Serial1_Println;
+  Serial1.print = &Serial1_Print;
 }
 
 

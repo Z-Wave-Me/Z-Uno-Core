@@ -8,7 +8,10 @@ typedef __code void (*VOID_FUNC_POINTER_DW0RD) (DWORD value);
 typedef __code BYTE (*BYTE_FUNC_POINTER_VOID) (void);
 typedef __code WORD (*WORD_FUNC_POINTER_VOID) (void);
 typedef __code DWORD (*DWORD_FUNC_POINTER_VOID) (void);
+typedef __code void (*VOID_FUNC_POINTER_BUFFER) (const char *bufPointer);
+typedef __code void (*VOID_FUNC_POINTER_BUFFER_BYTE) (const char *bufPointer, BYTE value);
 typedef __code void * GENERIC_POINTER;
+
 typedef struct _SERIAL_DESCRIPTOR
 {
 	VOID_FUNC_POINTER_VOID begin;
@@ -16,7 +19,26 @@ typedef struct _SERIAL_DESCRIPTOR
 	BYTE_FUNC_POINTER_VOID 	available;
 	BYTE_FUNC_POINTER_VOID 	read;
 	VOID_FUNC_POINTER_BYTE 	write;
+	VOID_FUNC_POINTER_BUFFER println;
+	VOID_FUNC_POINTER_BUFFER_BYTE print;
+	VOID_FUNC_POINTER_BYTE printChar;
 } SERIAL_DESCRIPTOR;
+
+typedef struct _SERIAL_1_DESCRIPTOR
+{
+	VOID_FUNC_POINTER_DW0RD begin;
+	VOID_FUNC_POINTER_VOID 	end;
+	BYTE_FUNC_POINTER_VOID 	available;
+	BYTE_FUNC_POINTER_VOID 	read;
+	VOID_FUNC_POINTER_BYTE 	write;
+	VOID_FUNC_POINTER_BUFFER println;
+	VOID_FUNC_POINTER_BUFFER_BYTE print;
+} SERIAL_1_DESCRIPTOR;
+
+typedef struct _WIRE_DESCRIPTOR
+{
+	VOID_FUNC_POINTER_VOID 	begin;
+} WIRE_DESCRIPTOR;
 
 typedef struct _ZUNO_CHANNEL_PROPERTIES_DESCRIPTION
 {
@@ -43,8 +65,11 @@ typedef struct _ZUNO_SLEEPING_MODE_PROPERTIES_DESCRIPTION
 
 //#define XBYTE  _xdata BYTE /* External data byte */
 
+#define byte 								BYTE
+#define word 								WORD
+
 #define ZUNO_CORES_SW_VERSION_MAJOR 		0
-#define ZUNO_CORES_SW_VERSION_MINOR 		45 			
+#define ZUNO_CORES_SW_VERSION_MINOR 		50 			
 
 
 #define ZUNO_PIN_STATE_HIGH 				1
@@ -67,6 +92,8 @@ typedef struct _ZUNO_SLEEPING_MODE_PROPERTIES_DESCRIPTION
 #define ZUNO_PIN_MODE_INPUT_WITH_PULLUP  	2
 #define OUTPUT 								ZUNO_PIN_MODE_OUTPUT
 #define INPUT 								ZUNO_PIN_MODE_INPUT
+#define INPUT_PULLUP 						ZUNO_PIN_MODE_INPUT_WITH_PULLUP
+#define LED_BUILTIN 						13
 #define NULL 								0
 
 enum {
@@ -84,6 +111,11 @@ enum {
 	ZUNO_FUNC_SERIAL0_READ,
 	ZUNO_FUNC_SERIAL0_WRITE,
 	ZUNO_FUNC_GO_SLEEP,
+	ZUNO_FUNC_SERIAL1_BEGIN,
+	ZUNO_FUNC_SERIAL1_END,
+	ZUNO_FUNC_SERIAL1_AVAILABLE,
+	ZUNO_FUNC_SERIAL1_READ,
+	ZUNO_FUNC_SERIAL1_WRITE,
 };
 
 enum {
@@ -103,6 +135,7 @@ enum {
 	ZUNO_GET_CHANNELS_ADDRESS, 		//3
 	ZUNO_GET_ASSOCIATIONS_ADDRESS,  //4
 	ZUNO_GET_SLEEPING_MODE, 		//5
+	ZUNO_GET_CURRENT_FREQUENCY, 	//6
 };
 
 enum {
@@ -127,7 +160,6 @@ enum {
 #define ZUNO_SENSOR_BINARY_TYPE_TILT 					0x0b
 #define ZUNO_SENSOR_BINARY_TYPE_MOTION 					0x0c
 #define ZUNO_SENSOR_BINARY_TYPE_GLASSBREAK 				0x0d
-#define ZUNO_SENSOR_BINARY_TYPE_DEFAULT 				0xff
 
 // Sensor Multilevel types
 #define ZUNO_SENSOR_MULTILEVEL_TYPE_TEMPERATURE		                                   	0x01
@@ -208,6 +240,7 @@ enum {
 #define MACRO_CAST_POINTER_TO_VOID(FUNCTION) 										((VOID_FUNC_POINTER_VOID) FUNCTION)
 
 //
+#define ZUNO_NO_CHANNEL 													{0, 0, 0, 0, 0}
 #define ZUNO_SWITCH_BINARY(GETTER, SETTER)   								{ZUNO_SWITCH_BINARY_CHANNEL_NUMBER, 0, 0, GETTER, SETTER}
 #define ZUNO_SWITCH_MULTILEVEL(GETTER, SETTER) 								{ZUNO_SWITCH_MULTILEVEL_CHANNEL_NUMBER, 0, 0, GETTER, SETTER}
 #define ZUNO_SENSOR_BINARY(TYPE, GETTER) 									{ZUNO_SENSOR_BINARY_CHANNEL_NUMBER, TYPE, 0, GETTER, MACRO_CAST_POINTER_TO_VOID(0)}
@@ -249,7 +282,7 @@ TODO: finish all types
 #define ZUNO_SENSOR_MULTILEVEL_FREQUENCY(GETTER)
 #define ZUNO_SENSOR_MULTILEVEL_TIME(GETTER)
 #define ZUNO_SENSOR_MULTILEVEL_TARGET_TEMPERATURE(GETTER)
-/**/
+*/
 
 #define ZUNO_SETUP_CHANNELS(...) 	\
 								__code ZUNO_CHANNEL_PROPERTIES_DESCRIPTION zunoChannelSetupArray[]= \
@@ -257,7 +290,7 @@ TODO: finish all types
 									{0x42, 0x42, 0x42, 0x4242, 0x4242}, \
 									__VA_ARGS__, \
 									{0x43, 0x43, 0x43, 0x4343, 0x4343} \
-								};
+								}
 
 
 
@@ -272,6 +305,7 @@ enum {
 
 #define ZUNO_ASSOC_NO_PARAMS 							0x00
 
+#define ZUNO_NO_ASSOCIATIONS							{0, 0}
 #define ZUNO_ASSOCIATION_GROUP_SET_VALUE 				{ZUNO_ASSOC_BASIC_SET_NUMBER, ZUNO_ASSOC_NO_PARAMS}
 #define ZUNO_ASSOCIATION_GROUP_SET_VALUE_AND_DIM 		{ZUNO_ASSOC_BASIC_SET_AND_DIM_NUMBER, ZUNO_ASSOC_NO_PARAMS}
 #define ZUNO_ASSOCIATION_GROUP_SCENE_CONTROL 			{ZUNO_ASSOC_SCENE_ACTIVATION_NUMBER, ZUNO_ASSOC_NO_PARAMS}
@@ -285,7 +319,7 @@ enum {
 									{0x42, 0x42}, \
 									__VA_ARGS__, \
 									{0x43, 0x43} \
-								};
+								}
 
 
 enum {
@@ -298,7 +332,18 @@ enum {
 #define ZUNO_SLEEPING_MODE_SLEEPING			 		{ZUNO_MODE_WAKE_UP_NUMBER, 0, 0}
 #define ZUNO_SLEEPING_MODE_FREQUENTLY_AWAKE 		{ZUNO_MODE_FLIRS_NUMBER, 0, 0}
 #define ZUNO_SETUP_SLEEPING_MODE(VALUE) 		\
-								__code ZUNO_SLEEPING_MODE_PROPERTIES_DESCRIPTION zunoSleepingModeSetupStruct = VALUE;
+								__code ZUNO_SLEEPING_MODE_PROPERTIES_DESCRIPTION zunoSleepingModeSetupStruct = VALUE
+
+				
+
+#define ZUNO_FREQ_EU 						0x00
+#define ZUNO_FREQ_RU 						0x01
+#define ZUNO_FREQ_IN						0x02
+#define ZUNO_FREQ_US						0x03
+#define ZUNO_FREQ_ANZ						0x04
+#define ZUNO_FREQ_CH						0x06
+#define ZUNO_SETUP_FREQUENCY(VALUE) 		\
+								__code BYTE zunoCurrentFrequency = VALUE
 
 
 #define ZUNO_MAX_MULTI_CHANNEL_NUMBER 					10
@@ -327,6 +372,16 @@ void SerialEnd(void);
 BYTE SerialAvailable(void);
 BYTE SerialRead(void);
 void SerialWrite(BYTE value);
+void SerialPrintln(const char* bufPointer);
+void SerialPrint(const char* bufPointer, BYTE size);
+void SerialPrint_char(BYTE value);
+void Serial1_Begin(DWORD baudrate);
+void Serial1_End(void);
+BYTE Serial1_Available(void);
+BYTE Serial1_Read(void);
+void Serial1_Write(BYTE value);
+void Serial1_Println(const char* bufPointer);
+void Serial1_Print(const char* bufPointer, BYTE size);
 //**********************************************
 void setup(void);
 void loop(void);
@@ -334,7 +389,7 @@ void InitArduinoEnvironment(void);
 
 
 #define ZUNO_REPORT_NO_IMMEDIATE_VALUE 		0xffff
-#define zunoSendZWaveReport(CHANNEL)  zunoSendUncolicitedReport(CHANNEL,ZUNO_REPORT_NO_IMMEDIATE_VALUE)
+#define zunoSendReport(CHANNEL)  zunoSendUncolicitedReport(CHANNEL,ZUNO_REPORT_NO_IMMEDIATE_VALUE)
 void zunoSendUncolicitedReport(BYTE channel,WORD value);
 
 #define ZUNO_DIMMING_UP				0
@@ -348,7 +403,7 @@ void zunoSendUncolicitedReport(BYTE channel,WORD value);
 
 void zunoSendAssociationCommand(BYTE group, BYTE assoc_type, BYTE param1, BYTE param2);
 
-void zunoSendTheDeviceToSleep(void);
+void zunoSendDeviceToSleep(void);
 
 
 /************************************************
@@ -357,6 +412,7 @@ void zunoSendTheDeviceToSleep(void);
 extern __code ZUNO_CHANNEL_PROPERTIES_DESCRIPTION zunoChannelSetupArray[];
 extern __code ZUNO_ASSOCIATION_PROPERTIES_DESCRIPTION zunoAssociationSetupArray[];
 extern __code ZUNO_SLEEPING_MODE_PROPERTIES_DESCRIPTION zunoSleepingModeSetupStruct;
+extern __code BYTE zunoCurrentFrequency;
 
 
 
