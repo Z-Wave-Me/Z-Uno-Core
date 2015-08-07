@@ -394,6 +394,10 @@ void zunoJumpTable(void) {
 		zunoPushByte(zunoCurrentFrequency);
 		break;
 
+		case ZUNO_GET_DEBUG_MODE_PARAM:
+		zunoPushByte(zunoDebugParameter);
+		break;
+
 		default:
 		break;
 	}

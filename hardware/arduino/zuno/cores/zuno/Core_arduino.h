@@ -69,7 +69,7 @@ typedef struct _ZUNO_SLEEPING_MODE_PROPERTIES_DESCRIPTION
 #define word 								WORD
 
 #define ZUNO_CORES_SW_VERSION_MAJOR 		0
-#define ZUNO_CORES_SW_VERSION_MINOR 		50 			
+#define ZUNO_CORES_SW_VERSION_MINOR 		51 			
 
 
 #define ZUNO_PIN_STATE_HIGH 				1
@@ -95,6 +95,10 @@ typedef struct _ZUNO_SLEEPING_MODE_PROPERTIES_DESCRIPTION
 #define INPUT_PULLUP 						ZUNO_PIN_MODE_INPUT_WITH_PULLUP
 #define LED_BUILTIN 						13
 #define NULL 								0
+
+
+#define DEBUG_ON 								1
+#define DEBUG_OFF 								0
 
 enum {
 	ZUNO_FUNC_PIN_MODE,
@@ -136,6 +140,7 @@ enum {
 	ZUNO_GET_ASSOCIATIONS_ADDRESS,  //4
 	ZUNO_GET_SLEEPING_MODE, 		//5
 	ZUNO_GET_CURRENT_FREQUENCY, 	//6
+	ZUNO_GET_DEBUG_MODE_PARAM, 		//7
 };
 
 enum {
@@ -345,6 +350,9 @@ enum {
 #define ZUNO_SETUP_FREQUENCY(VALUE) 		\
 								__code BYTE zunoCurrentFrequency = VALUE
 
+#define ZUNO_SETUP_DEBUG_MODE(VALUE) 		\
+								__code BYTE zunoDebugParameter = VALUE
+
 
 #define ZUNO_MAX_MULTI_CHANNEL_NUMBER 					10
 
@@ -413,6 +421,7 @@ extern __code ZUNO_CHANNEL_PROPERTIES_DESCRIPTION zunoChannelSetupArray[];
 extern __code ZUNO_ASSOCIATION_PROPERTIES_DESCRIPTION zunoAssociationSetupArray[];
 extern __code ZUNO_SLEEPING_MODE_PROPERTIES_DESCRIPTION zunoSleepingModeSetupStruct;
 extern __code BYTE zunoCurrentFrequency;
+extern __code BYTE zunoDebugParameter;
 
 
 
