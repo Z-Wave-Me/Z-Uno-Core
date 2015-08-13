@@ -201,17 +201,11 @@ void SerialPrint(const char* bufPointer, BYTE size) {
 }
 
 void SerialPrint_char(BYTE value) {
-	BYTE character;
-	BYTE i = 100;
-	for (; i >= 10; i /= 10)
-	{
-		character = value / i;
-		if (character > 0) {
-			SerialWrite(character + 0x30);
-		}
-		value %= i;
-	}
-	SerialWrite(value + 0x30);
+	if (value >= 100)
+      		SerialWrite((value / 100) + 0x30);
+    	if (value >= 10)
+      		SerialWrite(((value / 10) % 10) + 0x30);
+    	SerialWrite((value % 10) + 0x30);
 }
 
 /* ----------------------------------------------------------------------------
