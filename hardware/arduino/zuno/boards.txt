@@ -1,6 +1,7 @@
 # See: http://code.google.com/p/arduino/wiki/Platforms
 
 menu.cpu=Processor
+menu.Frequency=Frequency
 
 ##############################################################
 zuno.name=Z-Wave>ME Z-Uno
@@ -33,4 +34,11 @@ zuno.build.vid=0x2341
 zuno.build.pid=0x8039
 zuno.build.usb_product="Z-UNO"
 zuno.build.extra_flags=
+
+zuno.menu.Frequency.Ru = Russian
+zuno.menu.Frequency.Eu = Europe
+zuno.menu.Frequency.Us = USA
+zuno.menu.Frequency.Ru.build.rf_freq = RU
+zuno.menu.Frequency.Eu.build.rf_freq = EU
+zuno.menu.Frequency.Us.build.rf_freq = US
 
