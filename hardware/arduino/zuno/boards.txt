@@ -2,6 +2,8 @@
 
 menu.cpu=Processor
 menu.Frequency=Frequency
+menu.Security=Security
+menu.MuliCommand=Multicommand
 
 ##############################################################
 zuno.name=Z-Wave>ME Z-Uno
@@ -42,3 +44,12 @@ zuno.menu.Frequency.Ru.build.rf_freq = RU
 zuno.menu.Frequency.Eu.build.rf_freq = EU
 zuno.menu.Frequency.Us.build.rf_freq = US
 
+zuno.menu.Security.On = Enabled
+zuno.menu.Security.Off = Disabled
+zuno.menu.Security.On.build.security = 1
+zuno.menu.Security.Off.build.security = 0
+
+zuno.menu.MuliCommand.On = Enabled
+zuno.menu.MuliCommand.Off = Disabled
+zuno.menu.MuliCommand.On.build.multicmd = 1
+zuno.menu.MuliCommand.Off.build.multicmd = 0
