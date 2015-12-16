@@ -26,7 +26,7 @@ compiler.path={runtime.tools.zuno_toolchain.path}/zuno_toolchain/
 # ZUNO compile patterns
 # --------------------
 recipe.c.o.pattern=
-recipe.cpp.o.pattern={runtime.tools.zuno_toolchain.path}/zuno_toolchain/compiler build "{build.path}/{build.project_name}" -r {runtime.platform.path} -p {runtime.tools.zuno_toolchain.path}/zuno_toolchain/sdcc-linux64/bin/ -o '-mmcs51 --out-fmt-ihx --model-large --verbose --debug --use-stdout --code-loc 0x8000 --xram-loc 0x3000' 
+recipe.cpp.o.pattern={runtime.tools.zuno_toolchain.path}/zuno_toolchain/compiler build "{build.path}/{build.project_name}" -r {runtime.platform.path} -p {runtime.tools.zuno_toolchain.path}/zuno_toolchain/sdcc/bin/ -o '-mmcs51 --out-fmt-ihx --model-large --verbose --debug --use-stdout --code-loc 0x8000 --xram-loc 0x3000' 
 recipe.S.o.pattern=
 recipe.ar.pattern=
 recipe.c.combine.pattern=
