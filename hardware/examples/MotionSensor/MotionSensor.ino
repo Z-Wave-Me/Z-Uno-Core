@@ -18,9 +18,6 @@
 // you can read more on http://z-uno.z-wave.me/Reference/ZUNO_SENSOR_BINARY/
 ZUNO_SETUP_CHANNELS(ZUNO_SENSOR_BINARY(ZUNO_SENSOR_BINARY_TYPE_MOTION, getter));
 
-// next macro sets up the Z-Uno frequency
-ZUNO_SETUP_FREQUENCY(ZUNO_FREQ_RU);
-
 // variable to store current motion state
 byte lastSensorValue = 0;
 
