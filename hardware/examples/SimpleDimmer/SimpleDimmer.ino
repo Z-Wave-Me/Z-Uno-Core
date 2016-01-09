@@ -15,9 +15,6 @@ byte lastSetDimmer;
 // you can read more on http://z-uno.z-wave.me/Reference/ZUNO_SWITCH_MULTILEVEL/
 ZUNO_SETUP_CHANNELS(ZUNO_SWITCH_MULTILEVEL(getter, setter));
 
-// next macro sets up the Z-Uno frequency
-ZUNO_SETUP_FREQUENCY(ZUNO_FREQ_RU);
-
 void setup() {
   pinMode(LED_PIN, OUTPUT); //set up LED pin as output
 }
