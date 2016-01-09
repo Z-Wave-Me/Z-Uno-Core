@@ -27,6 +27,7 @@ void setup(){
   pinMode(LED_PIN, OUTPUT); // set LED pin as output
   pinMode(MOTION_PIN,INPUT); // set motion pin as input
 }
+
 void loop(){
   // sample current motion state
   byte currentSensorValue = digitalRead(MOTION_PIN);
