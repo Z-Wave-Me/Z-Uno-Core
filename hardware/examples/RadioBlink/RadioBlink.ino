@@ -15,9 +15,6 @@ byte dimmerValue=100;
 //Next line sets up Z-Uno channels. In this case it adds the Switch Multilevel channel
 ZUNO_SETUP_CHANNELS(ZUNO_SWITCH_MULTILEVEL(getSwitchMultilevelValue,setSwitchMultilevelValue));
 
-// next macro sets up the Z-Uno frequency
-ZUNO_SETUP_FREQUENCY(ZUNO_FREQ_EU);
-
 // the setup function runs once, when you press reset or power the board
 void setup() {
   // set digital pin 13 as an output.
