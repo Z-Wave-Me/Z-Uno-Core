@@ -18,9 +18,6 @@
 // you can read more on http://z-uno.z-wave.me/Reference/ZUNO_SENSOR_BINARY/
 ZUNO_SETUP_CHANNELS(ZUNO_SENSOR_BINARY(ZUNO_SENSOR_BINARY_TYPE_MOTION, getter));
 
-// next macro sets up the Z-Uno frequency
-ZUNO_SETUP_FREQUENCY(ZUNO_FREQ_RU);
-
 // variable to store current motion state
 byte lastSensorValue = 0;
 
@@ -30,6 +27,7 @@ void setup(){
   pinMode(LED_PIN, OUTPUT); // set LED pin as output
   pinMode(MOTION_PIN,INPUT); // set motion pin as input
 }
+
 void loop(){
   // sample current motion state
   byte currentSensorValue = digitalRead(MOTION_PIN);
