@@ -10,18 +10,6 @@ void InitArduinoEnvironment(void);
 void initSerial0(void);
 void initSerial1(void);
 
-#if 0
-__code ZUNO_ASSOCIATION_PROPERTIES_DESCRIPTION zunoAssociationSetupArray[]= 
-                { 
-                  {0x42, 0x42},
-                  ZUNO_ASSOCIATION_GROUP_SET_VALUE,
-                  ZUNO_ASSOCIATION_GROUP_SET_VALUE_AND_DIM,
-                  ZUNO_ASSOCIATION_GROUP_SCENE_CONTROL,
-                  {0x43, 0x43} 
-                };
-#endif
-
-
 
 // DO NOT REMOVE THIS LINE - void other_functions_here(...)
 
@@ -39,8 +27,45 @@ void main(void) {
 	}
 }
 
+void xdata8051_init(void) {
+  __asm
+  ;
+  ; check there is any user xdata
+  MOV r0,#l_XINIT
+  MOV a,r0
+  ORL a,#(l_XINIT >> 8)
+  JZ  EXIT
+  ;
+  ;
+  ;
+  ; load registers
+  ; r0-1
+  MOV r1,#((l_XINIT+255) >> 8)
+  MOV r2,#s_XINIT
+  MOV r3,#(s_XINIT >> 8)
+  MOV r4,#s_XISEG
+  MOV r5,#(s_XISEG >> 8)
+CYCLE: clr a
+  MOV dpl,r2
+  MOV dph,r3
+  MOVc  a,@a+dptr
+  INC dptr
+  MOV r2, dpl
+  MOV r3, dph
+  MOV dpl,r4
+  MOV dph,r5
+  MOVX  @dptr,a
+  INC dptr
+  MOV r4,dpl
+  MOV r5,dph
+  DJNZ  r0,CYCLE
+  DJNZ  r1,CYCLE
+EXIT:
+  __endasm;
+}
+
 void InitArduinoEnvironment(void) {
-  //TODO add initialization call C51STARTUP
+  xdata8051_init();
   initSerial0();
   initSerial1();
   setup();
