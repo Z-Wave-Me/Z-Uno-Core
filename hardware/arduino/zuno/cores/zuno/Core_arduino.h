@@ -69,7 +69,7 @@ typedef struct _ZUNO_SLEEPING_MODE_PROPERTIES_DESCRIPTION
 #define word 								WORD
 
 #define ZUNO_CORES_SW_VERSION_MAJOR 		0
-#define ZUNO_CORES_SW_VERSION_MINOR 		62
+#define ZUNO_CORES_SW_VERSION_MINOR 		63
 
 
 #define ZUNO_PIN_STATE_HIGH 				1
@@ -79,6 +79,17 @@ typedef struct _ZUNO_SLEEPING_MODE_PROPERTIES_DESCRIPTION
 
 #define HIGH 								ZUNO_PIN_STATE_HIGH
 #define LOW 								ZUNO_PIN_STATE_LOW
+
+#define A0 									0
+#define A1 									1
+#define A2 									2
+#define A3 									3
+
+
+#define PWM1 									0
+#define PWM2 									1
+#define PWM3 									2
+#define PWM4 									3
 
 #define ZUNO_STACK_SIZE 		50
 #define ZUNO_STACK_ADDRESS 		8001
