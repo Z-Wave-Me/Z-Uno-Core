@@ -20,9 +20,6 @@ byte lastValue;
 // you can read more on http://z-uno.z-wave.me/Reference/ZUNO_SENSOR_MULTILEVEL/
 ZUNO_SETUP_CHANNELS(ZUNO_SENSOR_MULTILEVEL_GENERAL_PURPOSE(getter));
 
-// next macro sets up the Z-Uno frequency
-ZUNO_SETUP_FREQUENCY(ZUNO_FREQ_RU);
-
 void setup() {
   pinMode(LED_PIN, OUTPUT); // setup pin as output
   pinMode(POT_PIN, INPUT); //setup potentiometer pin as input

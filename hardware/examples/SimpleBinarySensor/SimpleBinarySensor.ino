@@ -22,9 +22,6 @@ byte lastButtonState;
 // you can read more on http://z-uno.z-wave.me/Reference/ZUNO_SENSOR_BINARY/
 ZUNO_SETUP_CHANNELS(ZUNO_SENSOR_BINARY(ZUNO_SENSOR_BINARY_TYPE_GENERAL_PURPOSE, getter));
 
-// next macro sets up the Z-Uno frequency
-ZUNO_SETUP_FREQUENCY(ZUNO_FREQ_RU);
-
 void setup() {
  pinMode(LED_PIN, OUTPUT); // set LED pin as output
  pinMode(BTN_PIN, INPUT_PULLUP); // set button pin as input

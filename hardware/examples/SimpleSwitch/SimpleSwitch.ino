@@ -16,9 +16,6 @@ byte currentLEDValue;
 // you can read more on http://z-uno.z-wave.me/Reference/ZUNO_SWITCH_BINARY/
 ZUNO_SETUP_CHANNELS(ZUNO_SWITCH_BINARY(getter, setter));
 
-// next macro sets up the Z-Uno frequency
-ZUNO_SETUP_FREQUENCY(ZUNO_FREQ_RU);
-
 void setup() {
   pinMode(LED_PIN, OUTPUT); // setup pin as output
 }
