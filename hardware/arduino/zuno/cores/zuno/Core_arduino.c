@@ -201,11 +201,13 @@ void SerialPrint(const char* bufPointer, BYTE size) {
 }
 
 void SerialPrint_char(BYTE value) {
-	if (value >= 100)
-      		SerialWrite((value / 100) + 0x30);
-    	if (value >= 10)
-      		SerialWrite(((value / 10) % 10) + 0x30);
-    	SerialWrite((value % 10) + 0x30);
+	if (value >= 100) {
+  		SerialWrite((value / 100) + 0x30);
+  	}
+	if (value >= 10) {
+  		SerialWrite(((value / 10) % 10) + 0x30);
+	}
+	SerialWrite((value % 10) + 0x30);
 }
 
 /* ----------------------------------------------------------------------------
@@ -262,6 +264,17 @@ void Serial1_Print(const char* bufPointer, BYTE size) {
 		Serial1_Write(bufPointer[i]);
 		i++;
 	}
+}
+
+void Serial1_Print_char(BYTE value) {
+	if (value >= 100) {
+      	Serial1_Write((value / 100) + 0x30);
+	}
+
+	if (value >= 10) {
+  		Serial1_Write(((value / 10) % 10) + 0x30);
+	}
+	Serial1_Write((value % 10) + 0x30);
 }
 //
 /* ----------------------------------------------------------------------------
