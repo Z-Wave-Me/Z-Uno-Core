@@ -80,6 +80,22 @@ typedef struct _ZUNO_SLEEPING_MODE_PROPERTIES_DESCRIPTION
 #define HIGH 								ZUNO_PIN_STATE_HIGH
 #define LOW 								ZUNO_PIN_STATE_LOW
 
+#define A0 									0
+#define A1 									1
+#define A2 									2
+#define A3 									3
+
+#define PWM1 									0
+#define PWM2 									1
+#define PWM3 									2
+#define PWM4 									3
+
+#define CTRL_GROUP_1 							1
+#define CTRL_GROUP_2 							2
+#define CTRL_GROUP_3 							3
+#define CTRL_GROUP_4 							4
+#define CTRL_GROUP_5 							5
+
 #define ZUNO_STACK_SIZE 		50
 #define ZUNO_STACK_ADDRESS 		8001
 #define ZUNO_STACK_TOP_ADDRESS 	8000
