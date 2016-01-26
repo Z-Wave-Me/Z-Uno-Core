@@ -90,6 +90,7 @@ void initSerial1(void) {
   Serial1.write = &Serial1_Write;
   Serial1.println = &Serial1_Println;
   Serial1.print = &Serial1_Print;
+  Serial1.printChar = &Serial1_Print_char;
 }
 
 
