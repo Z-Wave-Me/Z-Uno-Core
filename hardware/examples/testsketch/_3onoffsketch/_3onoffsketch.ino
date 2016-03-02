@@ -55,7 +55,7 @@ void setup() {
 void loop() {
  word CurrentMoist;
  word CurrentTemperature;
- /*byte CurrentSensorValue = digitalRead(MotionPin); // датчик движения  
+byte CurrentSensorValue = digitalRead(MotionPin); // датчик движения  
        if (CurrentSensorValue != lastSensorValue) { 
         lastSensorValue = CurrentSensorValue; 
         zunoSendReport(7);
@@ -69,14 +69,16 @@ void loop() {
        if (CurrentDoorValue != lastDoorValue) { 
         lastDoorValue = CurrentDoorValue;
          zunoSendReport(10);
-   }*/
-      CurrentTemperature = ((long)(analogRead(TemperaturePin) * 330)/1024 - 50);
-       if (CurrentTemperature != lastTemperature) {
-        lastTemperature = CurrentTemperature;
-
-        // zunoSendReport(9);
    }
+      CurrentTemperature = ((long)(analogRead(TemperaturePin) * 330)/1024 - 50);
+       if ((CurrentTemperature > (lastTemperature + 50)) || (CurrentTemperature < (lastTemperature - 50))) {
+        lastTemperature = CurrentTemperature;
+         zunoSendReport(9);
+   }
+
 }
+ 
+
  void setterSwitch1(byte value) {
    if (value > 0) {
      digitalWrite (LedPin1, HIGH);
