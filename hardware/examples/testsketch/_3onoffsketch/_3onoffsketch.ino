@@ -73,12 +73,10 @@ void loop() {
       CurrentTemperature = ((long)(analogRead(TemperaturePin) * 330)/1024 - 50);
        if (CurrentTemperature != lastTemperature) {
         lastTemperature = CurrentTemperature;
+
         // zunoSendReport(9);
    }
 }
-
- 
-
  void setterSwitch1(byte value) {
    if (value > 0) {
      digitalWrite (LedPin1, HIGH);
