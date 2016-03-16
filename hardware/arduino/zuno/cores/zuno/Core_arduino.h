@@ -70,7 +70,7 @@ typedef struct _ZUNO_SLEEPING_MODE_PROPERTIES_DESCRIPTION
 #define word 								WORD
 
 #define ZUNO_CORES_SW_VERSION_MAJOR 		0
-#define ZUNO_CORES_SW_VERSION_MINOR 		64
+#define ZUNO_CORES_SW_VERSION_MINOR 		65
 
 
 #define ZUNO_PIN_STATE_HIGH 				1
@@ -137,6 +137,7 @@ enum {
 	ZUNO_FUNC_SERIAL1_AVAILABLE,
 	ZUNO_FUNC_SERIAL1_READ,
 	ZUNO_FUNC_SERIAL1_WRITE,
+	ZUNO_FUNC_GET_WAKE_UP_REASON,
 };
 
 enum {
@@ -165,6 +166,15 @@ enum {
 	ZUNO_SENSOR_BINARY_CHANNEL_NUMBER, 				//0x03
 	ZUNO_SENSOR_MULTILEVEL_CHANNEL_NUMBER, 			//0x04
 	ZUNO_END_OF_SUPPORTED_CC_NUM,
+};
+
+enum {
+	ZUNO_WAKEUP_RESET,
+	ZUNO_WAKEUP_TIMER,
+	ZUNO_WAKEUP_FLIRS,
+	ZUNO_WAKEUP_WATCHDOG,
+	ZUNO_WAKEUP_EXT_INT,
+	ZUNO_WAKEUP_POR,
 };
 
 //Sensor Binary types
@@ -514,6 +524,7 @@ void zunoSendUncolicitedReport(BYTE channel,WORD value);
 void zunoSendAssociationCommand(BYTE group, BYTE assoc_type, BYTE param1, BYTE param2);
 
 void zunoSendDeviceToSleep(void);
+BYTE zunoGetWakeReason(void);
 
 
 /************************************************

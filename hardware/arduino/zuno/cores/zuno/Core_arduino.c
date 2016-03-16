@@ -145,6 +145,12 @@ void zunoSendDeviceToSleep(void) {
 	zunoCall();
 }
 
+BYTE zunoGetWakeReason(void) {
+	zunoPushByte(ZUNO_FUNC_GET_WAKE_UP_REASON);
+	zunoCall();
+	return zunoPopByte();
+}
+
 /* ----------------------------------------------------------------------------
 									Service
 -------------------------------------------------------------------------------*/
