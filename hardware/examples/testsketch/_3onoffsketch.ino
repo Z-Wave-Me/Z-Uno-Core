@@ -21,8 +21,6 @@ byte MoistNew;
 byte CurrentDoorValue;
 byte lastTemperature;
 byte CurrentTemperature;
-//датчик освещенности
-//любой бинари сенсор
 ZUNO_SETUP_SLEEPING_MODE(ZUNO_SLEEPING_MODE_ALWAYS_AWAKE);
 ZUNO_SETUP_CHANNELS(
   ZUNO_SWITCH_BINARY(getterSwitch1, setterSwitch1),
@@ -55,29 +53,31 @@ void setup() {
 void loop() {
  word CurrentMoist;
  word CurrentTemperature;
-byte CurrentSensorValue = digitalRead(MotionPin); // датчик движения  
+byte CurrentSensorValue = digitalRead(MotionPin);   
        if (CurrentSensorValue != lastSensorValue) { 
         lastSensorValue = CurrentSensorValue; 
         zunoSendReport(7);
    }
-      CurrentMoist = analogRead(MoistPin);// влажность
+      CurrentMoist = analogRead(MoistPin);
        if (MoistNew != CurrentMoist) {
         MoistNew = CurrentMoist;
          zunoSendReport(8);
-   }
-      CurrentDoorValue = digitalRead(DoorPin); // геркон  
-       if (CurrentDoorValue != lastDoorValue) { 
-        lastDoorValue = CurrentDoorValue;
-         zunoSendReport(10);
-   }
-      CurrentTemperature = ((long)(analogRead(TemperaturePin) * 330)/1024 - 50);
+
+   }      
+      CurrentTemperature = ((long)(analogRead(TemperaturePin) * 3300)/1024 - 500);
        if ((CurrentTemperature > (lastTemperature + 50)) || (CurrentTemperature < (lastTemperature - 50))) {
         lastTemperature = CurrentTemperature;
          zunoSendReport(9);
    }
+      CurrentDoorValue = digitalRead(DoorPin); 
+       if (CurrentDoorValue != lastDoorValue) { 
+        lastDoorValue = CurrentDoorValue;
+         zunoSendReport(10);
+   }
+
+
 
 }
- 
 
  void setterSwitch1(byte value) {
    if (value > 0) {
@@ -88,7 +88,7 @@ byte CurrentSensorValue = digitalRead(MotionPin); // датчик движени
       currentLEDvalue1 = value;
    
 }
-byte getterSwitch1 (){
+ byte getterSwitch1 (){
   return  currentLEDvalue1;
   
  }
