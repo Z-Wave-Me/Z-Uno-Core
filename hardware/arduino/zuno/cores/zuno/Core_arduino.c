@@ -140,6 +140,12 @@ void delay(DWORD value) {
 	}
 }
 
+DWORD millis(void) {
+	zunoPushByte(ZUNO_FUNC_MILLIS);
+	zunoCall();
+	return zunoPopDWORD();
+}
+
 void zunoSendDeviceToSleep(void) {
 	zunoPushByte(ZUNO_FUNC_GO_SLEEP);
 	zunoCall();

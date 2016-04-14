@@ -138,6 +138,7 @@ enum {
 	ZUNO_FUNC_SERIAL1_READ,
 	ZUNO_FUNC_SERIAL1_WRITE,
 	ZUNO_FUNC_GET_WAKE_UP_REASON,
+	ZUNO_FUNC_MILLIS,
 };
 
 enum {
@@ -484,6 +485,7 @@ void pinMode(BYTE pin, BYTE mode);
 BYTE digitalRead(BYTE pin);
 void digitalWrite(BYTE pin, BYTE value);
 void delay(DWORD value);
+DWORD millis(void);
 WORD analogRead(BYTE pin);
 void analogWrite(BYTE pin, BYTE value);
 void SerialBegin(void);
