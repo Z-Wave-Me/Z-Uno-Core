@@ -37,7 +37,7 @@ void setter(byte value) {
   tempVariable = ((word)value)*255/99;
 
   // now we set the LED brightness
-  analogWrite(1, ((long)value)*255/99);
+  analogWrite(PWM1, ((long)value)*255/99);
   
   // let's save our value for the situation, when the controller will ask us about it
   lastSetDimmer = value;
