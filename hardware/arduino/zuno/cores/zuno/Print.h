@@ -43,6 +43,8 @@ class Print
     size_t print(long, int = DEC);
     size_t print(unsigned long, int = DEC);
     size_t print(float, int = 2);
+    size_t print(double, int = 2);
+
 
     size_t println(char *);
     size_t println(char);
@@ -52,7 +54,10 @@ class Print
     size_t println(long, int = DEC);
     size_t println(unsigned long, int = DEC);
     size_t println(float, int = 2);
+    size_t println(double, int = 2);
+    
     size_t println(void);
+
 };
 
 #endif

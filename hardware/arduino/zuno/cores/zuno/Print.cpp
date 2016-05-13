@@ -67,7 +67,7 @@ size_t Print::print(char c)
 
 size_t Print::print(unsigned char b, int base)
 {
-  return printByteArr((uint8_t*)&b, 1, base);
+  return printNumber((unsigned long)b, base);
 }
 
 size_t Print::print(int n, int base)
@@ -82,14 +82,12 @@ size_t Print::print(int n, int base)
       add_sz=1;
   }
 
-  // return printNumber(n, base) + add_sz; 
-  return printByteArr((uint8_t*)&n, 2, base)  + add_sz;
+  return printNumber((unsigned long)n, base) + add_sz; 
 }
 
 size_t Print::print(unsigned int n, int base)
 {
-  //return print((unsigned long) n, base);
-  return printByteArr((uint8_t*)&n, 2, base);
+  return print((unsigned long) n, base);
 }
 
 size_t Print::print(long n, int base)
@@ -104,8 +102,7 @@ size_t Print::print(long n, int base)
       add_sz=1;
   }
 
-  // return printNumber(n, base) + add_sz; 
-  return printByteArr((uint8_t*)&n, 4, base)  + add_sz;
+  return printNumber(n, base) + add_sz; 
   
 }
 
@@ -113,8 +110,7 @@ size_t Print::print(unsigned long n, int base)
 {
   if (base == 0) 
     return write(n);
-  // return printNumber(n, base);
-  return printByteArr((uint8_t*)&n, 4, base);
+  return printNumber(n, base);
   
 }
 
@@ -122,7 +118,10 @@ size_t Print::print(float n, int digits)
 {
   return printFloat(n, digits);
 }
-
+size_t Print::print(double n, int digits)
+{
+  return printFloat((double)n, digits);
+}
 size_t Print::println(void)
 {
   JUST_NEW_LINE;
@@ -132,25 +131,10 @@ size_t Print::println(void)
 size_t Print::println(char * c)
 {
   
-  // Упрощенный код
-  // ---------------
-  //byte i;
-  //for(i=0;i<100;i++)
-  //{
-  //    if(c[i] == 0)
-  //      return i;
-  //    write(c[i]);
-  //}
+
   print(c);
   JUST_NEW_LINE;
   return g_n+NEW_LINE_ADDN;
-
-  //return 100;
-  // ---------------
-  // код из Arduino
-  //size_t n = print(c);
-  //n += println();
-  //  return n;
   
 }
 
@@ -198,72 +182,50 @@ size_t Print::println(unsigned long num, int base)
 
 size_t Print::println(float num, int digits)
 {
-  printFloat(num, digits);;
+  printFloat(num, digits);
   JUST_NEW_LINE;
   return g_n+NEW_LINE_ADDN;
 }
-
+size_t Print::println(double num, int digits)
+{
+  printFloat((float)num, digits);
+  JUST_NEW_LINE;
+  return g_n+NEW_LINE_ADDN;
+}
 // Private Methods /////////////////////////////////////////////////////////////
 
-uint8_t g_digit_buffer[8];
+uint8_t g_digit_buffer[32];
 uint8_t g_digit_len = 0;
-uint8_t g_digit_order = 0;
 
 unsigned long g_long_tmp = 0;
 float         g_float_tmp = 0;
 
 
-size_t  Print::printByteArr(uint8_t * bytearr, uint8_t len, uint8_t base) {
-  
-  uint8_t i;
-  uint8_t num;
-  char    c;
-  uint8_t have_one_non_zero = false;
 
-  g_n = 0;
-  
+size_t Print::printNumber(unsigned long n, uint8_t base) {
 
+  g_digit_len = 0;
 
-  
   // prevent crash if called with base == 1
   if (base < 2) base = 10;
 
-  // На всякий случай!
-  g_digit_len = 0;
-
-  for(g_i=0; g_i<len; g_i++)
+  do 
   {
-        if(g_digit_order)
-           num = bytearr[g_i];
-        else
-           num = bytearr[len - g_i - 1];
+    g_i = n % base;
+    n /= base;
+    g_digit_buffer[g_digit_len++] = g_i < 10 ? g_i + '0' : g_i + 'A' - 10;
+  } while(n);
 
-        // Убираем лидирующие нули
-        if(num == 0 && !have_one_non_zero && g_i != len-1)
-           continue; 
-        have_one_non_zero = true; 
 
-        do
-        {
-            c   = num % base;
-            num /= base;
-            g_digit_buffer[g_digit_len++] = c < 10 ? c + '0' : c + 'A' - 10; 
+  g_n = g_digit_len;
 
-        }while(num);
-        
-        g_n += g_digit_len;
-        while(g_digit_len)
-        {
-            g_digit_len--;
-            write(g_digit_buffer[g_digit_len]);
-            
-        }
-      
-  }
-
+  // Печатаем в обратном порядке
+  while(g_digit_len--)
+      write(g_digit_buffer[g_digit_len]);         
 
   return g_n;
 }
+
 size_t Print::printFloat(float number, uint8_t digits) 
 { 
   g_n = 0;
@@ -286,11 +248,11 @@ size_t Print::printFloat(float number, uint8_t digits)
   // Extract the integer part of the number and print it
   g_long_tmp = (unsigned long)number;
   g_float_tmp = number - (float)g_long_tmp;
-  g_n += printByteArr((uint8_t *)&g_long_tmp, 4, 10);
+  g_n += printNumber((unsigned long)g_long_tmp, 10);
 
   // Print the decimal point, but only if there are digits beyond
   if (digits > 0) {
-    g_n++;//print("."); 
+    g_n++;
     write('.');
   }
 
@@ -300,7 +262,7 @@ size_t Print::printFloat(float number, uint8_t digits)
     g_float_tmp *= 10.0;
     g_digit_buffer[0] = uint8_t(g_float_tmp);
     write('0'+ g_digit_buffer[0]);
-    g_n++;// print(toPrint);
+    g_n++;
     g_float_tmp -= g_digit_buffer[0]; 
   } 
    
