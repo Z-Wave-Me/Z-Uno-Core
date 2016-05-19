@@ -26,7 +26,7 @@ void setup() {
 }
 void loop() {
   // read potemtiometer value and save it inside a variable
-  byte currentValue = (byte) (analogRead(2) / 4);
+  byte currentValue = (byte) (analogRead(A3) / 4);
 
   // if the value is different then the previously measured one
   // save it and send a report
