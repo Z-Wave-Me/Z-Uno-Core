@@ -70,7 +70,7 @@ typedef struct _ZUNO_SLEEPING_MODE_PROPERTIES_DESCRIPTION
 #define word 								WORD
 
 #define ZUNO_CORES_SW_VERSION_MAJOR 		0
-#define ZUNO_CORES_SW_VERSION_MINOR 		67
+#define ZUNO_CORES_SW_VERSION_MINOR 		68
 
 
 #define ZUNO_PIN_STATE_HIGH 				1
@@ -525,7 +525,11 @@ void zunoSendUncolicitedReport(BYTE channel,WORD value);
 
 void zunoSendAssociationCommand(BYTE group, BYTE assoc_type, BYTE param1, BYTE param2);
 
-void zunoSendDeviceToSleep(void);
+#define GO_TO_SLEEP_NOW_AND_WAIT_WHEN_INT_IS_HIGH 			1
+#define WAKEUP_REASON_INT_LOW 			0
+#define zunoSendDeviceToSleep() zunoSendToSleep(WAKE_INT_LOW) //
+void zunoSendToSleep(BYTE wakeUpLevel);
+
 BYTE zunoGetWakeReason(void);
 
 
