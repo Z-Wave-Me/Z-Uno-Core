@@ -146,8 +146,7 @@ DWORD millis(void) {
 	return zunoPopDWORD();
 }
 
-void zunoSendToSleep(BYTE wakeUpLevel) {
-	zunoPushByte(wakeUpLevel);
+void zunoSendDeviceToSleep(void) {
 	zunoPushByte(ZUNO_FUNC_GO_SLEEP);
 	zunoCall();
 }
