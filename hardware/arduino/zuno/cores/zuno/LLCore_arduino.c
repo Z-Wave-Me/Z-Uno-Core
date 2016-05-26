@@ -169,9 +169,21 @@ void delay(DWORD value) {
 	}
 }
 
+DWORD millis(void) {
+	zunoPushByte(ZUNO_FUNC_MILLIS);
+	zunoCall();
+	return zunoPopDWORD();
+}
+
 void zunoSendDeviceToSleep(void) {
 	zunoPushByte(ZUNO_FUNC_GO_SLEEP);
 	zunoCall();
+}
+
+BYTE zunoGetWakeReason(void) {
+	zunoPushByte(ZUNO_FUNC_GET_WAKE_UP_REASON);
+	zunoCall();
+	return zunoPopByte();
 }
 
 /* ----------------------------------------------------------------------------
@@ -180,6 +192,72 @@ void zunoSendDeviceToSleep(void) {
 
 
 
+#define SPI_SPEED_8_MHZ   0x00
+#define SPI_SPEED_4_MHZ   0x01
+#define SPI_SPEED_2_MHZ   0x02
+#define SPI_SPEED_1_MHZ   0x03
+
+
+#define SPI_MODE_0       0x00
+#define SPI_MODE_1       0x01
+#define SPI_MODE_2       0x02
+#define SPI_MODE_3       0x03
+
+#define SPI_MSB_FIRST     0x01
+#define SPI_LSB_FIRST     0x00
+/* ----------------------------------------------------------------------------
+									SPI
+-------------------------------------------------------------------------------*/
+void zunoSpi0Init(BYTE speed, BYTE mode, BYTE border) {
+	/* 	speed
+
+			SPI_SPEED_8_MHZ   0x00
+			SPI_SPEED_4_MHZ   0x01
+			SPI_SPEED_2_MHZ   0x02
+			SPI_SPEED_1_MHZ   0x03
+
+		mode
+			SPI_MODE_0       0x00
+			SPI_MODE_1       0x01
+			SPI_MODE_2       0x02
+			SPI_MODE_3       0x03
+
+		border
+			SPI_MSB_FIRST     0x01
+			SPI_LSB_FIRST     0x00
+	*/
+	if 	(  (speed > SPI_SPEED_1_MHZ)
+		|| (mode > SPI_MODE_3)
+		|| (border > SPI_MSB_FIRST)) {
+		// unsupported values
+		return;
+	}
+	zunoPushByte(speed | (mode * 4) | (border * 0x10));
+	zunoPushByte(ZUNO_FUNC_SPI0_INIT);
+	zunoCall();
+}
+
+void zunoSpi0Begin(void) {
+	zunoPushByte(TRUE);
+	zunoPushByte(ZUNO_FUNC_SPI0_ENABLE);
+	zunoCall();
+}
+
+void zunoSpi0End(void) {
+	zunoPushByte(FALSE);
+	zunoPushByte(ZUNO_FUNC_SPI0_ENABLE);
+	zunoCall();
+}
+
+BYTE zunoSpi0Transfer(BYTE value) {
+	zunoPushByte(value);
+	zunoPushByte(ZUNO_FUNC_SPI0_TRANSFER);
+	zunoCall();
+	return zunoPopByte();
+}
+/* ----------------------------------------------------------------------------
+									SPI
+-------------------------------------------------------------------------------*/
 
 
 
