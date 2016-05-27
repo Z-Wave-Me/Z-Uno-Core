@@ -22,6 +22,10 @@
 #define TemperaturePin A3
 #define DoorPin 19
 
+#define CONTROL_GROUP 1  // number of Association Group 
+#define SWITCH_ON 0xff
+#define SWITCH_OFF 0
+
 // Global variables to store data reported via getters
 byte switchValue1 = 0;
 byte switchValue2 = 0;
@@ -30,15 +34,14 @@ byte dimValue1 = 0;
 byte dimValue2 = 0;
 byte dimValue3 = 0;
 byte lastMotionValue = 0;
-word lastLumiValue = 0;
+byte lastLumiValue = 0;
 byte lastTemperatureValue = 0;
 byte lastDoorValue = 0;
 word relaxMotion = 0;
 
 ZUNO_SETUP_SLEEPING_MODE(ZUNO_SLEEPING_MODE_ALWAYS_AWAKE);
 
-// In group 1 send Basic Set from Door Sensor
-ZUNO_SETUP_ASSOCIATIONS(ZUNO_ASSOCIATION_GROUP_SET_VALUE);
+ZUNO_SETUP_ASSOCIATIONS(ZUNO_ASSOCIATION_GROUP_SET_VALUE); // Send Basic Set to association group
 
 // Set up 10 channels
 ZUNO_SETUP_CHANNELS(
@@ -65,7 +68,7 @@ void setup() {
 
 void loop() {
   byte currentMotionValue;
-  word currentLumiValue;
+  byte currentLumiValue;
   byte currentTemperatureValue;
   byte currentDoorValue;
 
@@ -75,19 +78,19 @@ void loop() {
     if (relaxMotion == 0) {
       lastMotionValue = 1;
       zunoSendReport(7);
-      zunoSendToGroupSetValueCommand(2, 255);
+      zunoSendToGroupSetValueCommand(CONTROL_GROUP, SWITCH_ON);
     }
     relaxMotion = 1900; // impirical for ~5 sec relax time
   }
   if (lastMotionValue == 1 && relaxMotion == 0) {
     lastMotionValue = 0; 
     zunoSendReport(7);
-    zunoSendToGroupSetValueCommand(2, 0);
+    zunoSendToGroupSetValueCommand(CONTROL_GROUP, SWITCH_OFF);
   }
   if (relaxMotion) relaxMotion--;
 
   // Luminosity
-  currentLumiValue = 100 - analogRead(LumiPin)*25/256;
+  currentLumiValue = (byte)(100 - analogRead(LumiPin)*25/256);
   if ((currentLumiValue > (lastLumiValue + 5)) || (currentLumiValue < (lastLumiValue - 5))) {
     lastLumiValue = currentLumiValue;
     zunoSendReport(8);
@@ -171,7 +174,7 @@ byte getterMotion(void) {
   return lastMotionValue ? 0xff : 0;
 }
 
-word getterLuminance(void) {
+byte getterLuminance(void) {
   return lastLumiValue;
 }
 
