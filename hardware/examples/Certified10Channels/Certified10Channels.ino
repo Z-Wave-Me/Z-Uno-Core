@@ -22,7 +22,6 @@
 #define TemperaturePin A3
 #define DoorPin 19
 
-#define CONTROL_GROUP 1  // number of Association Group 
 #define SWITCH_ON 0xff
 #define SWITCH_OFF 0
 
@@ -78,14 +77,14 @@ void loop() {
     if (relaxMotion == 0) {
       lastMotionValue = 1;
       zunoSendReport(7);
-      zunoSendToGroupSetValueCommand(CONTROL_GROUP, SWITCH_ON);
+      zunoSendToGroupSetValueCommand(CTRL_GROUP_1, SWITCH_ON);
     }
     relaxMotion = 1900; // impirical for ~5 sec relax time
   }
   if (lastMotionValue == 1 && relaxMotion == 0) {
     lastMotionValue = 0; 
     zunoSendReport(7);
-    zunoSendToGroupSetValueCommand(CONTROL_GROUP, SWITCH_OFF);
+    zunoSendToGroupSetValueCommand(CTRL_GROUP_1, SWITCH_OFF);
   }
   if (relaxMotion) relaxMotion--;
 
