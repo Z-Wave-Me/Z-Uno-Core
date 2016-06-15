@@ -25,7 +25,7 @@
 #define exp(x) 			expf(x)
 #define log(x) 			logf(x)
 #define log10(x) 		log10f(x)
-#define pow(x) 			powf(x)
+#define pow(x,y) 		powf(x,y)
 #define sqrt(x) 		sqrtf(x)
 #define fabs(x)     	fabsf(x)
 #define ceil(x)     	ceilf(x)
@@ -33,6 +33,8 @@
 #define modf(x,y)   	modff(x,y)
 #define frexp(x, pw2)   frexpf(x, pw2)
 #define ldexp(x, pw2)   ldexpf(x, pw2)
+
+ 
 
 
 

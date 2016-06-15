@@ -131,10 +131,25 @@ size_t Print::println(void)
 size_t Print::println(char * c)
 {
   
-
+  // Упрощенный код
+  // ---------------
+  //byte i;
+  //for(i=0;i<100;i++)
+  //{
+  //    if(c[i] == 0)
+  //      return i;
+  //    write(c[i]);
+  //}
   print(c);
   JUST_NEW_LINE;
   return g_n+NEW_LINE_ADDN;
+
+  //return 100;
+  // ---------------
+  // код из Arduino
+  //size_t n = print(c);
+  //n += println();
+  //  return n;
   
 }
 
@@ -226,6 +241,60 @@ size_t Print::printNumber(unsigned long n, uint8_t base) {
   return g_n;
 }
 
+/*
+
+size_t  Print::printByteArr(uint8_t * bytearr, uint8_t len, uint8_t base) {
+  
+  uint8_t i;
+  uint8_t num;
+  char    c;
+  uint8_t have_one_non_zero = false;
+
+  g_n = 0;
+  
+
+
+  
+  // prevent crash if called with base == 1
+  if (base < 2) base = 10;
+
+  // На всякий случай!
+  g_digit_len = 0;
+
+  for(g_i=0; g_i<len; g_i++)
+  {
+        if(g_digit_order)
+           num = bytearr[g_i];
+        else
+           num = bytearr[len - g_i - 1];
+
+        // Убираем лидирующие нули
+        if(num == 0 && !have_one_non_zero && g_i != len-1)
+           continue; 
+        have_one_non_zero = true; 
+
+        do
+        {
+            c   = num % base;
+            num /= base;
+            g_digit_buffer[g_digit_len++] = c < 10 ? c + '0' : c + 'A' - 10; 
+
+        }while(num);
+        
+        g_n += g_digit_len;
+        while(g_digit_len)
+        {
+            g_digit_len--;
+            write(g_digit_buffer[g_digit_len]);
+            
+        }
+      
+  }
+
+
+  return g_n;
+}
+*/
 size_t Print::printFloat(float number, uint8_t digits) 
 { 
   g_n = 0;

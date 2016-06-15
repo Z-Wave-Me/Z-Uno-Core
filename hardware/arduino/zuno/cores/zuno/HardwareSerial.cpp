@@ -1,6 +1,7 @@
 	
 #include "HardwareSerial.h"	
 #include "ZUNO_Definitions.h"
+#include "ZUNO_call_proto.h"
 
 // Чтобы было проще настраивать потом - определяем смещения от первого enum
 #define FUNC_START(num) 		(num)
@@ -9,11 +10,6 @@
 #define FUNC_READ(num) 			(num + 3)
 #define FUNC_WRITE(num) 		(num + 4)
 
-// Здесь только то, что действительно нужно из CoreArduino.
-BYTE zunoPopByte(void);
-void zunoPushByte(BYTE value);
-void zunoPushWord(WORD value);
-void zunoCall(void);
 
 
 HardwareSerial::HardwareSerial(BYTE number)

@@ -2,7 +2,7 @@
 #define __ZUNO_DEFINES___
 
 #define ZUNO_CORES_SW_VERSION_MAJOR 		2
-#define ZUNO_CORES_SW_VERSION_MINOR 		1
+#define ZUNO_CORES_SW_VERSION_MINOR 		02
 
 
 #define ZUNO_PIN_STATE_HIGH 				1
@@ -52,12 +52,7 @@
 #define MAX(A,B)  (A > B ? A : B)
 #define MIN(A,B)  (A < B ? A : B)
 
-
-#define MULTILINE_DEF(x)    if(x*x-2)\
-							{\
-							  print(x);\
-							}\
-							else{}		
+	
 enum {
 	ZUNO_FUNC_PIN_MODE,
 	ZUNO_FUNC_DIGITAL_WRITE,
@@ -282,4 +277,117 @@ TODO: finish all types
 #define ZUNO_SENSOR_MULTILEVEL_TIME(GETTER)
 #define ZUNO_SENSOR_MULTILEVEL_TARGET_TEMPERATURE(GETTER)
 */
+
+
+// Additional Macroses
+
+//#define XBYTE  _xdata BYTE /* External data byte */
+
+
+
+
+
+// Associations
+// -----------------------------------------------------------------
+enum {
+	ZUNO_ASSOC_BASIC_SET_NUMBER = 1, 						//0x01
+	ZUNO_ASSOC_BASIC_SET_AND_DIM_NUMBER,				//0x02
+	ZUNO_ASSOC_SCENE_ACTIVATION_NUMBER, 				//0x03
+	ZUNO_END_OF_SUPPORTED_ASSOC_NUM,
+};
+
+#define ZUNO_ASSOC_NO_PARAMS 							0x00
+
+#define ZUNO_NO_ASSOCIATIONS							{0, 0}
+#define ZUNO_ASSOCIATION_GROUP_SET_VALUE 				{ZUNO_ASSOC_BASIC_SET_NUMBER, ZUNO_ASSOC_NO_PARAMS}
+#define ZUNO_ASSOCIATION_GROUP_SET_VALUE_AND_DIM 		{ZUNO_ASSOC_BASIC_SET_AND_DIM_NUMBER, ZUNO_ASSOC_NO_PARAMS}
+#define ZUNO_ASSOCIATION_GROUP_SCENE_CONTROL 			{ZUNO_ASSOC_SCENE_ACTIVATION_NUMBER, ZUNO_ASSOC_NO_PARAMS}
+//TODO #define ZUNO_ASSOCIATION_GROUP_COLOR_CONTROL 		 		{}
+//TODO #define ZUNO_ASSOCIATION_GROUP_THERMOSTAT_CONTROL 		 	{}
+//TODO #define ZUNO_ASSOCIATION_GROUP_DOOR_LOCK_CONTROL 		 	{}
+
+#define ZUNO_SETUP_ASSOCIATIONS(...)	\
+								__code ZUNO_ASSOCIATION_PROPERTIES_DESCRIPTION zunoAssociationSetupArray[]= \
+								{ \
+									{0x42, 0x42}, \
+									__VA_ARGS__, \
+									{0x43, 0x43} \
+								}
+
+// -----------------------------------------------------------------
+
+// Sleeping Mode
+// -----------------------------------------------------------------
+
+enum {
+	ZUNO_MODE_ALWAYS_LISTENING_NUMBER,				//0
+	ZUNO_MODE_WAKE_UP_NUMBER,						//1
+	ZUNO_MODE_FLIRS_NUMBER,							//2
+};
+
+#define ZUNO_SLEEPING_MODE_ALWAYS_AWAKE 			{ZUNO_MODE_ALWAYS_LISTENING_NUMBER, 0, 0}
+#define ZUNO_SLEEPING_MODE_SLEEPING			 		{ZUNO_MODE_WAKE_UP_NUMBER, 0, 0}
+#define ZUNO_SLEEPING_MODE_FREQUENTLY_AWAKE 		{ZUNO_MODE_FLIRS_NUMBER, 0, 0}
+#define ZUNO_SETUP_SLEEPING_MODE(VALUE) 		\
+								__code ZUNO_SLEEPING_MODE_PROPERTIES_DESCRIPTION zunoSleepingModeSetupStruct = VALUE
+
+// -----------------------------------------------------------------
+
+				
+
+#define ZUNO_SETUP_DEBUG_MODE(VALUE) 		\
+								__code BYTE zunoDebugParameter = VALUE
+
+
+#define ZUNO_MAX_MULTI_CHANNEL_NUMBER 					10
+
+#define ZUNO_REPORT_NO_IMMEDIATE_VALUE 		0xffff
+#define zunoSendReport(CHANNEL)  			zunoSendUncolicitedReport(CHANNEL,ZUNO_REPORT_NO_IMMEDIATE_VALUE)
+
+#define ZUNO_DIMMING_UP				0
+#define ZUNO_DIMMING_DOWN 			1
+#define ZUNO_DIMMING_START			1
+#define ZUNO_DIMMING_STOP 			0
+
+#define zunoSendToGroupSetValueCommand(GROUP,VALUE) 					zunoSendAssociationCommand(GROUP,ZUNO_ASSOC_BASIC_SET_NUMBER,VALUE,0)
+#define zunoSendToGroupDimmingCommand(GROUP,DIRECTION,START_STOP) 		zunoSendAssociationCommand(GROUP,ZUNO_ASSOC_BASIC_SET_AND_DIM_NUMBER,DIRECTION,START_STOP)
+#define zunoSendToGroupScene(GROUP,SCENE_NUMBER) 						zunoSendAssociationCommand(GROUP,ZUNO_ASSOC_SCENE_ACTIVATION_NUMBER,SCENE_NUMBER,0)
+
+
+
+// SPI
+// -----------------------------------------------------------------
+#define SPI_SPEED_8_MHZ   0x00
+#define SPI_SPEED_4_MHZ   0x01
+#define SPI_SPEED_2_MHZ   0x02
+#define SPI_SPEED_1_MHZ   0x03
+
+#define SPI_MODE0       0x00
+#define SPI_MODE1       0x01
+#define SPI_MODE2       0x02
+#define SPI_MODE3       0x03
+
+#define MSBFIRST     0x01
+#define LSBFIRST     0x00
+// -----------------------------------------------------------------
+
+
+// Для совместимости с библиотеками Arduino используем определение частоты процессора
+#define F_CPU			  16000000
+// Версия Arduino
+#define ARDUINO 		  152	
+
+
+// Битовые операции
+#define bitRead(value, bit) (((value) >> (bit)) & 0x01)
+#define bitSet(value, bit) ((value) |= (1UL << (bit)))
+#define bitClear(value, bit) ((value) &= ~(1UL << (bit)))
+#define bitWrite(value, bit, bitvalue) (bitvalue ? bitSet(value, bit) : bitClear(value, bit))
+
+#define CHANGE 1
+#define FALLING 2
+#define RISING 3
+
+
+
 #endif // #define __ZUNO_DEFINES___

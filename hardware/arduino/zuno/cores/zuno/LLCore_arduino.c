@@ -16,6 +16,8 @@ void Serial1_Println(const char* bufPointer);
 
 __sfr __at (0x81) SP;
 
+
+
 // Дополнительный код
 
 BYTE zme_strlen(char * str)
@@ -133,10 +135,6 @@ void analogWrite(BYTE pin, BYTE value) {
 	zunoCall();
 }
 
-DWORD millis()
-{
-	return 0;
-}
 /* ----------------------------------------------------------------------------
 									GPIO
 -------------------------------------------------------------------------------*/
@@ -191,44 +189,14 @@ BYTE zunoGetWakeReason(void) {
 -------------------------------------------------------------------------------*/
 
 
-
-#define SPI_SPEED_8_MHZ   0x00
-#define SPI_SPEED_4_MHZ   0x01
-#define SPI_SPEED_2_MHZ   0x02
-#define SPI_SPEED_1_MHZ   0x03
-
-
-#define SPI_MODE_0       0x00
-#define SPI_MODE_1       0x01
-#define SPI_MODE_2       0x02
-#define SPI_MODE_3       0x03
-
-#define SPI_MSB_FIRST     0x01
-#define SPI_LSB_FIRST     0x00
 /* ----------------------------------------------------------------------------
 									SPI
 -------------------------------------------------------------------------------*/
 void zunoSpi0Init(BYTE speed, BYTE mode, BYTE border) {
-	/* 	speed
 
-			SPI_SPEED_8_MHZ   0x00
-			SPI_SPEED_4_MHZ   0x01
-			SPI_SPEED_2_MHZ   0x02
-			SPI_SPEED_1_MHZ   0x03
-
-		mode
-			SPI_MODE_0       0x00
-			SPI_MODE_1       0x01
-			SPI_MODE_2       0x02
-			SPI_MODE_3       0x03
-
-		border
-			SPI_MSB_FIRST     0x01
-			SPI_LSB_FIRST     0x00
-	*/
 	if 	(  (speed > SPI_SPEED_1_MHZ)
-		|| (mode > SPI_MODE_3)
-		|| (border > SPI_MSB_FIRST)) {
+		|| (mode > SPI_MODE3)
+		|| (border > MSBFIRST)) {
 		// unsupported values
 		return;
 	}
@@ -257,6 +225,45 @@ BYTE zunoSpi0Transfer(BYTE value) {
 }
 /* ----------------------------------------------------------------------------
 									SPI
+-------------------------------------------------------------------------------*/
+/* ----------------------------------------------------------------------------
+									I2C
+-------------------------------------------------------------------------------*/
+#define SCL_PIN  9
+#define SDA_PIN  10
+void zunoI2CInit()
+{
+	// Инициализируем пины
+    pinMode(SCL_PIN, OUTPUT);
+    pinMode(SDA_PIN, OUTPUT);
+    digitalWrite(SCL_PIN, HIGH);
+    digitalWrite(SDA_PIN, HIGH);
+}
+void zunoI2CBegin()
+{
+	// Подсоединяемся к шине I2C как мастер
+    zunoPushByte(ZUNO_FUNC_I2C_BEGIN);
+    zunoCall();
+}
+void zunoI2CEnd()
+{
+	zunoPushByte(ZUNO_FUNC_I2C_END);
+    zunoCall();
+}
+void zunoI2CWrite(BYTE data)
+{
+	zunoPushByte(data);
+	zunoPushByte(ZUNO_FUNC_I2C_WRITE);
+    zunoCall();
+}
+BYTE zunoI2CRead()
+{
+	zunoPushByte(ZUNO_FUNC_I2C_READ);
+    zunoCall();		
+	return zunoPopByte();
+}
+/* ----------------------------------------------------------------------------
+									I2C
 -------------------------------------------------------------------------------*/
 
 
