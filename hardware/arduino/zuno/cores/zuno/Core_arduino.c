@@ -365,6 +365,7 @@ void zunoCallback(void) {
 		}
 	}
 }
+
 /* ----------------------------------------------------------------------------
 							Z-Wave communication
 -------------------------------------------------------------------------------*/
@@ -378,6 +379,7 @@ void begin_callback_code(void) __naked {
 
 void zunoJumpTable(void) {
 	BYTE requested_function = zunoPopByte();
+	
 	switch(requested_function) {
 		case ZUNO_JUMP_TABLE_SETUP:
 		InitArduinoEnvironment();
