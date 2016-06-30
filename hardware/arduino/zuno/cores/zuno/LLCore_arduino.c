@@ -167,6 +167,23 @@ void delay(DWORD value) {
 	}
 }
 
+void delayMicroseconds(unsigned int value) {
+    __asm
+    mov	r6,dpl
+    mov	r7,dph
+LOOP:    nop
+    nop
+    nop
+    nop
+    nop
+    nop
+    djnz r6,LOOP
+    cjne r7,#0x00,CONTINUE
+EXIT:    ret
+CONTINUE:    djnz r7,LOOP
+    __endasm;
+}
+
 DWORD millis(void) {
 	zunoPushByte(ZUNO_FUNC_MILLIS);
 	zunoCall();
