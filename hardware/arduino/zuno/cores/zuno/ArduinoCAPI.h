@@ -26,6 +26,8 @@ void zunoI2CEnd();
 void zunoI2CWrite(BYTE data);
 BYTE zunoI2CRead();
 
+//DHT
+BYTE zunoDHTreadSensor(BYTE * array, BYTE pin, BYTE wakeupDelay, BYTE leadingZeroBits);
 
 
 // Z-Uno Systems calls

@@ -33,6 +33,7 @@
 #define modf(x,y)   	modff(x,y)
 #define frexp(x, pw2)   frexpf(x, pw2)
 #define ldexp(x, pw2)   ldexpf(x, pw2)
+#define min(A,B) ((A > B) ? B : A)
 
  
 

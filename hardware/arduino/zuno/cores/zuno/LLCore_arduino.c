@@ -284,6 +284,46 @@ BYTE zunoI2CRead()
 -------------------------------------------------------------------------------*/
 
 
+/* ----------------------------------------------------------------------------
+									DHT
+-------------------------------------------------------------------------------*/
+
+BYTE zunoDHTreadSensor(BYTE * array, BYTE pin, BYTE wakeupDelay, BYTE leadingZeroBits) {
+	BYTE i = 0;
+	BYTE status;
+
+
+    // REQUEST SAMPLE
+	pinMode(pin, OUTPUT);
+    digitalWrite(pin, LOW); // T-be
+    delay(wakeupDelay);
+    //start data receiving
+	zunoPushByte(leadingZeroBits);
+	zunoPushByte(wakeupDelay);
+	zunoPushByte(pin);
+	zunoPushByte(ZUNO_FUNC_DHT_READ_SENSOR);
+    zunoCall();
+    status = zunoPopByte();
+    // 0 is reserved value, so midlleware will return "TRUE" if everything is ok
+    if (status == TRUE) {
+    	//everything is ok
+	    for (; i < 5; i++) {
+	    	array[i] = zunoPopByte();
+	    }
+	    //fallback to original Lib value
+	    status = 0;
+	}
+
+	if (status == 0) {
+		status = -6;
+		// some internal problems
+	}
+	
+	return status;
+}
+/* ----------------------------------------------------------------------------
+									DHT
+-------------------------------------------------------------------------------*/
 
 
 /* ----------------------------------------------------------------------------

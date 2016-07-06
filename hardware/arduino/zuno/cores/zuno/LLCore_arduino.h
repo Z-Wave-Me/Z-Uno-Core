@@ -15,7 +15,6 @@ typedef __code void (*VOID_FUNC_POINTER_BUFFER_BYTE) (const char *bufPointer, BY
 typedef __code void * GENERIC_POINTER;
 
 
-#define min(A,B) ((A > B) ? B : A)
 
 
 //Debug///
