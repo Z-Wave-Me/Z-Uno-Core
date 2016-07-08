@@ -20,6 +20,7 @@ HardwareSerial::HardwareSerial(BYTE number)
 
 void HardwareSerial::begin()
 {
+	zunoPushWord(1152);  //default baudrate is 115200
 	zunoPushByte(FUNC_START(func_vec));
 	zunoCall();
 }
@@ -44,10 +45,14 @@ int HardwareSerial::available(void)
 }
 int HardwareSerial::peek(void)
 {
-	return read();
+	zunoPushByte(FALSE); // not to remove byte from read buffer
+	zunoPushByte(FUNC_READ(func_vec));
+	zunoCall();
+	return zunoPopByte();
 }
 int HardwareSerial::read(void)
 {
+	zunoPushByte(TRUE); // remove byte from read buffer
 	zunoPushByte(FUNC_READ(func_vec));
 	zunoCall();
 	return zunoPopByte();

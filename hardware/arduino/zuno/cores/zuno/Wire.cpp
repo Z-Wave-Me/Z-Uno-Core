@@ -79,8 +79,7 @@ size_t TwoWire::write(uint8_t data)
     zunoCall();
 
     // Должны проверять NACK/ACK и возвращать его
-    // zunoPopByte(); 
-    return 1;
+    return zunoPopByte(); 
 }
 int TwoWire::available(void)
 {
@@ -95,7 +94,7 @@ int TwoWire::read(void)
     }
     else
         return 0;
-    // zunoPushByte(nack_ack);
+    zunoPushByte(nack_ack);
     zunoPushByte(I2C_READ_FUNC_VEC(func_vec));
     zunoCall();
 
