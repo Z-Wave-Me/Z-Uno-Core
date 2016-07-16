@@ -39,10 +39,13 @@ void setup() {
 }
   
 void loop() {
+    
+
+    
     Serial.print("Temperature = ");
     Serial.print(bmp.readTemperature());
     Serial.println(" *C");
-    
+        
     Serial.print("Pressure = ");
     Serial.print(bmp.readPressure());
     Serial.println(" Pa");
@@ -58,9 +61,10 @@ void loop() {
   // vary with weather and such. If it is 1015 millibars
   // that is equal to 101500 Pascals.
     Serial.print("Real altitude = ");
-    Serial.print(bmp.readAltitude(101500));
+    Serial.print(bmp.readAltitude(99082));
     Serial.println(" meters");
-    
+  
     Serial.println();
-    delay(10000);
+
+    delay(3000);
 }

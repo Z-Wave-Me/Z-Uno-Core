@@ -36,14 +36,16 @@ class TwoWire : public Stream
     uint8_t func_vec;
     uint8_t txAddress;
     uint8_t available_bytes;
+    uint8_t state;
+    uint8_t b_flags;
+    uint8_t sucess_code;
     
   public:
     TwoWire(uint8_t func_vec);
     void begin();
     void beginTransmission(uint8_t);
-    uint8_t endTransmission(void);
-    uint8_t endTransmission(uint8_t);
-    uint8_t requestFrom(uint8_t, uint8_t);
+    uint8_t endTransmission(uint8_t stop = true);
+    uint8_t requestFrom(uint8_t, uint8_t, bool stop = true);
     virtual size_t write(uint8_t);
     virtual int available(void);
     virtual int read(void);

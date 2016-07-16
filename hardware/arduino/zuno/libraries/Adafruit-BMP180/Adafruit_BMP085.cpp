@@ -19,6 +19,9 @@
 #include "Wire.h"
 
 
+//#define BMP085_DEBUG 1
+
+
 #define _delay_ms(d) delay(d)
 
 Adafruit_BMP085::Adafruit_BMP085() {
@@ -48,7 +51,10 @@ boolean Adafruit_BMP085::begin(uint8_t mode) {
   mb = read16(BMP085_CAL_MB);
   mc = read16(BMP085_CAL_MC);
   md = read16(BMP085_CAL_MD);
-#if (BMP085_DEBUG == 1)
+
+}
+void     Adafruit_BMP085::dumpInternal()
+{
   Serial.print("ac1 = "); Serial.println(ac1, DEC);
   Serial.print("ac2 = "); Serial.println(ac2, DEC);
   Serial.print("ac3 = "); Serial.println(ac3, DEC);
@@ -60,17 +66,13 @@ boolean Adafruit_BMP085::begin(uint8_t mode) {
   Serial.print("b2 = "); Serial.println(b2, DEC);
 
   Serial.print("mb = "); Serial.println(mb, DEC);
+  
   Serial.print("mc = "); Serial.println(mc, DEC);
   Serial.print("md = "); Serial.println(md, DEC);
-#endif
 }
-
 uint16_t Adafruit_BMP085::readRawTemperature(void) {
   write8(BMP085_CONTROL, BMP085_READTEMPCMD);
   _delay_ms(5);
-#if BMP085_DEBUG == 1
-  Serial.print("Raw temp: "); Serial.println(read16(BMP085_TEMPDATA));
-#endif
   return read16(BMP085_TEMPDATA);
 }
 
@@ -94,129 +96,102 @@ uint32_t Adafruit_BMP085::readRawPressure(void) {
   raw |= read8(BMP085_PRESSUREDATA+2);
   raw >>= (8 - oversampling);
 
- /* this pull broke stuff, look at it later?
-  if (oversampling==0) {
-    raw <<= 8;
-    raw |= read8(BMP085_PRESSUREDATA+2);
-    raw >>= (8 - oversampling);
-  }
- */
-
-#if BMP085_DEBUG == 1
-  Serial.print("Raw pressure: "); Serial.println(raw);
-#endif
+ 
   return raw;
 }
 
 
 int32_t Adafruit_BMP085::readPressure(void) {
-  int32_t UT, UP, B3, B5, B6, X1, X2, X3, p;
-  uint32_t B4, B7;
 
-  UT = readRawTemperature();
-  UP = readRawPressure();
+  int16_t UT = readRawTemperature();
+  long    UP = readRawPressure();
 
-#if BMP085_DEBUG == 1
-  // use datasheet numbers!
-  UT = 27898;
-  UP = 23843;
-  ac6 = 23153;
-  ac5 = 32757;
-  mc = -8711;
-  md = 2868;
-  b1 = 6190;
-  b2 = 4;
-  ac3 = -14383;
-  ac2 = -72;
-  ac1 = 408;
-  ac4 = 32741;
-  oversampling = 0;
-#endif
 
-  // do temperature calculations
-  X1=(UT-(int32_t)(ac6))*((int32_t)(ac5))/pow(2,15);
-  X2=((int32_t)mc*pow(2,11))/(X1+(int32_t)md);
-  B5=X1 + X2;
+  long X1 = UT - ac6;
+  long X2 = mc;
 
-#if BMP085_DEBUG == 1
-  Serial.print("X1 = "); Serial.println(X1);
-  Serial.print("X2 = "); Serial.println(X2);
-  Serial.print("B5 = "); Serial.println(B5);
-#endif
+  X1 *= ac5;
+  X1 >>= 15;
+  X2 <<= 11;
+  X2 /= (X1 + md);
+  //1) => B5 => B6 
+  long B6 = (X1 + X2) - 4000;
 
-  // do pressure calcs
-  B6 = B5 - 4000;
-  X1 = ((int32_t)b2 * ( (B6 * B6)>>12 )) >> 11;
-  X2 = ((int32_t)ac2 * B6) >> 11;
-  X3 = X1 + X2;
-  B3 = ((((int32_t)ac1*4 + X3) << oversampling) + 2) / 4;
+  //2) X1
+  // X1 = (B2*(B6*B6)/2^12)/2^11
+  X2 = X1 = B6;
+  X1 *= B6;
+  X1 >>= 12;
+  uint16_t koef1 = X1;
+  X1 *= b2;
+  X1 >>= 11;
+  //3) 
+  // X2 = ac2*b6/2^11
+  X2 *= ac2;
+  X2 >>= 11;
+  // 4
+  // B3 = ((4*ac1 + X1 + X2)*2^(oversampling) + 2) / 4
+  long B3 = ac1;
+  B3 <<= 2;
+  B3 += X1 + X2;
+  B3 <<= oversampling;
+  B3 >>= 2;
+  B3 = UP-B3; // B7
+  B3 *= (50000 >> oversampling); 
+  // 5)
+  // X1 = AC3*B6/2^13
+  X1 = ac3;
+  X1 *= B6;
+  X1 >>= 13;
+  // 6)
+  // X2 = (b1*b6*b6/2^12)/2^16
+  X2 = b1;
+  X2 *= koef1;
+  X2 >>= 16;
+  // 
+  X1 += X2 + 2;
+  X1 >>= 2;
 
-#if BMP085_DEBUG == 1
-  Serial.print("B6 = "); Serial.println(B6);
-  Serial.print("X1 = "); Serial.println(X1);
-  Serial.print("X2 = "); Serial.println(X2);
-  Serial.print("B3 = "); Serial.println(B3);
-#endif
+  // B4....
+  unsigned long B4 = X1;
+  B4 += 32768;
+  B4 *= ac4;
+  B4 >>= 15;
 
-  X1 = ((int32_t)ac3 * B6) >> 13;
-  X2 = ((int32_t)b1 * ((B6 * B6) >> 12)) >> 16;
-  X3 = ((X1 + X2) + 2) >> 2;
-  B4 = ((uint32_t)ac4 * (uint32_t)(X3 + 32768)) >> 15;
-  B7 = ((uint32_t)UP - B3) * (uint32_t)( 50000UL >> oversampling );
+  long p = B3 < 0x80000000 ? (B3 << 1) / B4 : (B3/B4) << 1;
+  X1 = p >> 8;
+  X1 *= X1;
+  X1 *= 3038;
+  X1 >>= 16;
+  X2 = p;
+  X2 *= -7357;
+  X2 >>= 16;
+  X1 += X2 + 3791;
+  X1 >>= 4;
 
-#if BMP085_DEBUG == 1
-  Serial.print("X1 = "); Serial.println(X1);
-  Serial.print("X2 = "); Serial.println(X2);
-  Serial.print("B4 = "); Serial.println(B4);
-  Serial.print("B7 = "); Serial.println(B7);
-#endif
+  p += X1; 
 
-  if (B7 < 0x80000000) {
-    p = (B7 * 2) / B4;
-  } else {
-    p = (B7 / B4) * 2;
-  }
-  X1 = (p >> 8) * (p >> 8);
-  X1 = (X1 * 3038) >> 16;
-  X2 = (-7357 * p) >> 16;
-
-#if BMP085_DEBUG == 1
-  Serial.print("p = "); Serial.println(p);
-  Serial.print("X1 = "); Serial.println(X1);
-  Serial.print("X2 = "); Serial.println(X2);
-#endif
-
-  p = p + ((X1 + X2 + (int32_t)3791)>>4);
-#if BMP085_DEBUG == 1
-  Serial.print("p = "); Serial.println(p);
-#endif
   return p;
 }
 
 
-float Adafruit_BMP085::readTemperature(void) {
-  int32_t UT, X1, X2, B5;     // following ds convention
-  float temp;
+int16_t Adafruit_BMP085::readTemperature(void) {
 
-  UT = readRawTemperature();
+ 
+  int16_t UT = readRawTemperature();
+  Serial.print("UT=");
+  Serial.println(UT);
+  long X1 = UT - ac6;
+  long X2 = mc;
 
-#if BMP085_DEBUG == 1
-  // use datasheet numbers!
-  UT = 27898;
-  ac6 = 23153;
-  ac5 = 32757;
-  mc = -8711;
-  md = 2868;
-#endif
+  X1 *= ac5;
+  X1 >>= 15;
+  X2 <<= 11;
+  X2 /= (X1 + md);
+  X1 += X2 + 8;
+  X1 >>= 4;
 
-  // step 1
-  X1 = (UT - (int32_t)ac6) * ((int32_t)ac5) / pow(2,15);
-  X2 = ((int32_t)mc * pow(2,11)) / (X1+(int32_t)md);
-  B5 = X1 + X2;
-  temp = (B5+8)/pow(2,4);
-  temp /= 10;
-  
-  return temp;
+  return  (int16_t) X1;
 }
 
 float Adafruit_BMP085::readAltitude(float sealevelPressure) {
@@ -236,20 +211,12 @@ uint8_t Adafruit_BMP085::read8(uint8_t a) {
   uint8_t ret;
 
   Wire.beginTransmission(BMP085_I2CADDR); // start transmission to device 
-#if (ARDUINO >= 100)
   Wire.write(a); // sends register address to read from
-#else
-  Wire.send(a); // sends register address to read from
-#endif
   Wire.endTransmission(); // end transmission
   
   Wire.beginTransmission(BMP085_I2CADDR); // start transmission to device 
   Wire.requestFrom(BMP085_I2CADDR, 1);// send data n-bytes read
-#if (ARDUINO >= 100)
   ret = Wire.read(); // receive DATA
-#else
-  ret = Wire.receive(); // receive DATA
-#endif
   Wire.endTransmission(); // end transmission
 
   return ret;
@@ -259,24 +226,14 @@ uint16_t Adafruit_BMP085::read16(uint8_t a) {
   uint16_t ret;
 
   Wire.beginTransmission(BMP085_I2CADDR); // start transmission to device 
-#if (ARDUINO >= 100)
   Wire.write(a); // sends register address to read from
-#else
-  Wire.send(a); // sends register address to read from
-#endif
   Wire.endTransmission(); // end transmission
   
   Wire.beginTransmission(BMP085_I2CADDR); // start transmission to device 
   Wire.requestFrom(BMP085_I2CADDR, 2);// send data n-bytes read
-#if (ARDUINO >= 100)
   ret = Wire.read(); // receive DATA
   ret <<= 8;
   ret |= Wire.read(); // receive DATA
-#else
-  ret = Wire.receive(); // receive DATA
-  ret <<= 8;
-  ret |= Wire.receive(); // receive DATA
-#endif
   Wire.endTransmission(); // end transmission
 
   return ret;
@@ -284,12 +241,7 @@ uint16_t Adafruit_BMP085::read16(uint8_t a) {
 
 void Adafruit_BMP085::write8(uint8_t a, uint8_t d) {
   Wire.beginTransmission(BMP085_I2CADDR); // start transmission to device 
-#if (ARDUINO >= 100)
   Wire.write(a); // sends register address to read from
   Wire.write(d);  // write data
-#else
-  Wire.send(a); // sends register address to read from
-  Wire.send(d);  // write data
-#endif
   Wire.endTransmission(); // end transmission
 }

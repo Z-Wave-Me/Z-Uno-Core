@@ -82,12 +82,12 @@ size_t Print::print(int n, int base)
       add_sz=1;
   }
 
-  return printNumber((unsigned long)n, base) + add_sz; 
+  return printNumber(((unsigned long)n)&0xFFFF, base) + add_sz; 
 }
 
 size_t Print::print(unsigned int n, int base)
 {
-  return print((unsigned long) n, base);
+  return print(((unsigned long) n) & 0xFFFF, base);
 }
 
 size_t Print::print(long n, int base)
