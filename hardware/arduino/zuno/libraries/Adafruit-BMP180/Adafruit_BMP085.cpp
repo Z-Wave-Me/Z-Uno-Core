@@ -179,8 +179,6 @@ int16_t Adafruit_BMP085::readTemperature(void) {
 
  
   int16_t UT = readRawTemperature();
-  Serial.print("UT=");
-  Serial.println(UT);
   long X1 = UT - ac6;
   long X2 = mc;
 

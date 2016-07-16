@@ -41,11 +41,17 @@ void setup() {
 void loop() {
     
 
-    
+    // Get Temperature
     Serial.print("Temperature = ");
-    Serial.print(bmp.readTemperature());
+    // library uses original data format of BMP180. Temerature is integer value in 0.1 of *C 
+    int temp = bmp.readTemperature();
+    // Just convert it in more readable view...
+    Serial.print(temp/10);
+    Serial.print('.');
+    Serial.print(temp%10);
     Serial.println(" *C");
         
+    // Get Pressure
     Serial.print("Pressure = ");
     Serial.print(bmp.readPressure());
     Serial.println(" Pa");
