@@ -52,7 +52,7 @@
 int8_t dht::read11(uint8_t pin)
 {
     // READ VALUES
-    int8_t result = _readSensor(pin, DHTLIB_DHT11_WAKEUP, DHTLIB_DHT11_LEADING_ZEROS);
+    int8_t result = _readSensor(pin, DHTLIB_DHT11_WAKEUP);
 
     // these bits are always zero, masking them reduces errors.
     bits[0] &= 0x7F;
@@ -75,15 +75,15 @@ int8_t dht::read11(uint8_t pin)
 int8_t dht::read(uint8_t pin)
 {
     // READ VALUES
-    int8_t result = _readSensor(pin, DHTLIB_DHT_WAKEUP, DHTLIB_DHT_LEADING_ZEROS);
+    int8_t result = _readSensor(pin, DHTLIB_DHT_WAKEUP);
 
     // these bits are always zero, masking them reduces errors.
     bits[0] &= 0x03;
     bits[2] &= 0x83;
 
     // CONVERT AND STORE
-    humidity = (bits[0]*256 + bits[1]) * 0.1;
-    temperature = ((bits[2] & 0x7F)*256 + bits[3]) * 0.1;
+    humidity = (bits[0]*256 + bits[1]);
+    temperature = ((bits[2] & 0x7F)*256 + bits[3]);
     if (bits[2] & 0x80)  // negative temperature
     {
         temperature = -temperature;
@@ -103,9 +103,9 @@ int8_t dht::read(uint8_t pin)
 // PRIVATE
 //
 
-int8_t dht::_readSensor(uint8_t pin, uint8_t wakeupDelay, uint8_t leadingZeroBits)
+int8_t dht::_readSensor(uint8_t pin, uint8_t wakeupDelay)
 {
-    return zunoDHTreadSensor(bits, pin, wakeupDelay, leadingZeroBits);
+    return zunoDHTreadSensor(bits, pin, wakeupDelay);
 }
 //
 // END OF FILE

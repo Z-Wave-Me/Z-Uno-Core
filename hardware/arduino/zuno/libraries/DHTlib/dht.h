@@ -19,19 +19,17 @@
 
 #define DHT_LIB_VERSION "0.1.21"
 
-#define DHTLIB_OK                   0
-#define DHTLIB_ERROR_CHECKSUM       -1
-#define DHTLIB_ERROR_TIMEOUT        -2
-#define DHTLIB_ERROR_CONNECT        -3
-#define DHTLIB_ERROR_ACK_L          -4
-#define DHTLIB_ERROR_ACK_H          -5
-#define DHTLIB_ERROR_ZUNO_PROBLEM   -6
+#define DHTLIB_OK                       0
+#define DHTLIB_ERROR_CHECKSUM           -1
+#define DHTLIB_ERROR_TIMEOUT            -2
+#define DHTLIB_ERROR_CONNECT            -3
+#define DHTLIB_ERROR_ACK_L              -4
+#define DHTLIB_ERROR_ACK_H              -5
+#define DHTLIB_ERROR_NOT_ALLOWED_PIN    -6
+#define DHTLIB_ERROR_ZUNO_PROBLEM       -7
 
 #define DHTLIB_DHT11_WAKEUP         18
 #define DHTLIB_DHT_WAKEUP           1
-
-#define DHTLIB_DHT11_LEADING_ZEROS  1
-#define DHTLIB_DHT_LEADING_ZEROS    6
 
 // max timeout is 100 usec.
 
@@ -54,12 +52,12 @@ public:
     inline int8_t read33(uint8_t pin) { return read(pin); };
     inline int8_t read44(uint8_t pin) { return read(pin); };
 
-    double humidity;
-    double temperature;
+    int humidity;
+    int temperature;
 
 private:
     uint8_t bits[5];  // buffer to receive data
-    int8_t _readSensor(uint8_t pin, uint8_t wakeupDelay, uint8_t leadingZeroBits);
+    int8_t _readSensor(uint8_t pin, uint8_t wakeupDelay);
 };
 #endif
 //

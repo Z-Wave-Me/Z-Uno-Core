@@ -288,7 +288,7 @@ BYTE zunoI2CRead()
 									DHT
 -------------------------------------------------------------------------------*/
 
-BYTE zunoDHTreadSensor(BYTE * array, BYTE pin, BYTE wakeupDelay, BYTE leadingZeroBits) {
+BYTE zunoDHTreadSensor(BYTE * array, BYTE pin, BYTE wakeupDelay) {
 	BYTE i = 0;
 	BYTE status;
 
@@ -298,7 +298,6 @@ BYTE zunoDHTreadSensor(BYTE * array, BYTE pin, BYTE wakeupDelay, BYTE leadingZer
     digitalWrite(pin, LOW); // T-be
     delay(wakeupDelay);
     //start data receiving
-	zunoPushByte(leadingZeroBits);
 	zunoPushByte(wakeupDelay);
 	zunoPushByte(pin);
 	zunoPushByte(ZUNO_FUNC_DHT_READ_SENSOR);
@@ -312,10 +311,8 @@ BYTE zunoDHTreadSensor(BYTE * array, BYTE pin, BYTE wakeupDelay, BYTE leadingZer
 	    }
 	    //fallback to original Lib value
 	    status = 0;
-	}
-
-	if (status == 0) {
-		status = -6;
+	} else if (status == 0) {
+		status = -7;
 		// some internal problems
 	}
 	
