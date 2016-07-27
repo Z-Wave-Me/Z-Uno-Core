@@ -303,7 +303,6 @@ BYTE zunoDHTreadSensor(BYTE * array, BYTE pin, BYTE wakeupDelay) {
     digitalWrite(pin, LOW); // T-be
     delay(wakeupDelay);
     //start data receiving
-	zunoPushByte(wakeupDelay);
 	zunoPushByte(pin);
 	zunoPushByte(ZUNO_FUNC_DHT_READ_SENSOR);
     zunoCall();

@@ -1,12 +1,11 @@
-    //
-//    FILE: dht.h
-//  AUTHOR: Rob Tillaart
-// VERSION: 0.1.21
-// PURPOSE: DHT Temperature & Humidity Sensor library for Arduino
-//     URL: http://arduino.cc/playground/Main/DHTLib
 //
-// HISTORY:
-// see dht.cpp file
+//    FILE: dht.h
+//  AUTHOR: Z-Wave.Me
+// VERSION: 0.1
+// PURPOSE: DHT Temperature & Humidity Sensor library for Z-Uno
+//
+// Based on the library by Rob Tillaart
+// https://github.com/RobTillaart/Arduino/tree/master/libraries/DHTlib
 //
 
 
@@ -17,7 +16,7 @@
 
 #include <Arduino.h>
 
-#define DHT_LIB_VERSION "0.1.21"
+#define DHT_LIB_VERSION "0.1"
 
 #define DHTLIB_OK                       0
 #define DHTLIB_ERROR_CHECKSUM           -1
@@ -44,6 +43,8 @@ public:
     // DHTLIB_ERROR_CONNECT
     // DHTLIB_ERROR_ACK_L
     // DHTLIB_ERROR_ACK_H
+    // DHTLIB_ERROR_NOT_ALLOWED_PIN
+    // DHTLIB_ERROR_ZUNO_PROBLEM
     int8_t read11(uint8_t pin);
     int8_t read(uint8_t pin);
 
@@ -52,8 +53,8 @@ public:
     inline int8_t read33(uint8_t pin) { return read(pin); };
     inline int8_t read44(uint8_t pin) { return read(pin); };
 
-    int humidity;
-    int temperature;
+    float humidity;
+    float temperature;
 
 private:
     uint8_t bits[5];  // buffer to receive data
