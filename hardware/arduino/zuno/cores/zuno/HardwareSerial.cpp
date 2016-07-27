@@ -45,6 +45,12 @@ int HardwareSerial::available(void)
 }
 int HardwareSerial::peek(void)
 {
+	byte res  = 0;
+	zunoPushByte(FUNC_AVAILIABLE(func_vec));
+	zunoCall();
+	res = zunoPopByte();
+	if(!res)
+		return -1;
 	zunoPushByte(FALSE); // not to remove byte from read buffer
 	zunoPushByte(FUNC_READ(func_vec));
 	zunoCall();

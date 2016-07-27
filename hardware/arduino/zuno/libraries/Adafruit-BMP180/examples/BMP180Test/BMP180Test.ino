@@ -39,10 +39,19 @@ void setup() {
 }
   
 void loop() {
-    Serial.print("Temperature = ");
-    Serial.print(bmp.readTemperature());
-    Serial.println(" *C");
     
+
+    // Get Temperature
+    Serial.print("Temperature = ");
+    // library uses original data format of BMP180. Temerature is integer value in 0.1 of *C 
+    int temp = bmp.readTemperature();
+    // Just convert it in more readable view...
+    Serial.print(temp/10);
+    Serial.print('.');
+    Serial.print(temp%10);
+    Serial.println(" *C");
+        
+    // Get Pressure
     Serial.print("Pressure = ");
     Serial.print(bmp.readPressure());
     Serial.println(" Pa");
@@ -58,9 +67,10 @@ void loop() {
   // vary with weather and such. If it is 1015 millibars
   // that is equal to 101500 Pascals.
     Serial.print("Real altitude = ");
-    Serial.print(bmp.readAltitude(101500));
+    Serial.print(bmp.readAltitude(99082));
     Serial.println(" meters");
-    
+  
     Serial.println();
-    delay(10000);
+
+    delay(3000);
 }

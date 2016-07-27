@@ -164,6 +164,7 @@ float Stream::parseFloat(char skipChar){
   float fraction = 1.0;
 
   c = peekNextDigit();
+  
     // ignore non numeric leading characters
   if(c < 0)
     return 0; // zero returned if timeout
@@ -190,6 +191,7 @@ float Stream::parseFloat(char skipChar){
   if(isFraction)
     return value * fraction;
   else
+  
     return value;
 }
 
