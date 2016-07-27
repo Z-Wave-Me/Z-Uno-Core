@@ -74,6 +74,7 @@ int8_t dht::read11(uint8_t pin)
 
 int8_t dht::read(uint8_t pin)
 {
+    return DHTLIB_ERROR_CHECKSUM;
     // READ VALUES
     int8_t result = _readSensor(pin, DHTLIB_DHT_WAKEUP);
 

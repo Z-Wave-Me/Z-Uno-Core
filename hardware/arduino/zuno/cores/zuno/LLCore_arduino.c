@@ -4,7 +4,7 @@
 __xdata __at (ZUNO_STACK_ADDRESS) unsigned char zunoStack[ZUNO_STACK_SIZE]; //
 __xdata __at (ZUNO_STACK_TOP_ADDRESS) unsigned char zunoStackTop; //
 __xdata __at (ZUNO_DELAY_SAFE_STACK_ADDRESS) unsigned char stack_pointer_outside;
-__data __at (ZUNO_DELAY_USER_STACK_POINTER_ADDRESS) unsigned char user_stack_pointer;
+__xdata __at (ZUNO_DELAY_USER_STACK_DELTA_ADDRESS) unsigned char user_stack_pointer_delta;
 
 
 #include "Custom.h"
@@ -159,7 +159,12 @@ void delay(DWORD value) {
 	result = zunoPopByte();
 	if (result != 0xFF)
 	{
-		user_stack_pointer = SP;
+		user_stack_pointer_delta = SP - stack_pointer_outside;
+		//SaveTheStack()
+	    __asm
+	        LCALL 0x00FFA0
+	    __endasm;
+	    //
 		SP = stack_pointer_outside; //is the next we store before entering
 		return;
 	} else {
