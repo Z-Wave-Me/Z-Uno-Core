@@ -31,4 +31,4 @@ class HardwareSerial: public Stream
 
 extern HardwareSerial Serial;
 extern HardwareSerial Serial1;
-extern HardwareSerial Serial2;
+extern HardwareSerial Serial0;

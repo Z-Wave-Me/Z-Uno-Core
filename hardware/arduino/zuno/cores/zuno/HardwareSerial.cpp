@@ -81,6 +81,6 @@ size_t HardwareSerial::write(uint8_t value)
 }
 
 // Экземпляры классов - стиль как в Ардуино
-HardwareSerial Serial(ZUNO_FUNC_SERIAL0_BEGIN);  // USB
+HardwareSerial Serial(ZUNO_FUNC_SERIAL_USB_BEGIN);  // USB
 HardwareSerial Serial1(ZUNO_FUNC_SERIAL1_BEGIN); // UART0
-HardwareSerial Serial2(ZUNO_FUNC_SERIAL1_BEGIN); // UART1 -  Нужно его добавить, пока это тот же UART0
+HardwareSerial Serial0(ZUNO_FUNC_SERIAL0_BEGIN); // UART1 -  Нужно его добавить, пока это тот же UART0
