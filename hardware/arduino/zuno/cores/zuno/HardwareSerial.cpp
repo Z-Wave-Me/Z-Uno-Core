@@ -73,6 +73,8 @@ size_t HardwareSerial::write(uint8_t value)
 	zunoPushByte(value);
 	zunoPushByte(FUNC_WRITE(func_vec));
 	zunoCall();
+
+
 	// Несоотвествие ардуиновскому вызову
 	// должно быть 
 	// return zunoPopByte();

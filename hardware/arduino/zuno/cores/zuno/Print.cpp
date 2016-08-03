@@ -33,6 +33,7 @@
 
 size_t  g_n; 
 uint8_t g_i;
+word g_write_counter2 = 0;
 ///
 
 // Public Methods //////////////////////////////////////////////////////////////

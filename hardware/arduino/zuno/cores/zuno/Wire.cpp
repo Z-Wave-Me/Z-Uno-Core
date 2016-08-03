@@ -49,7 +49,7 @@ void TwoWire::begin()
 
 
 }
-void TwoWire::beginTransmission(uint8_t addr)
+void TwoWire::beginTransmission(uint8_t addr, uint8_t forced_write)
 {
     txAddress = addr;
 
@@ -67,9 +67,29 @@ void TwoWire::beginTransmission(uint8_t addr)
 
     sucess_code = 0;
 
+    if(forced_write)
+    {
+        zunoPushByte(txAddress << 1);
+        zunoPushByte(I2C_WRITE_FUNC_VEC(func_vec));
+        zunoCall();
+        state = STATE_TRANSMITION_WRITEMODE;
+        sucess_code = zunoPopByte();
+    }
+
 }
 uint8_t TwoWire::endTransmission(uint8_t stop)
 {
+    // Нужно для того, чтобы работал нормально скан шины и тд
+    if(state == STATE_TRANSMITION_INIT)
+    {
+        zunoPushByte(txAddress << 1 | 0x01);
+        zunoPushByte(I2C_WRITE_FUNC_VEC(func_vec));
+        zunoCall();
+        if(!zunoPopByte())
+        {
+            sucess_code |= NACK_ON_ADDRESS;
+        }
+    }
     zunoPushByte(I2C_END_FUNC_VEC(func_vec));
     zunoCall();
 

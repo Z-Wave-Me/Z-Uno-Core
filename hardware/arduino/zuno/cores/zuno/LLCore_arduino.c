@@ -17,7 +17,6 @@ void Serial1_Println(const char* bufPointer);
 __sfr __at (0x81) SP;
 
 
-
 // Дополнительный код
 
 BYTE zme_strlen(char * str)
@@ -87,11 +86,16 @@ DWORD zunoPopDWORD(void) {
 	return dummy;
 }
 
+
+
 void zunoCall(void) {
 
 
+
     __asm
+    	  //LCALL 0x00FF00		
           LCALL 0x002B00
+          //LCALL 0x00F8A0
     __endasm;
     /**/
 }
@@ -427,6 +431,10 @@ void begin_callback_code(void) __naked {
     __endasm;
 }
 
+
+
+
+
 void zunoJumpTable(void) {
 	
 
@@ -439,8 +447,9 @@ void zunoJumpTable(void) {
 		break;
 
 		case ZUNO_JUMP_TABLE_LOOP:
-
+	
 		loop();
+		
 		break;
 
 		case ZUNO_JUMP_TABLE_CALLBACK:

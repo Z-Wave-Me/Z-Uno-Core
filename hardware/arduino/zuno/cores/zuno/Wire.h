@@ -27,6 +27,7 @@
 
 
 
+#define MAX_WIRE_OUTPUT_BUFF 32
 // Функционал только Master'a
 
 class TwoWire : public Stream
@@ -43,7 +44,7 @@ class TwoWire : public Stream
   public:
     TwoWire(uint8_t func_vec);
     void begin();
-    void beginTransmission(uint8_t);
+    void beginTransmission(uint8_t, uint8_t forced_write = false);
     uint8_t endTransmission(uint8_t stop = true);
     uint8_t requestFrom(uint8_t, uint8_t, bool stop = true);
     virtual size_t write(uint8_t);
@@ -57,6 +58,7 @@ class TwoWire : public Stream
     size_t write(long n) { return write((uint8_t)n); }
     size_t write(unsigned int n) { return write((uint8_t)n); }
     size_t write(int n) { return write((uint8_t)n); }
+
 };
 
 extern TwoWire Wire;
