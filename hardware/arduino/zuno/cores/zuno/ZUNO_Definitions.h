@@ -2,7 +2,7 @@
 #define __ZUNO_DEFINES___
 
 #define ZUNO_CORES_SW_VERSION_MAJOR 		2
-#define ZUNO_CORES_SW_VERSION_MINOR 		04
+#define ZUNO_CORES_SW_VERSION_MINOR 		05
 
 
 #define ZUNO_PIN_STATE_HIGH 				1
@@ -93,6 +93,11 @@ enum {
 	ZUNO_ONE_WIRE_READ,
 	ZUNO_ONE_WIRE_WRITE,
 	ZUNO_ONE_WIRE_SEARCH,
+	ZUNO_FUNC_EEPROM_READ,
+	ZUNO_FUNC_EEPROM_WRITE,
+	ZUNO_FUNC_KS_WU_SETUP,
+	ZUNO_FUNC_NZRAM_READ,
+	ZUNO_FUNC_NZRAM_WRITE
 };
 
 enum {
@@ -462,9 +467,11 @@ enum {
 #define bitSet(value, bit) ((value) |= (1UL << (bit)))
 #define bitClear(value, bit) ((value) &= ~(1UL << (bit)))
 #define bitWrite(value, bit, bitvalue) (bitvalue ? bitSet(value, bit) : bitClear(value, bit))
+#define _BV(bit) (1 << (bit))
 
 #define CHANGE 1
 #define FALLING 2
 #define RISING 3
+
 
 #endif // #define __ZUNO_DEFINES___

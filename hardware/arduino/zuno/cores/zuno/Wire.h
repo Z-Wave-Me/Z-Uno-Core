@@ -40,6 +40,7 @@ class TwoWire : public Stream
     uint8_t state;
     uint8_t b_flags;
     uint8_t sucess_code;
+    //uint8_t output_buff[MAX_WIRE_OUTPUT_BUFF];
     
   public:
     TwoWire(uint8_t func_vec);
@@ -59,6 +60,8 @@ class TwoWire : public Stream
     size_t write(unsigned int n) { return write((uint8_t)n); }
     size_t write(int n) { return write((uint8_t)n); }
 
+  //private:
+    //  byte output_buff[MAX_WIRE_OUTPUT_BUFF];
 };
 
 extern TwoWire Wire;

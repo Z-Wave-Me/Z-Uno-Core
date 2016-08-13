@@ -91,6 +91,9 @@ extern __code BYTE zunoDebugParameter;
 
 
 
+// !!! DBG
+void printUART1ByteHex(unsigned char b);
+
 /************************************************
 			end of Variables
 ************************************************/

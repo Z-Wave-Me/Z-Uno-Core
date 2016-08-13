@@ -29,12 +29,23 @@ BYTE zunoI2CRead();
 //DHT
 BYTE zunoDHTreadSensor(BYTE * array, BYTE pin, BYTE wakeupDelay);
 
-
+// EEPROM
+WORD zunoReadEEPROM(WORD address, WORD size, BYTE * destination);
+WORD zunoWriteEEPROM(WORD address, WORD size, BYTE * source);
+// WakeUp on KS
+void zunoSetupKeyScannerWU(byte cols_num);
 // Z-Uno Systems calls
 void zunoSendUncolicitedReport(BYTE channel,WORD value);
 void zunoSendAssociationCommand(BYTE group, BYTE assoc_type, BYTE param1, BYTE param2);
 void zunoSendDeviceToSleep(void);
 BYTE zunoGetWakeReason(void);
+
+void delayMicroseconds(unsigned int value);
+
+// interrupts
+void noInterrupts();
+void interrupts();
+
 
 
 #endif // ARDUINO_ZUNO_C_API

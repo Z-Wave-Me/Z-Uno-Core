@@ -12,6 +12,8 @@
 
 
 
+//word g_write_counter = 0;
+
 HardwareSerial::HardwareSerial(BYTE number)
 {
 	func_vec = number;
@@ -70,6 +72,7 @@ void HardwareSerial::flush(void)
 size_t HardwareSerial::write(uint8_t value)
 {
 
+	//g_write_counter++;
 	zunoPushByte(value);
 	zunoPushByte(FUNC_WRITE(func_vec));
 	zunoCall();

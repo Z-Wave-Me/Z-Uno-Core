@@ -4,6 +4,7 @@
 
 typedef unsigned char 	boolean;
 typedef unsigned char 	uint8_t;
+typedef unsigned char 	s_pin;
 typedef unsigned short  uint16_t;
 typedef unsigned long   uint32_t;
 
@@ -17,25 +18,30 @@ typedef unsigned char   BYTE;
 typedef unsigned short  WORD;
 typedef unsigned long   DWORD;
 
-//#define size_t  WORD
 #define byte 	BYTE
 #define word    WORD
 #define bool 	BYTE
 
-/*enum 
-{
-	FALSE  = 0,
-	TRUE   = 1
-};*/
-
-/*
-enum 
-{
-	false = 0,
-	true = 1
-}*/
 #define TRUE    1
 #define FALSE   0
+
+typedef unsigned long   time_t;
+
+struct tmElements_s {
+uint8_t Second;
+uint8_t Minute;
+uint8_t Hour;
+uint8_t Wday; // day of week, sunday is day 1
+uint8_t Day;
+uint8_t Month;
+uint8_t Year; // offset from 1970;
+};
+
+
+typedef struct tmElements_s tmElements_t;
+typedef enum tmElementsFields{
+    tmSecond, tmMinute, tmHour, tmWday, tmDay,tmMonth, tmYear, tmNbrFields
+}tmElementsFields_t;	 
 
 //#define true 	TRUE
 //#define false	FALSE

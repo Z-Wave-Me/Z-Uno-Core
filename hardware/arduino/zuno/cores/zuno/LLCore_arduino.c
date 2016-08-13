@@ -16,6 +16,14 @@ void Serial1_Println(const char* bufPointer);
 
 __sfr __at (0x81) SP;
 
+void noInterrupts()
+{
+
+}
+void interrupts()
+{
+
+}
 
 // Дополнительный код
 
@@ -88,16 +96,16 @@ DWORD zunoPopDWORD(void) {
 
 
 
-void zunoCall(void) {
 
 
 
+void zunoCall(void) 
+{	
     __asm
-    	  //LCALL 0x00FF00		
-          LCALL 0x002B00
-          //LCALL 0x00F8A0
+    	  // Calling FW		
+    	  LCALL 0x002B00
     __endasm;
-    /**/
+    
 }
 
 /* ----------------------------------------------------------------------------
@@ -349,6 +357,48 @@ BYTE zunoOneWireSearch(void) {
 									One Wire
 -------------------------------------------------------------------------------*/
 
+/* -----------------------------------------------------------------------------
+									  EEPROM
+--------------------------------------------------------------------------------*/
+WORD reinterpPOINTER(byte * ptr)
+{
+	return (WORD)ptr;
+}
+WORD zunoReadEEPROM(WORD address, WORD size, BYTE * destination)
+{
+	zunoPushWord((WORD)destination);
+	zunoPushWord(size);
+	zunoPushWord(address);
+	zunoPushByte(ZUNO_FUNC_EEPROM_READ);
+    zunoCall();	
+
+    return zunoPopWord();
+}
+WORD zunoWriteEEPROM(WORD address, WORD size, BYTE * source)
+{
+	zunoPushWord((WORD)source);
+	zunoPushWord(size);
+	zunoPushWord(address);
+	zunoPushByte(ZUNO_FUNC_EEPROM_WRITE);
+    zunoCall();	
+
+    return zunoPopWord();
+}
+/* -----------------------------------------------------------------------------
+									  EEPROM
+--------------------------------------------------------------------------------*/
+
+/* ------------------------------
+		WakeUP on keyscanner
+   ------------------------------
+*/
+void zunoSetupKeyScannerWU(byte cols_num)
+{
+	 zunoPushByte(cols_num);
+	 zunoPushByte(ZUNO_FUNC_KS_WU_SETUP);
+     zunoCall();	
+
+}
 
 /* ----------------------------------------------------------------------------
 							Z-Wave communication
@@ -427,12 +477,13 @@ void zunoCallback(void) {
 void begin_callback_code(void) __naked {
     __asm
           .area ABSCODE (ABS,CODE)
-          .org 0x8100        // YOUR FUNCTION'S DESIRED ADDRESS HERE.
+          .org 0x8020        // YOUR FUNCTION'S DESIRED ADDRESS HERE.
     __endasm;
 }
 
 
-
+//extern word g_write_counter;
+//extern word g_write_counter2;
 
 
 void zunoJumpTable(void) {
@@ -447,9 +498,7 @@ void zunoJumpTable(void) {
 		break;
 
 		case ZUNO_JUMP_TABLE_LOOP:
-	
 		loop();
-		
 		break;
 
 		case ZUNO_JUMP_TABLE_CALLBACK:

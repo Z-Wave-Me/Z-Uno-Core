@@ -126,6 +126,8 @@ size_t TwoWire::write(uint8_t data)
         }
 
     }
+
+    //output_buff[]
     
     zunoPushByte(data);
     zunoPushByte(I2C_WRITE_FUNC_VEC(func_vec));
