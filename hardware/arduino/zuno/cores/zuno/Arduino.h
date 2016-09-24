@@ -5,9 +5,12 @@
 #include "HardwareSerial.h" // Поддержка Serial
 // Все обычные С-функции
 #include "ArduinoCAPI.h"
+#include "HLCore.h"
 
 // Хидеры SDCC
 #include "math.h"
+
+
 
 // В SDCC все math-функции только float
 // Преобразуем к привычным прототипам
@@ -33,15 +36,12 @@
 #define modf(x,y)   	modff(x,y)
 #define frexp(x, pw2)   frexpf(x, pw2)
 #define ldexp(x, pw2)   ldexpf(x, pw2)
-#define min(A,B) ((A > B) ? B : A)
 
- 
 
 
 
 //**********************************************
 void setup(void);
 void loop(void);
-// DBG
-void printUART1Str(char * str);
+
 

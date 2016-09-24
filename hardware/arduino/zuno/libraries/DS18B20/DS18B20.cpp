@@ -11,7 +11,7 @@ byte DS18B20Sensor::scanAloneSensor(byte * rom)
   		return 0;
   	return 1;
 }
-int DS18B20Sensor::getTempC10(byte * addr)
+int DS18B20Sensor::getTempC100(byte * addr)
 {
 	int temp = BAD_TEMP;
 	byte dallas_data[9];
@@ -57,5 +57,11 @@ int DS18B20Sensor::getTempC10(byte * addr)
 
     
 
-    return (temp * 50) >> 6;
+    return (temp * 25) >> 2;
+}
+
+float DS18B20Sensor::getTemperature(byte * addr)
+{
+    return getTempC100(addr) / 100.0;
+       
 }

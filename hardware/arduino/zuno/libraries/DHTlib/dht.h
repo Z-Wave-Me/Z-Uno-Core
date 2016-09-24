@@ -1,66 +1,73 @@
-//
-//    FILE: dht.h
-//  AUTHOR: Z-Wave.Me
-// VERSION: 0.1
-// PURPOSE: DHT Temperature & Humidity Sensor library for Z-Uno
-//
-// Based on the library by Rob Tillaart
-// https://github.com/RobTillaart/Arduino/tree/master/libraries/DHTlib
-//
+/* DHT library
+
+MIT license
+written by Adafruit Industries
+
+UPGRADED/Rewriten by Z-Wave>ME for project Z-Uno 2016
+
+*/
+#ifndef DHT_H
+#define DHT_H
+
+#include "Arduino.h"
 
 
-// Adopted for Z-Uno.
+// Define types of sensors.
+#define DHT11   11
+#define DHT22   22
+#define DHT21   21
+#define AM2301  21
 
-#ifndef dht_h
-#define dht_h
+#define BAD_DHT_VALUE 0xFFFF
 
-#include <Arduino.h>
-
-#define DHT_LIB_VERSION "0.1"
-
-#define DHTLIB_OK                       0
-#define DHTLIB_ERROR_CHECKSUM           -1
-#define DHTLIB_ERROR_TIMEOUT            -2
-#define DHTLIB_ERROR_CONNECT            -3
-#define DHTLIB_ERROR_ACK_L              -4
-#define DHTLIB_ERROR_ACK_H              -5
-#define DHTLIB_ERROR_NOT_ALLOWED_PIN    -6
-#define DHTLIB_ERROR_ZUNO_PROBLEM       -7
-
-#define DHTLIB_DHT11_WAKEUP         18
-#define DHTLIB_DHT_WAKEUP           1
-
-// max timeout is 100 usec.
-
-class dht
+enum
 {
-public:
-    dht() {};
-    // return values:
-    // DHTLIB_OK
-    // DHTLIB_ERROR_CHECKSUM
-    // DHTLIB_ERROR_TIMEOUT
-    // DHTLIB_ERROR_CONNECT
-    // DHTLIB_ERROR_ACK_L
-    // DHTLIB_ERROR_ACK_H
-    // DHTLIB_ERROR_NOT_ALLOWED_PIN
-    // DHTLIB_ERROR_ZUNO_PROBLEM
-    int8_t read11(uint8_t pin);
-    int8_t read(uint8_t pin);
+    DHT_RESULT_OK = 0,
+    DHT_RESULT_PREVIOUS,
+    DHT_RESULT_ERROR_NOSYNC,
+    DHT_RESULT_ERROR_TIMEOUT,
+    DHT_RESULT_ERROR_CRC
 
-    inline int8_t read21(uint8_t pin) { return read(pin); };
-    inline int8_t read22(uint8_t pin) { return read(pin); };
-    inline int8_t read33(uint8_t pin) { return read(pin); };
-    inline int8_t read44(uint8_t pin) { return read(pin); };
-
-    float humidity;
-    float temperature;
-
-private:
-    uint8_t bits[5];  // buffer to receive data
-    int8_t _readSensor(uint8_t pin, uint8_t wakeupDelay);
 };
+
+
+class DHT {
+  public:
+   DHT(s_pin pin, uint8_t type = DHT22);
+   void begin(void);
+   // returns temperature in 10 th of Celsius
+   int readTemperatureC10(bool force=false);
+   // returns humidity in 10 th of percent
+   int readHumidityH10(bool force=false);
+
+   // Returns temperature as float in Celsius
+   float readTemperature(bool force=false);
+   // Returns humidity as float in pecents
+   float readHumidity(bool force=false);
+   
+   // Just read raw data from sensor
+
+   // Returns result code of operation (see enum)
+   byte read(bool force=false);
+
+   // Copies raw data from the last "read" operation to user buffer
+   void getRawData(byte * ptr){ byte i; for(i=0;i<5;i++) ptr[i] = data_ptr[i];};
+
+ private:
+
+  s_pin _pin;
+  byte data_ptr[5];
+
+  int16_t  humidity;
+  int16_t  temperature;
+  uint8_t  crc;
+    
+  uint8_t _type;
+  uint32_t _lastreadtime, _maxcycles;
+  bool _lastresult;
+
+
+};
+
+
 #endif
-//
-// END OF FILE
-//

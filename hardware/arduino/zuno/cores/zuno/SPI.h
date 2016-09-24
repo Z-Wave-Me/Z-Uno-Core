@@ -82,6 +82,7 @@ public:
 
 private:
   uint8_t begin_func_vec;
+  uint8_t data_tmp;
   
 };
 

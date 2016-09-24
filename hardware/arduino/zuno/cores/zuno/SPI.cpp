@@ -81,43 +81,42 @@ uint8_t SPIClass::transfer(uint8_t data)
 {
    uint8_t ret;
 
-   zunoPushByte(data);
+   data_tmp = data;
+
+   zunoPushWord(reinterpPOINTER(&data_tmp));
+   zunoPushByte(1);
    zunoPushByte(SPI_TRANSFER_FUNC_VEC(begin_func_vec));
    zunoCall(); 
 
-   ret = zunoPopByte();
-
-   return ret;
+   return data_tmp;
 }
 uint16_t SPIClass::transfer16(uint16_t data)
 {
     uint8_t in_out[2];
     uint8_t i;
+    WORD    result =0;
+    
     in_out[0] = data >> 8;
     in_out[1] = data & 0xFF;
     
-    for(i=0;i<2;i++)
-    {
-      zunoPushByte(in_out[i]);
-      zunoPushByte(SPI_TRANSFER_FUNC_VEC(begin_func_vec));
-      zunoCall(); 
-      in_out[i] = zunoPopByte();
-    }
+    zunoPushWord(reinterpPOINTER(in_out));
+    zunoPushByte(2);
+    zunoPushByte(SPI_TRANSFER_FUNC_VEC(begin_func_vec));
+    zunoCall(); 
     
-    return (((uint16_t) in_out[0]) << 8) + in_out[1];
+    result = in_out[0];
+    result <<= 8;
+    result += in_out[1];
+
+    return result;
        
 }
 void SPIClass::transfer(void *buf, size_t count)
 {
-    uint8_t i;
-    
-    for(i=0;i<count;i++)
-    {
-      zunoPushByte(((BYTE*)buf)[i]);
-      zunoPushByte(SPI_TRANSFER_FUNC_VEC(begin_func_vec));
-      zunoCall(); 
-      ((BYTE*)buf)[i] = zunoPopByte();
-    }
+    zunoPushWord(reinterpPOINTER((BYTE*)buf));
+    zunoPushByte(count);
+    zunoPushByte(SPI_TRANSFER_FUNC_VEC(begin_func_vec));
+    zunoCall(); 
     
 }
 void SPIClass::endTransaction(void)
@@ -135,7 +134,6 @@ void SPIClass::end()
 }
 // Глобальная переменнная для SPI0
 SPIClass SPI0(ZUNO_FUNC_SPI0_INIT);
-// Тут еще должен быть SPI1
-// SPIClass SPI1(ZUNO_FUNC_SPI1_INIT);
+
 
 

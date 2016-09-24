@@ -12,26 +12,6 @@ WORD analogRead(BYTE pin);
 void analogWrite(BYTE pin, BYTE value);
 DWORD millis();
 
-
-// SPI
-void zunoSpi0Init(BYTE speed, BYTE mode, BYTE border);
-void zunoSpi0Begin(void);
-void zunoSpi0End(void);
-BYTE zunoSpi0Transfer(BYTE value);
-
-// I2C
-void zunoI2CInit();
-void zunoI2CBegin();
-void zunoI2CEnd();
-void zunoI2CWrite(BYTE data);
-BYTE zunoI2CRead();
-
-//DHT
-BYTE zunoDHTreadSensor(BYTE * array, BYTE pin, BYTE wakeupDelay);
-
-// EEPROM
-WORD zunoReadEEPROM(WORD address, WORD size, BYTE * destination);
-WORD zunoWriteEEPROM(WORD address, WORD size, BYTE * source);
 // WakeUp on KS
 void zunoSetupKeyScannerWU(byte cols_num);
 // Z-Uno Systems calls
@@ -41,10 +21,17 @@ void zunoSendDeviceToSleep(void);
 BYTE zunoGetWakeReason(void);
 
 void delayMicroseconds(unsigned int value);
+void exactlyMicrosecond();
+void delayCycles(byte value);
+void NOPS(byte i);
 
 // interrupts
 void noInterrupts();
 void interrupts();
+
+// math
+long map(long x, long in_min, long in_max, long out_min, long out_max);
+
 
 
 

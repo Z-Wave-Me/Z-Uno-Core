@@ -9,11 +9,6 @@ __xdata __at (ZUNO_DELAY_USER_STACK_DELTA_ADDRESS) unsigned char user_stack_poin
 
 #include "Custom.h"
 
-
-void Serial1_Print_char(BYTE value);
-void Serial1_Print(const char* bufPointer, BYTE size);
-void Serial1_Println(const char* bufPointer);
-
 __sfr __at (0x81) SP;
 
 void noInterrupts()
@@ -23,6 +18,10 @@ void noInterrupts()
 void interrupts()
 {
 
+}
+void NOPS(byte i)
+{
+	
 }
 
 // Дополнительный код
@@ -36,7 +35,6 @@ BYTE zme_strlen(char * str)
 }
 //
 
-
 void zunoPushByte(BYTE value) {
 	if (zunoStackTop >= ZUNO_STACK_SIZE) {
 		return;
@@ -45,22 +43,26 @@ void zunoPushByte(BYTE value) {
 }
 
 void zunoPushWord(WORD value) {
-	if (zunoStackTop >= (ZUNO_STACK_SIZE - 1)) {
+	if (zunoStackTop > (ZUNO_STACK_SIZE - 2)) {
 		return;
 	}
 
-	zunoStack[++zunoStackTop] = (BYTE)(value >> 8);
-	zunoStack[++zunoStackTop] = (BYTE)(value & 0xFF);
+	zunoStack[++zunoStackTop] =  value & 0xFF;
+	value >>= 8;
+	zunoStack[++zunoStackTop] =  value & 0xFF;
 }
 
 void zunoPushDword(DWORD value) {
-	if (zunoStackTop >= (ZUNO_STACK_SIZE - 3)) {
+	if (zunoStackTop > (ZUNO_STACK_SIZE - 4)) {
 		return;
 	}
-	zunoStack[++zunoStackTop] = (BYTE)(value >> 24);
-	zunoStack[++zunoStackTop] = (BYTE)(value >> 16);
-	zunoStack[++zunoStackTop] = (BYTE)(value >> 8);
-	zunoStack[++zunoStackTop] = (BYTE)(value & 0xFF);
+	zunoStack[++zunoStackTop] =  value & 0xFF;
+	value >>= 8;
+	zunoStack[++zunoStackTop] =  value & 0xFF;
+	value >>= 8;
+	zunoStack[++zunoStackTop] =  value & 0xFF;
+	value >>= 8;
+	zunoStack[++zunoStackTop] =  value & 0xFF;
 }
 
 BYTE zunoPopByte(void) {
@@ -73,24 +75,29 @@ BYTE zunoPopByte(void) {
 
 WORD zunoPopWord(void) {
 	WORD dummy = 0;
-	if (zunoStackTop <= 1) {
+	if (zunoStackTop < 2) {
 		return 0;
 	}
 
-	dummy |=zunoStack[zunoStackTop--];
-	dummy |=(((WORD)zunoStack[zunoStackTop--])<<8);
+	dummy |= zunoStack[zunoStackTop--];
+	dummy <<= 8;
+	dummy |= zunoStack[zunoStackTop--];
 	return dummy;
+
 }
 
 DWORD zunoPopDWORD(void) {
 	DWORD dummy = 0;
-	if (zunoStackTop <= 3) {
+	if (zunoStackTop < 4) {
 		return 0;
 	}
-	dummy |=zunoStack[zunoStackTop--];
-	dummy |=(((DWORD)zunoStack[zunoStackTop--])<<8);
-	dummy |=(((DWORD)zunoStack[zunoStackTop--])<<16);
-	dummy |=(((DWORD)zunoStack[zunoStackTop--])<<24);
+	dummy |= zunoStack[zunoStackTop--];
+	dummy <<= 8;
+	dummy |= zunoStack[zunoStackTop--];
+	dummy <<= 8;
+	dummy |= zunoStack[zunoStackTop--];
+	dummy <<= 8;
+	dummy |= zunoStack[zunoStackTop--];
 	return dummy;
 }
 
@@ -201,6 +208,9 @@ CONTINUE:    djnz r7,LOOP
     __endasm;
 }
 
+
+
+
 DWORD millis(void) {
 	zunoPushByte(ZUNO_FUNC_MILLIS);
 	zunoCall();
@@ -218,6 +228,14 @@ BYTE zunoGetWakeReason(void) {
 	return zunoPopByte();
 }
 
+void zunoConfigFWUpdate(word my_version, unsigned long unlock_pin)
+{
+	zunoPushDword(unlock_pin);
+	zunoPushWord(my_version);
+	zunoPushByte(ZUNO_FUNC_SETUP_FWUPGRADE);
+	zunoCall();	
+
+}
 /* ----------------------------------------------------------------------------
 									Service
 -------------------------------------------------------------------------------*/
@@ -226,76 +244,12 @@ BYTE zunoGetWakeReason(void) {
 /* ----------------------------------------------------------------------------
 									SPI
 -------------------------------------------------------------------------------*/
-void zunoSpi0Init(BYTE speed, BYTE mode, BYTE border) {
-
-	if 	(  (speed > SPI_SPEED_1_MHZ)
-		|| (mode > SPI_MODE3)
-		|| (border > MSBFIRST)) {
-		// unsupported values
-		return;
-	}
-	zunoPushByte(speed | (mode * 4) | (border * 0x10));
-	zunoPushByte(ZUNO_FUNC_SPI0_INIT);
-	zunoCall();
-}
-
-void zunoSpi0Begin(void) {
-	zunoPushByte(TRUE);
-	zunoPushByte(ZUNO_FUNC_SPI0_ENABLE);
-	zunoCall();
-}
-
-void zunoSpi0End(void) {
-	zunoPushByte(FALSE);
-	zunoPushByte(ZUNO_FUNC_SPI0_ENABLE);
-	zunoCall();
-}
-
-BYTE zunoSpi0Transfer(BYTE value) {
-	zunoPushByte(value);
-	zunoPushByte(ZUNO_FUNC_SPI0_TRANSFER);
-	zunoCall();
-	return zunoPopByte();
-}
 /* ----------------------------------------------------------------------------
 									SPI
 -------------------------------------------------------------------------------*/
 /* ----------------------------------------------------------------------------
 									I2C
 -------------------------------------------------------------------------------*/
-#define SCL_PIN  9
-#define SDA_PIN  10
-void zunoI2CInit()
-{
-	// Инициализируем пины
-    pinMode(SCL_PIN, OUTPUT);
-    pinMode(SDA_PIN, OUTPUT);
-    digitalWrite(SCL_PIN, HIGH);
-    digitalWrite(SDA_PIN, HIGH);
-}
-void zunoI2CBegin()
-{
-	// Подсоединяемся к шине I2C как мастер
-    zunoPushByte(ZUNO_FUNC_I2C_BEGIN);
-    zunoCall();
-}
-void zunoI2CEnd()
-{
-	zunoPushByte(ZUNO_FUNC_I2C_END);
-    zunoCall();
-}
-void zunoI2CWrite(BYTE data)
-{
-	zunoPushByte(data);
-	zunoPushByte(ZUNO_FUNC_I2C_WRITE);
-    zunoCall();
-}
-BYTE zunoI2CRead()
-{
-	zunoPushByte(ZUNO_FUNC_I2C_READ);
-    zunoCall();		
-	return zunoPopByte();
-}
 /* ----------------------------------------------------------------------------
 									I2C
 -------------------------------------------------------------------------------*/
@@ -305,35 +259,6 @@ BYTE zunoI2CRead()
 									DHT
 -------------------------------------------------------------------------------*/
 
-BYTE zunoDHTreadSensor(BYTE * array, BYTE pin, BYTE wakeupDelay) {
-	BYTE i = 0;
-	BYTE status;
-
-
-    // REQUEST SAMPLE
-	pinMode(pin, OUTPUT);
-    digitalWrite(pin, LOW); // T-be
-    delay(wakeupDelay);
-    //start data receiving
-	zunoPushByte(pin);
-	zunoPushByte(ZUNO_FUNC_DHT_READ_SENSOR);
-    zunoCall();
-    status = zunoPopByte();
-    // 0 is reserved value, so midlleware will return "TRUE" if everything is ok
-    if (status == TRUE) {
-    	//everything is ok
-	    for (; i < 5; i++) {
-	    	array[i] = zunoPopByte();
-	    }
-	    //fallback to original Lib value
-	    status = 0;
-	} else if (status == 0) {
-		status = -7;
-		// some internal problems
-	}
-	
-	return status;
-}
 /* ----------------------------------------------------------------------------
 									DHT
 -------------------------------------------------------------------------------*/
@@ -342,17 +267,6 @@ BYTE zunoDHTreadSensor(BYTE * array, BYTE pin, BYTE wakeupDelay) {
 									One Wire
 -------------------------------------------------------------------------------*/
 
-BYTE zunoOneWireRead(void) {
-	return 0;
-}
-
-BYTE zunoOneWireWrite(void) {
-	return 0;
-}
-
-BYTE zunoOneWireSearch(void) {
-	return 0;
-}
 /* ----------------------------------------------------------------------------
 									One Wire
 -------------------------------------------------------------------------------*/
@@ -363,26 +277,6 @@ BYTE zunoOneWireSearch(void) {
 WORD reinterpPOINTER(byte * ptr)
 {
 	return (WORD)ptr;
-}
-WORD zunoReadEEPROM(WORD address, WORD size, BYTE * destination)
-{
-	zunoPushWord((WORD)destination);
-	zunoPushWord(size);
-	zunoPushWord(address);
-	zunoPushByte(ZUNO_FUNC_EEPROM_READ);
-    zunoCall();	
-
-    return zunoPopWord();
-}
-WORD zunoWriteEEPROM(WORD address, WORD size, BYTE * source)
-{
-	zunoPushWord((WORD)source);
-	zunoPushWord(size);
-	zunoPushWord(address);
-	zunoPushByte(ZUNO_FUNC_EEPROM_WRITE);
-    zunoCall();	
-
-    return zunoPopWord();
 }
 /* -----------------------------------------------------------------------------
 									  EEPROM

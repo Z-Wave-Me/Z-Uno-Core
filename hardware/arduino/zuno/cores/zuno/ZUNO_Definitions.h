@@ -2,7 +2,7 @@
 #define __ZUNO_DEFINES___
 
 #define ZUNO_CORES_SW_VERSION_MAJOR 		2
-#define ZUNO_CORES_SW_VERSION_MINOR 		05
+#define ZUNO_CORES_SW_VERSION_MINOR 		06
 
 
 #define ZUNO_PIN_STATE_HIGH 				1
@@ -56,7 +56,7 @@
 
 	
 enum {
-	ZUNO_FUNC_PIN_MODE,
+ZUNO_FUNC_PIN_MODE,
 	ZUNO_FUNC_DIGITAL_WRITE,
 	ZUNO_FUNC_DIGITAL_READ,
 	ZUNO_FUNC_ANALOG_READ,
@@ -85,19 +85,18 @@ enum {
 	ZUNO_FUNC_SPI0_INIT,
 	ZUNO_FUNC_SPI0_ENABLE,
 	ZUNO_FUNC_SPI0_TRANSFER,
-	ZUNO_FUNC_I2C_BEGIN,
-	ZUNO_FUNC_I2C_END,
-	ZUNO_FUNC_I2C_WRITE,
-	ZUNO_FUNC_I2C_READ,
-	ZUNO_FUNC_DHT_READ_SENSOR,
-	ZUNO_ONE_WIRE_READ,
-	ZUNO_ONE_WIRE_WRITE,
-	ZUNO_ONE_WIRE_SEARCH,
 	ZUNO_FUNC_EEPROM_READ,
 	ZUNO_FUNC_EEPROM_WRITE,
-	ZUNO_FUNC_KS_WU_SETUP,
 	ZUNO_FUNC_NZRAM_READ,
-	ZUNO_FUNC_NZRAM_WRITE
+	ZUNO_FUNC_NZRAM_WRITE,
+	ZUNO_FUNC_KS_WU_SETUP,
+	ZUNO_FUNC_IR_SEND,
+	ZUNO_FUNC_IR_SCAN,
+	ZUNO_FUNC_IR_STATUS,
+	ZUNO_FUNC_RADIO_POLL,
+	ZUNO_FUNC_SETUP_FWUPGRADE,
+
+	ZUNO_FUNC_TEST = 0xFE
 };
 
 enum {
@@ -126,6 +125,13 @@ enum {
 	ZUNO_SENSOR_BINARY_CHANNEL_NUMBER, 				//0x03
 	ZUNO_SENSOR_MULTILEVEL_CHANNEL_NUMBER, 			//0x04
 	ZUNO_END_OF_SUPPORTED_CC_NUM,
+};
+
+enum
+{
+	ZUNO_FWUPGRADE_AUTHRADIO_LOCKED = 0,
+	ZUNO_FWUPGRADE_AUTHRADIO_ANY	= 0xFFFFFFFF
+
 };
 
 //Sensor Binary types
@@ -177,7 +183,6 @@ enum {
 #define ZUNO_SENSOR_MULTILEVEL_TYPE_MOISTURE                                            0x1F
 #define ZUNO_SENSOR_MULTILEVEL_TYPE_FREQUENCY                                           0x20
 #define ZUNO_SENSOR_MULTILEVEL_TYPE_TIME                                                0x21
-#define ZUNO_SENSOR_MULTILEVEL_TYPE_WATER_FLOW                                          0x38
 
 
 //Sensor Multilevel scales,sizes,precisions
@@ -290,9 +295,6 @@ enum {
 //Target temperature
 #define SENSOR_MULTILEVEL_SCALE_CELSIUS											0x00
 
-//Water flow
-#define SENSOR_MULTILEVEL_SCALE_LITER_PER_HOUR									0x00
-
 //Sensor Multilevel Properties
 #define SENSOR_MULTILEVEL_PROPERTIES_SIZE_MASK                                      0x07
 #define SENSOR_MULTILEVEL_PROPERTIES_SCALE_SHIFT                                    0x03
@@ -366,8 +368,6 @@ enum {
 #define ZUNO_SENSOR_MULTILEVEL_FREQUENCY(GETTER)							ZUNO_SENSOR_MULTILEVEL(ZUNO_SENSOR_MULTILEVEL_TYPE_FREQUENCY, SENSOR_MULTILEVEL_SCALE_HERTZ, SENSOR_MULTILEVEL_SIZE_ONE_BYTE, SENSOR_MULTILEVEL_PRECISION_ZERO_DECIMALS, GETTER)
 #define ZUNO_SENSOR_MULTILEVEL_TIME(GETTER)									ZUNO_SENSOR_MULTILEVEL(ZUNO_SENSOR_MULTILEVEL_TYPE_TIME, SENSOR_MULTILEVEL_SCALE_SECOND, SENSOR_MULTILEVEL_SIZE_ONE_BYTE, SENSOR_MULTILEVEL_PRECISION_ZERO_DECIMALS, GETTER)
 #define ZUNO_SENSOR_MULTILEVEL_TARGET_TEMPERATURE(GETTER)					ZUNO_SENSOR_MULTILEVEL(ZUNO_SENSOR_MULTILEVEL_TYPE_TARGET_TEMPERATURE, SENSOR_MULTILEVEL_SCALE_CELSIUS, SENSOR_MULTILEVEL_SIZE_ONE_BYTE, SENSOR_MULTILEVEL_PRECISION_ZERO_DECIMALS, GETTER)
-#define ZUNO_SENSOR_MULTILEVEL_WATER_FLOW(GETTER)						ZUNO_SENSOR_MULTILEVEL(ZUNO_SENSOR_MULTILEVEL_TYPE_WATER_FLOW, SENSOR_MULTILEVEL_SCALE_LITER_PER_HOUR, SENSOR_MULTILEVEL_SIZE_ONE_BYTE, SENSOR_MULTILEVEL_PRECISION_ZERO_DECIMALS, GETTER)
-
 
 // Additional Macroses
 
@@ -383,7 +383,9 @@ enum {
 	ZUNO_ASSOC_BASIC_SET_NUMBER = 1, 						//0x01
 	ZUNO_ASSOC_BASIC_SET_AND_DIM_NUMBER,				//0x02
 	ZUNO_ASSOC_SCENE_ACTIVATION_NUMBER, 				//0x03
-	ZUNO_END_OF_SUPPORTED_ASSOC_NUM,
+	ZUNO_ASSOC_DOORLOCK_CONTROL_NUMBER,
+	ZUNO_END_OF_SUPPORTED_ASSOC_NUM
+
 };
 
 #define ZUNO_ASSOC_NO_PARAMS 							0x00
@@ -392,6 +394,8 @@ enum {
 #define ZUNO_ASSOCIATION_GROUP_SET_VALUE 				{ZUNO_ASSOC_BASIC_SET_NUMBER, ZUNO_ASSOC_NO_PARAMS}
 #define ZUNO_ASSOCIATION_GROUP_SET_VALUE_AND_DIM 		{ZUNO_ASSOC_BASIC_SET_AND_DIM_NUMBER, ZUNO_ASSOC_NO_PARAMS}
 #define ZUNO_ASSOCIATION_GROUP_SCENE_CONTROL 			{ZUNO_ASSOC_SCENE_ACTIVATION_NUMBER, ZUNO_ASSOC_NO_PARAMS}
+#define ZUNO_ASSOCIATION_GROUP_DOORLOCK					{ZUNO_ASSOC_DOORLOCK_CONTROL_NUMBER, ZUNO_ASSOC_NO_PARAMS}
+
 //TODO #define ZUNO_ASSOCIATION_GROUP_COLOR_CONTROL 		 		{}
 //TODO #define ZUNO_ASSOCIATION_GROUP_THERMOSTAT_CONTROL 		 	{}
 //TODO #define ZUNO_ASSOCIATION_GROUP_DOOR_LOCK_CONTROL 		 	{}
@@ -442,6 +446,7 @@ enum {
 #define zunoSendToGroupSetValueCommand(GROUP,VALUE) 					zunoSendAssociationCommand(GROUP,ZUNO_ASSOC_BASIC_SET_NUMBER,VALUE,0)
 #define zunoSendToGroupDimmingCommand(GROUP,DIRECTION,START_STOP) 		zunoSendAssociationCommand(GROUP,ZUNO_ASSOC_BASIC_SET_AND_DIM_NUMBER,DIRECTION,START_STOP)
 #define zunoSendToGroupScene(GROUP,SCENE_NUMBER) 						zunoSendAssociationCommand(GROUP,ZUNO_ASSOC_SCENE_ACTIVATION_NUMBER,SCENE_NUMBER,0)
+#define zunoSendToGroupDoorlockControl(GROUP,OPEN_CLOSE) 				zunoSendAssociationCommand(GROUP,ZUNO_ASSOC_DOORLOCK_CONTROL_NUMBER,OPEN_CLOSE,0)
 
 
 
@@ -465,15 +470,33 @@ enum {
 // Для совместимости с библиотеками Arduino используем определение частоты процессора
 #define F_CPU			  16000000
 // Версия Arduino
-#define ARDUINO 		  152	
+#define ARDUINO 		    152	
+#define DEG_TO_RAD 			0.017453292519
+#define RAD_TO_DEG 			57.29577951308
+#define EULER 				2.718281828459
 
-
+#define min(a,b) 				((a)<(b)?(a):(b))
+#define max(a,b) 				((a)>(b)?(a):(b))
+#define abs(x) 					((x)>0?(x):-(x))
+#define constrain(amt,low,high) ((amt)<(low)?(low):((amt)>(high)?(high):(amt)))
+#define round(x)     			((x)>=0?(long)((x)+0.5):(long)((x)-0.5))
+#define radians(deg) 			((deg)*DEG_TO_RAD)
+#define degrees(rad) 			((rad)*RAD_TO_DEG)
+#define sq(x) 					((x)*(x))
+ 
 // Битовые операции
 #define bitRead(value, bit) (((value) >> (bit)) & 0x01)
 #define bitSet(value, bit) ((value) |= (1UL << (bit)))
 #define bitClear(value, bit) ((value) &= ~(1UL << (bit)))
 #define bitWrite(value, bit, bitvalue) (bitvalue ? bitSet(value, bit) : bitClear(value, bit))
 #define _BV(bit) (1 << (bit))
+
+
+#define lowByte(w) ((uint8_t) ((w) & 0xff))
+#define highByte(w) ((uint8_t) ((w) >> 8))
+								
+#define _NOP()  NOPS(1)
+
 
 #define CHANGE 1
 #define FALLING 2

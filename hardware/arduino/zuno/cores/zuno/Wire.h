@@ -26,10 +26,66 @@
 
 
 
+// DEFAULT I2C PINS
+#define SCL_PIN  9
+#define SDA_PIN  10
 
-#define MAX_WIRE_OUTPUT_BUFF 32
-// Функционал только Master'a
 
+
+class I2CDriver
+{
+
+    public:
+    I2CDriver(s_pin scl = 9, s_pin sda = 10);
+    void bind(void);
+    void start(void);   
+    void stop(void);   
+    byte write(byte b);
+    byte read(byte ack);
+
+  private:
+
+      s_pin _scl;
+      s_pin _sda;
+     
+};
+class TwoWire : public Stream
+{
+  private:
+    
+    uint8_t txAddress;
+    uint8_t available_bytes;
+    uint8_t state;
+    uint8_t b_flags;
+    uint8_t sucess_code;
+
+    I2CDriver * p_driver;    
+    
+
+
+  public:
+    TwoWire(I2CDriver * driver = NULL);
+    void begin(I2CDriver * driver = NULL);
+    void bindDriver(I2CDriver * driver);
+    void beginTransmission(uint8_t, uint8_t forced_write = false);
+    uint8_t endTransmission(uint8_t stop = true);
+    uint8_t requestFrom(uint8_t, uint8_t, bool stop = true);
+    virtual size_t write(uint8_t);
+    virtual int available(void);
+    virtual int read(void);
+    virtual int peek(void);
+    virtual void flush(void);
+    
+
+    size_t write(unsigned long n) { return write((uint8_t)n); }
+    size_t write(long n) { return write((uint8_t)n); }
+    size_t write(unsigned int n) { return write((uint8_t)n); }
+    size_t write(int n) { return write((uint8_t)n); }
+
+};
+
+/*
+// OLD version without s_pin
 class TwoWire : public Stream
 {
   private:
@@ -63,7 +119,7 @@ class TwoWire : public Stream
   //private:
     //  byte output_buff[MAX_WIRE_OUTPUT_BUFF];
 };
-
+*/
 extern TwoWire Wire;
 
 

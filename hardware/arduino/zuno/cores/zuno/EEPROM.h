@@ -7,25 +7,39 @@
 class EEPROMClass
 {
 	public:
-		EEPROMClass(byte read_func, byte addr_size){rfunc = read_func;  addrsize = addr_size; };
+		EEPROMClass(byte read_func):rfunc(read_func){};
 
 	
-		word put(word address, void * value, word val_size);
-		word get(word address, void * value, word val_size);
-		byte read(word address);
-		void update(word address, byte value);
-		void write(word address, byte value);
+		word put(DWORD address, void * value, word val_size);
+		word get(DWORD address, void * value, word val_size);
+		byte read(DWORD address);
+		void update(DWORD address, byte value);
+		void write(DWORD address, byte value);
+		
+	private:
+		byte temp_byte;
+		byte rfunc;
+		
+
+};
+class NZRAMClass
+{
+	public:
+		NZRAMClass(byte read_func):rfunc(read_func){};
+
+		byte put(byte address, void * value, byte val_size);
+		byte get(byte address, void * value, byte val_size);
+		byte read(byte address);
+		void update(byte address, byte value);
+		void write(byte address, byte value);
 		
 	private:
 
-		void pushAddresses(word address,  word val_size);
-		word popResult();
 		byte temp_byte;
 		byte rfunc;
-		byte addrsize;
-
+		
 };
 extern EEPROMClass EEPROM;
-extern EEPROMClass NZRAM;
+extern NZRAMClass NZRAM;
 
 #endif // ZUNO_EEPROM_LIBRARY

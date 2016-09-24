@@ -10,13 +10,17 @@ class DS18B20Sensor
 	public:
 		DS18B20Sensor(OneWire * ow);
 
-		// Определяет адрес сенсора, 
-		// но только если он один на шине
+		// Search for sensors. Copies found sensor's address (ROM) to buffer
+		// Returns:
+		//   1 if we have a valid sensor connected
+		//   0 otherwise    
 		byte scanAloneSensor(byte * rom);
-		// Считывает температуру, если первый параметр не задан 
-		// считает что только одноустройство на шине
-		// возвращает температуру в 10-х градуса Цельсия 
-		int getTempC10(byte * addr = NULL);
+		
+		// Return temperarure in cents of Celsius
+		// sonsume less memory of sketch than getTemperature()
+		int getTempC100(byte * addr = NULL);
+		// Returns temperature as float in Celsius
+		float getTemperature(byte * addr = NULL);
 
 
 	private:

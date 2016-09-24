@@ -175,10 +175,12 @@ int32_t Adafruit_BMP085::readPressure(void) {
 }
 
 
-int16_t Adafruit_BMP085::readTemperature(void) {
+int16_t Adafruit_BMP085::readTemperatureC10(void) {
 
  
   int16_t UT = readRawTemperature();
+  //Serial.print("UT=");
+  //Serial.println(UT);
   long X1 = UT - ac6;
   long X2 = mc;
 
@@ -192,6 +194,10 @@ int16_t Adafruit_BMP085::readTemperature(void) {
   return  (int16_t) X1;
 }
 
+float  Adafruit_BMP085::readTemperature(void)
+{
+    return readTemperatureC10() / 10.0;
+}
 float Adafruit_BMP085::readAltitude(float sealevelPressure) {
   float altitude;
 
@@ -212,10 +218,10 @@ uint8_t Adafruit_BMP085::read8(uint8_t a) {
   Wire.write(a); // sends register address to read from
   Wire.endTransmission(); // end transmission
   
-  Wire.beginTransmission(BMP085_I2CADDR); // start transmission to device 
+  //Wire.beginTransmission(BMP085_I2CADDR); // start transmission to device 
   Wire.requestFrom(BMP085_I2CADDR, 1);// send data n-bytes read
   ret = Wire.read(); // receive DATA
-  Wire.endTransmission(); // end transmission
+  //Wire.endTransmission(); // end transmission
 
   return ret;
 }
@@ -227,12 +233,12 @@ uint16_t Adafruit_BMP085::read16(uint8_t a) {
   Wire.write(a); // sends register address to read from
   Wire.endTransmission(); // end transmission
   
-  Wire.beginTransmission(BMP085_I2CADDR); // start transmission to device 
+  //Wire.beginTransmission(BMP085_I2CADDR); // start transmission to device 
   Wire.requestFrom(BMP085_I2CADDR, 2);// send data n-bytes read
   ret = Wire.read(); // receive DATA
   ret <<= 8;
   ret |= Wire.read(); // receive DATA
-  Wire.endTransmission(); // end transmission
+  //Wire.endTransmission(); // end transmission
 
   return ret;
 }
