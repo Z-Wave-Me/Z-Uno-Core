@@ -6,7 +6,7 @@
   UPGRADED/Rewriten by Z-Wave>ME for project Z-Uno 2016
 */
 
-#include "DHT.h"
+#include "ZUNO_DHT.h"
 
 #define MIN_INTERVAL 2000
 

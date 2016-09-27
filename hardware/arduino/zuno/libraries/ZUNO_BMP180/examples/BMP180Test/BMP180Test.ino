@@ -25,11 +25,11 @@
 // XCLR is a reset pin, also not used here
 
 #include <Wire.h>
-#include <Adafruit_BMP085.h>
+#include <ZUNO_BMP180.h>
 
 
 
-Adafruit_BMP085 bmp;
+ZUNO_BMP180 bmp;
   
 void setup() {
   Serial.begin();
@@ -43,12 +43,7 @@ void loop() {
 
     // Get Temperature
     Serial.print("Temperature = ");
-    // library uses original data format of BMP180. Temerature is integer value in 0.1 of *C 
-    int temp = bmp.readTemperature();
-    // Just convert it in more readable view...
-    Serial.print(temp/10);
-    Serial.print('.');
-    Serial.print(temp%10);
+    Serial.print(bmp.readTemperature());
     Serial.println(" *C");
         
     // Get Pressure

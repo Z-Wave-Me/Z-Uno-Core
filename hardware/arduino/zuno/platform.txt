@@ -26,7 +26,7 @@ compiler.path={runtime.tools.zuno_toolchain.path}/zuno_toolchain/
 # ZUNO compile patterns
 # --------------------
 
-recipe.hooks.sketch.prebuild.1.pattern = {runtime.tools.zuno_toolchain.path}/zuno_toolchain/compiler build "{build.path}/{build.project_name}" -r {runtime.platform.path} 
+recipe.hooks.sketch.prebuild.1.pattern = {runtime.tools.zuno_toolchain.path}/zuno_toolchain/compiler build "{build.path}/{build.project_name}" -r "{runtime.platform.path}" 
 
 recipe.c.o.pattern=
 recipe.cpp.o.pattern=
@@ -61,7 +61,7 @@ tools.zprog.erase.pattern="{cmd.path}" erase -d {serial.port}
 
 tools.zprog.bootloader.params.verbose=-v
 tools.zprog.bootloader.params.quiet=-q
-tools.zprog.bootloader.pattern="{cmd.path}" boot -p {runtime.platform.path}/bootloaders/ -d {serial.port}
+tools.zprog.bootloader.pattern="{cmd.path}" boot -p "{runtime.platform.path}/bootloaders/" -d {serial.port}
 
 
 # USB Default Flags

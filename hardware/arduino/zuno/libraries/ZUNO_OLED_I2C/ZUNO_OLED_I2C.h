@@ -23,6 +23,8 @@
 
   The license applies to all part of the library including the 
   examples and tools supplied with the library.
+
+  Adoptated for Z-Uno project by Z-Wave>ME 2016
 */
 
 #ifndef OLED_I2C_h

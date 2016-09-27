@@ -3,7 +3,7 @@
 MIT license
 written by Adafruit Industries
 
-UPGRADED/Rewriten by Z-Wave>ME for project Z-Uno 2016
+UPGRADED/Rewritten by Z-Wave>ME for project Z-Uno 2016
 
 */
 #ifndef DHT_H
@@ -46,7 +46,6 @@ class DHT {
    float readHumidity(bool force=false);
    
    // Just read raw data from sensor
-
    // Returns result code of operation (see enum)
    byte read(bool force=false);
 

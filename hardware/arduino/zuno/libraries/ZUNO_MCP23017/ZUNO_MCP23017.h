@@ -9,21 +9,19 @@
 
   Written by Limor Fried/Ladyada for Adafruit Industries.  
   BSD license, all text above must be included in any redistribution
+
+  Adoptated for Z-Uno project by Z-Wave>ME 2016
  ****************************************************/
 
-#ifndef _Adafruit_MCP23017_H_
-#define _Adafruit_MCP23017_H_
+#ifndef _ZUNO_MCP23017_H_
+#define _ZUNO_MCP23017_H_
 
-// Don't forget the Wire library
-#ifdef __AVR_ATtiny85__
-#include <TinyWireM.h>
-#else
 #include <Wire.h>
-#endif
 
-class Adafruit_MCP23017 {
+
+class ZUNO_MCP23017 {
 public:
-  Adafruit_MCP23017(){};
+  ZUNO_MCP23017(){};
   void begin(uint8_t addr);
   void begin(void);
 

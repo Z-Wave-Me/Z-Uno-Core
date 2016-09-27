@@ -39,7 +39,7 @@ void EEPROMClass::update(DWORD address, byte value)
     }
 
 }
-void EEPROMClass::write(word address, byte value)
+void EEPROMClass::write(DWORD address, byte value)
 {
 	temp_byte = value;	
 	put(address, &temp_byte, 1);

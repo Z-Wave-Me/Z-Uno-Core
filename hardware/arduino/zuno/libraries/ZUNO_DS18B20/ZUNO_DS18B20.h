@@ -1,7 +1,7 @@
 #ifndef DALLAS_DS_18B20LIB
 #define DALLAS_DS_18B20LIB
 #include "Arduino.h"
-#include "OneWire.h"
+#include "ZUNO_OneWire.h"
 
 #define BAD_TEMP -32767
 

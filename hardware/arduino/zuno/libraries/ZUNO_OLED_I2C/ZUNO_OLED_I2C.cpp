@@ -20,7 +20,7 @@
   examples and tools supplied with the library.
 */
 
-#include "OLED_I2C.h"
+#include "ZUNO_OLED_I2C.h"
 #include "Wire.h"
 
 

@@ -1,4 +1,3 @@
-#include "OneWire.h"
 
 /*
 Copyright (c) 2007, Jim Studt  (original old version - many contributors since)
@@ -121,7 +120,7 @@ sample code bearing this copyright.
 //--------------------------------------------------------------------------
 */
 
-#include "OneWire.h"
+#include "ZUNO_OneWire.h"
 
 
 void interupts_on(unsigned char en);

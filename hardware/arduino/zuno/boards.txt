@@ -40,9 +40,22 @@ zuno.build.extra_flags=
 zuno.menu.Frequency.Ru = Russian
 zuno.menu.Frequency.Eu = Europe
 zuno.menu.Frequency.Us = USA
+zuno.menu.Frequency.In = India
+zuno.menu.Frequency.Il = Israel
+zuno.menu.Frequency.ANz = Australia & New Zealand, Brazil
+zuno.menu.Frequency.Ch = China
+zuno.menu.Frequency.Hk = Hong Kong
+
+
 zuno.menu.Frequency.Ru.build.rf_freq = RU
 zuno.menu.Frequency.Eu.build.rf_freq = EU
 zuno.menu.Frequency.Us.build.rf_freq = US
+zuno.menu.Frequency.In.build.rf_freq = IN
+zuno.menu.Frequency.Il.build.rf_freq = IL
+zuno.menu.Frequency.ANz.build.rf_freq = ANZ
+zuno.menu.Frequency.Ch.build.rf_freq = CN
+zuno.menu.Frequency.Hk.build.rf_freq = HK
+
 
 zuno.menu.Security.Off = Disabled
 zuno.menu.Security.On = Enabled

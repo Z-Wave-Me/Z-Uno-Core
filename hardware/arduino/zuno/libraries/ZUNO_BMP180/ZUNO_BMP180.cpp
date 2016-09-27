@@ -15,7 +15,7 @@
   BSD license, all text above must be included in any redistribution
  ****************************************************/
 
-#include "Adafruit_BMP085.h"
+#include "ZUNO_BMP180.h"
 #include "Wire.h"
 
 
@@ -24,11 +24,11 @@
 
 #define _delay_ms(d) delay(d)
 
-Adafruit_BMP085::Adafruit_BMP085() {
+ZUNO_BMP180::ZUNO_BMP180() {
 }
 
 
-boolean Adafruit_BMP085::begin(uint8_t mode) {
+boolean ZUNO_BMP180::begin(uint8_t mode) {
   if (mode > BMP085_ULTRAHIGHRES) 
     mode = BMP085_ULTRAHIGHRES;
   oversampling = mode;
@@ -53,7 +53,7 @@ boolean Adafruit_BMP085::begin(uint8_t mode) {
   md = read16(BMP085_CAL_MD);
 
 }
-void     Adafruit_BMP085::dumpInternal()
+void     ZUNO_BMP180::dumpInternal()
 {
   Serial.print("ac1 = "); Serial.println(ac1, DEC);
   Serial.print("ac2 = "); Serial.println(ac2, DEC);
@@ -70,13 +70,13 @@ void     Adafruit_BMP085::dumpInternal()
   Serial.print("mc = "); Serial.println(mc, DEC);
   Serial.print("md = "); Serial.println(md, DEC);
 }
-uint16_t Adafruit_BMP085::readRawTemperature(void) {
+uint16_t ZUNO_BMP180::readRawTemperature(void) {
   write8(BMP085_CONTROL, BMP085_READTEMPCMD);
   _delay_ms(5);
   return read16(BMP085_TEMPDATA);
 }
 
-uint32_t Adafruit_BMP085::readRawPressure(void) {
+uint32_t ZUNO_BMP180::readRawPressure(void) {
   uint32_t raw;
 
   write8(BMP085_CONTROL, BMP085_READPRESSURECMD + (oversampling << 6));
@@ -101,7 +101,7 @@ uint32_t Adafruit_BMP085::readRawPressure(void) {
 }
 
 
-int32_t Adafruit_BMP085::readPressure(void) {
+int32_t ZUNO_BMP180::readPressure(void) {
 
   int16_t UT = readRawTemperature();
   long    UP = readRawPressure();
@@ -175,7 +175,7 @@ int32_t Adafruit_BMP085::readPressure(void) {
 }
 
 
-int16_t Adafruit_BMP085::readTemperatureC10(void) {
+int16_t ZUNO_BMP180::readTemperatureC10(void) {
 
  
   int16_t UT = readRawTemperature();
@@ -194,11 +194,11 @@ int16_t Adafruit_BMP085::readTemperatureC10(void) {
   return  (int16_t) X1;
 }
 
-float  Adafruit_BMP085::readTemperature(void)
+float  ZUNO_BMP180::readTemperature(void)
 {
     return readTemperatureC10() / 10.0;
 }
-float Adafruit_BMP085::readAltitude(float sealevelPressure) {
+float ZUNO_BMP180::readAltitude(float sealevelPressure) {
   float altitude;
 
   float pressure = readPressure();
@@ -211,7 +211,7 @@ float Adafruit_BMP085::readAltitude(float sealevelPressure) {
 
 /*********************************************************************/
 
-uint8_t Adafruit_BMP085::read8(uint8_t a) {
+uint8_t ZUNO_BMP180::read8(uint8_t a) {
   uint8_t ret;
 
   Wire.beginTransmission(BMP085_I2CADDR); // start transmission to device 
@@ -226,7 +226,7 @@ uint8_t Adafruit_BMP085::read8(uint8_t a) {
   return ret;
 }
 
-uint16_t Adafruit_BMP085::read16(uint8_t a) {
+uint16_t ZUNO_BMP180::read16(uint8_t a) {
   uint16_t ret;
 
   Wire.beginTransmission(BMP085_I2CADDR); // start transmission to device 
@@ -243,7 +243,7 @@ uint16_t Adafruit_BMP085::read16(uint8_t a) {
   return ret;
 }
 
-void Adafruit_BMP085::write8(uint8_t a, uint8_t d) {
+void ZUNO_BMP180::write8(uint8_t a, uint8_t d) {
   Wire.beginTransmission(BMP085_I2CADDR); // start transmission to device 
   Wire.write(a); // sends register address to read from
   Wire.write(d);  // write data

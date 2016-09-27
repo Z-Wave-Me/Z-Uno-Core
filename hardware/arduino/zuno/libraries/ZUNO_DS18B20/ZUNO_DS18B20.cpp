@@ -1,4 +1,4 @@
-#include "DS18B20.h"
+#include "ZUNO_DS18B20.h"
 DS18B20Sensor::DS18B20Sensor(OneWire * ow):my_ow(ow)
 {
 }

@@ -35,7 +35,7 @@
  * CC BY-SA 4.0, http://creativecommons.org/licenses/by-sa/4.0/         *
  *----------------------------------------------------------------------*/ 
 
-#include <DS3232RTC.h>
+#include <ZUNO_DS3232RTC.h>
 
 #include <Wire.h>
 #define i2cBegin Wire.begin

@@ -47,9 +47,9 @@
 #define BMP085_READPRESSURECMD            0x34
 
 
-class Adafruit_BMP085 {
+class ZUNO_BMP180 {
  public:
-  Adafruit_BMP085();
+  ZUNO_BMP180();
   boolean begin(uint8_t mode = BMP085_ULTRAHIGHRES);  // by default go highres
   int16_t readTemperatureC10(void);
   float   readTemperature(void);
