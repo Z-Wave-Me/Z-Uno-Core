@@ -14,12 +14,7 @@ ZMEKeypad::ZMEKeypad(BYTE * colums, BYTE numcols, BYTE * rows, BYTE numrows)
 
 
 }
-/*
-KEYPAD_KEYSTATE_IDLE,
-KEYPAD_KEYSTATE_DEBOUNCE,
-KEYPAD_KEYSTATE_PRESSED,
-KEYPAD_KEYSTATE_HOLDED
-*/
+
 void ZMEKeypad::begin()
 {
   BYTE i;
@@ -52,13 +47,11 @@ BYTE ZMEKeypad::scanKeys(BYTE * key_actions)
   	   
   	  for (r=0; r<n_row; r++) {
 
-        //BYTE ki = 4*r + c;
   	  	BYTE key_num = r*n_row + c;
 
   	  	BYTE mon_key_index = 0xFF;
 
-  	  	// Мы уже мониторим эту клавишу ?
-
+  	  	// Did we scan this key нуе?
   	  	for(i=0;i<mon_keys;i++)
   	  	{
   	  		if(key_states[i].key_num == key_num)
@@ -75,7 +68,6 @@ BYTE ZMEKeypad::scanKeys(BYTE * key_actions)
         			case KEYPAD_KEYSTATE_DEBOUNCE:
         				if(kt > debounce_time)
         					key_states[mon_key_index].key_state = KEYPAD_KEYSTATE_PRESSED;
-        					//ret = key_num;
         				break;
         			case KEYPAD_KEYSTATE_PRESSED:
         				if(kt > hold_time)
@@ -91,7 +83,7 @@ BYTE ZMEKeypad::scanKeys(BYTE * key_actions)
         	{
         		if(mon_keys >= MAX_SCAN_KEYS)
         			break;
-        		// Добавляем клавишу в мониторинг - ставим начальное состояние
+        		// Add this key to keypad state, return to the start condition
         		key_states[mon_keys].key_num   =    key_num;
         		key_states[mon_keys].key_state =	KEYPAD_KEYSTATE_DEBOUNCE;
         		key_states[mon_keys].time      =	scan_time;
@@ -110,7 +102,7 @@ BYTE ZMEKeypad::scanKeys(BYTE * key_actions)
         			ret++;
         		}	
         		
-        		// Удаляем клавишу из мониторинга
+        		// Remove key from list
         		for(i=mon_key_index;i<(mon_keys-1);i++)
         		{
         			key_states[i].key_num   =   key_states[i+1].key_num;
@@ -124,8 +116,6 @@ BYTE ZMEKeypad::scanKeys(BYTE * key_actions)
         }	
        
       }
-
-      //pinMode(column_vec[c],OUTPUT);
       m_pinSet(column_vec[c], HIGH);  // Begin column pulse output.
 
   	}

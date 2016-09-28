@@ -1,26 +1,25 @@
 
-// Работа с KeyPad 4x4
+// This skethc demonstrate use of KeyPad 4x4 with Z-Uno
 #include <ZMEKeypad.h> 
-// Количество строк
+// Define number of rows
 #define ROWS  4    
-// Количество столбцов         
+// Define number of columns        
 #define COLS  4                 
                     
 
 
-// Определяем пины, которые подключены к строкам
+// Define pins numbers that we use for rows
 BYTE rowPins[4] = {9, 10, 11, 12};
-// Определяем пины, которые подключены к столбцам
+// Define pins numbers that we use for volumns
 BYTE columnPins[4] = {14, 15, 16, 17};
 
-// Раскладываем весь keypad по строкам
-// чтобы сделать подписи кнопок
+// Titlse for all buttons in one string
 char keys[] = "123A456B789C*0#D";
 
 
 
 #define ledpin 13 
-// Создаем объект KeyPad'a           
+// Construct keypad object           
 ZMEKeypad kpd = ZMEKeypad(columnPins, COLS, rowPins, ROWS);
 
 
@@ -30,7 +29,7 @@ void setup()
   digitalWrite(ledpin, LOW);
   Serial.begin();
  
-  // Инициализируем KeyPad
+  // Init keypad
   kpd.begin();
   Serial.println("Sketch is starting...");
   
@@ -41,31 +40,28 @@ void loop()
   byte actions[4]; 
   byte num_touched_keys = kpd.scanKeys(actions);
  
-  // Одновременно могут быть нажаты несколько клавиш
-  // Перебираем весь список
+  // We can process a number of buttons during one scan
   for(byte i=0;i<num_touched_keys;i++)
   {
       byte key_index = KEYPAD_KEYINDEX(actions[i]);
 
-      // Удерживание
+      // the button was held
       if(KEYPAD_IS_HOLDING(actions[i]))
       {
           Serial.print("HOLD ");
       }
-      // Нажатие
+      // the button was pressed
       else
       {
           Serial.print("PRESSED ");
-          // Пример выполения действия по нажатию
-          // клавиши
+          // Example of handling some buttons
           if(keys[key_index] == '*')
             digitalWrite(ledpin, HIGH);
           if(keys[key_index] == '#')
             digitalWrite(ledpin, LOW);
              
       }
-      // Распечатываем информацию о нажатой 
-      // клавише в последовательный порт 
+      // Print info about pressed key to Serial
       Serial.print("KEY #");
       Serial.print(key_index);
       Serial.print(" caption: ");
