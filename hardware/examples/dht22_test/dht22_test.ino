@@ -1,16 +1,14 @@
-#include <dht.h>
-
 #include "ZUNO_DHT.h"
 
 
-DHT           dht22_sensor(11, DHT22);
+DHT    dht22_sensor(11, DHT22);
 
 void setup() {
   
   Serial.begin(115200);
   dht22_sensor.begin();
   
-  MY_SERIAL.println("\n **** Sketch is starting... ****\n");
+  Serial.println("\n **** Sketch is starting... ****\n");
   
 
 }

@@ -24,15 +24,7 @@ void setup()
  Wire.write(0x00); // set all of port A to outputs
  Wire.endTransmission();
  
- // Raw C
- /*
- zunoI2CInit();
- zunoI2CBegin();
- zunoI2CWrite(0x40);
- zunoI2CWrite(0x00);
- zunoI2CWrite(0x00);
- zunoI2CEnd();
-*/
+
  Serial.begin();
  
 
@@ -58,23 +50,6 @@ void loop()
   Wire.endTransmission();
   delay(500);
   
-  
-  
-  // RawC
-  /*
-  zunoI2CBegin();
-  zunoI2CWrite(0x40);
-  zunoI2CWrite(0x12);
-  zunoI2CWrite(0xAA);
-  zunoI2CEnd();
-  delay(500);
-  zunoI2CBegin();
-  zunoI2CWrite(0x40);
-  zunoI2CWrite(0x12);
-  zunoI2CWrite(0x55);
-  zunoI2CEnd();
-  delay(500);
-  */
 
 
 
