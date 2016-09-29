@@ -1,5 +1,5 @@
 /*************************************************** 
-  This is an example for the BMP085 Barometric Pressure & Temp Sensor
+  This is an example for the BMP180 Barometric Pressure & Temp Sensor
 
   Designed specifically to work with the Adafruit BMP085 Breakout 
   ----> https://www.adafruit.com/products/391
@@ -34,13 +34,13 @@ ZUNO_BMP180 bmp;
 void setup() {
   Serial.begin();
   if (!bmp.begin()) {
-  Serial.println("Could not find a valid BMP085 sensor, check wiring!");
+  Serial.println("Could not find a valid BMP180 sensor, check wiring!");
   }
 }
   
 void loop() {
     
-
+    delay(1000);
     // Get Temperature
     Serial.print("Temperature = ");
     Serial.print(bmp.readTemperature());
@@ -67,5 +67,5 @@ void loop() {
   
     Serial.println();
 
-    delay(3000);
+    delay(2000);
 }
