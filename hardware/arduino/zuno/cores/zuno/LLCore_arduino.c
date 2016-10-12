@@ -1,10 +1,39 @@
-#include "Core_arduino.h"
+#include "LLCore_arduino.h"
+
 
 __xdata __at (ZUNO_STACK_ADDRESS) unsigned char zunoStack[ZUNO_STACK_SIZE]; //
 __xdata __at (ZUNO_STACK_TOP_ADDRESS) unsigned char zunoStackTop; //
 __xdata __at (ZUNO_DELAY_SAFE_STACK_ADDRESS) unsigned char stack_pointer_outside;
-__data __at (ZUNO_DELAY_USER_STACK_POINTER_ADDRESS) unsigned char user_stack_pointer;
+__xdata __at (ZUNO_DELAY_USER_STACK_DELTA_ADDRESS) unsigned char user_stack_pointer_delta;
 
+
+#include "Custom.h"
+
+__sfr __at (0x81) SP;
+
+void noInterrupts()
+{
+
+}
+void interrupts()
+{
+
+}
+void NOPS(byte i)
+{
+	
+}
+
+// Дополнительный код
+
+BYTE zme_strlen(char * str)
+{
+	BYTE i = 0;
+	while(str[i] != 0)
+		i++;
+	return i;
+}
+//
 
 void zunoPushByte(BYTE value) {
 	if (zunoStackTop >= ZUNO_STACK_SIZE) {
@@ -14,22 +43,26 @@ void zunoPushByte(BYTE value) {
 }
 
 void zunoPushWord(WORD value) {
-	if (zunoStackTop >= (ZUNO_STACK_SIZE - 1)) {
+	if (zunoStackTop > (ZUNO_STACK_SIZE - 2)) {
 		return;
 	}
 
-	zunoStack[++zunoStackTop] = (BYTE)(value >> 8);
-	zunoStack[++zunoStackTop] = (BYTE)(value & 0xFF);
+	zunoStack[++zunoStackTop] =  value & 0xFF;
+	value >>= 8;
+	zunoStack[++zunoStackTop] =  value & 0xFF;
 }
 
 void zunoPushDword(DWORD value) {
-	if (zunoStackTop >= (ZUNO_STACK_SIZE - 3)) {
+	if (zunoStackTop > (ZUNO_STACK_SIZE - 4)) {
 		return;
 	}
-	zunoStack[++zunoStackTop] = (BYTE)(value >> 24);
-	zunoStack[++zunoStackTop] = (BYTE)(value >> 16);
-	zunoStack[++zunoStackTop] = (BYTE)(value >> 8);
-	zunoStack[++zunoStackTop] = (BYTE)(value & 0xFF);
+	zunoStack[++zunoStackTop] =  value & 0xFF;
+	value >>= 8;
+	zunoStack[++zunoStackTop] =  value & 0xFF;
+	value >>= 8;
+	zunoStack[++zunoStackTop] =  value & 0xFF;
+	value >>= 8;
+	zunoStack[++zunoStackTop] =  value & 0xFF;
 }
 
 BYTE zunoPopByte(void) {
@@ -42,32 +75,44 @@ BYTE zunoPopByte(void) {
 
 WORD zunoPopWord(void) {
 	WORD dummy = 0;
-	if (zunoStackTop <= 1) {
+	if (zunoStackTop < 2) {
 		return 0;
 	}
 
-	dummy |=zunoStack[zunoStackTop--];
-	dummy |=(((WORD)zunoStack[zunoStackTop--])<<8);
+	dummy |= zunoStack[zunoStackTop--];
+	dummy <<= 8;
+	dummy |= zunoStack[zunoStackTop--];
 	return dummy;
+
 }
 
 DWORD zunoPopDWORD(void) {
 	DWORD dummy = 0;
-	if (zunoStackTop <= 3) {
+	if (zunoStackTop < 4) {
 		return 0;
 	}
-	dummy |=zunoStack[zunoStackTop--];
-	dummy |=(((DWORD)zunoStack[zunoStackTop--])<<8);
-	dummy |=(((DWORD)zunoStack[zunoStackTop--])<<16);
-	dummy |=(((DWORD)zunoStack[zunoStackTop--])<<24);
+	dummy |= zunoStack[zunoStackTop--];
+	dummy <<= 8;
+	dummy |= zunoStack[zunoStackTop--];
+	dummy <<= 8;
+	dummy |= zunoStack[zunoStackTop--];
+	dummy <<= 8;
+	dummy |= zunoStack[zunoStackTop--];
 	return dummy;
 }
 
-void zunoCall(void) {
+
+
+
+
+
+void zunoCall(void) 
+{	
     __asm
-          LCALL 0x002B00
+    	  // Calling FW		
+    	  LCALL 0x002B00
     __endasm;
-    /**/
+    
 }
 
 /* ----------------------------------------------------------------------------
@@ -108,6 +153,7 @@ void analogWrite(BYTE pin, BYTE value) {
 	zunoPushByte(ZUNO_FUNC_ANALOG_WRITE);
 	zunoCall();
 }
+
 /* ----------------------------------------------------------------------------
 									GPIO
 -------------------------------------------------------------------------------*/
@@ -132,13 +178,38 @@ void delay(DWORD value) {
 	result = zunoPopByte();
 	if (result != 0xFF)
 	{
-		user_stack_pointer = SP;
+		user_stack_pointer_delta = SP - stack_pointer_outside;
+		//SaveTheStack()
+	    __asm
+	        LCALL 0x00FFA0
+	    __endasm;
+	    //
 		SP = stack_pointer_outside; //is the next we store before entering
 		return;
 	} else {
 		//TODO zuno error
 	}
 }
+
+void delayMicroseconds(unsigned int value) {
+    __asm
+    mov	r6,dpl
+    mov	r7,dph
+LOOP:    nop
+    nop
+    nop
+    nop
+    nop
+    nop
+    djnz r6,LOOP
+    cjne r7,#0x00,CONTINUE
+EXIT:    ret
+CONTINUE:    djnz r7,LOOP
+    __endasm;
+}
+
+
+
 
 DWORD millis(void) {
 	zunoPushByte(ZUNO_FUNC_MILLIS);
@@ -157,143 +228,71 @@ BYTE zunoGetWakeReason(void) {
 	return zunoPopByte();
 }
 
+void zunoConfigFWUpdate(word my_version, unsigned long unlock_pin)
+{
+	zunoPushDword(unlock_pin);
+	zunoPushWord(my_version);
+	zunoPushByte(ZUNO_FUNC_SETUP_FWUPGRADE);
+	zunoCall();	
+
+}
 /* ----------------------------------------------------------------------------
 									Service
 -------------------------------------------------------------------------------*/
 
 
-
 /* ----------------------------------------------------------------------------
-									Serial
+									SPI
 -------------------------------------------------------------------------------*/
-//Serial (USB com)
-void SerialBegin(void) {
-	zunoPushByte(ZUNO_FUNC_SERIAL0_BEGIN);
-	zunoCall();
-}
-
-void SerialEnd(void) {
-	zunoPushByte(ZUNO_FUNC_SERIAL0_END);
-	zunoCall();
-}
-
-BYTE SerialAvailable(void) {
-	zunoPushByte(ZUNO_FUNC_SERIAL0_AVAILABLE);
-	zunoCall();
-	return zunoPopByte();
-}
-
-BYTE SerialRead(void) {
-	zunoPushByte(ZUNO_FUNC_SERIAL0_READ);
-	zunoCall();
-	return zunoPopByte();
-}
-
-void SerialWrite(BYTE value) {
-	zunoPushByte(value);
-	zunoPushByte(ZUNO_FUNC_SERIAL0_WRITE);
-	zunoCall();
-}
-
-void SerialPrintln(const char* bufPointer) {
-	BYTE i = 0;
-	while ((bufPointer[i] != 0) && (i < 100)) {
-		SerialWrite(bufPointer[i]);
-		i++;
-	}
-	SerialWrite('\n');
-}
-
-void SerialPrint(const char* bufPointer, BYTE size) {
-	BYTE i = 0;
-	while (i < size) {
-		SerialWrite(bufPointer[i]);
-		i++;
-	}
-}
-
-void SerialPrint_char(BYTE value) {
-	if (value >= 100) {
-  		SerialWrite((value / 100) + 0x30);
-  	}
-	if (value >= 10) {
-  		SerialWrite(((value / 10) % 10) + 0x30);
-	}
-	SerialWrite((value % 10) + 0x30);
-}
-
 /* ----------------------------------------------------------------------------
-									Serial
+									SPI
+-------------------------------------------------------------------------------*/
+/* ----------------------------------------------------------------------------
+									I2C
+-------------------------------------------------------------------------------*/
+/* ----------------------------------------------------------------------------
+									I2C
 -------------------------------------------------------------------------------*/
 
 
 /* ----------------------------------------------------------------------------
-									Serial1
+									DHT
 -------------------------------------------------------------------------------*/
-//Serial (UART)
-void Serial1_Begin(DWORD baudrate) {
-	WORD correct_dbrt = (WORD)(baudrate / 100);
-	zunoPushWord(correct_dbrt);
-	zunoPushByte(ZUNO_FUNC_SERIAL1_BEGIN);
-	zunoCall();
-}
 
-void Serial1_End(void) {
-	zunoPushByte(ZUNO_FUNC_SERIAL1_END);
-	zunoCall();
-}
-
-BYTE Serial1_Available(void) {
-	zunoPushByte(ZUNO_FUNC_SERIAL1_AVAILABLE);
-	zunoCall();
-	return zunoPopByte();
-}
-
-BYTE Serial1_Read(void) {
-	zunoPushByte(ZUNO_FUNC_SERIAL1_READ);
-	zunoCall();
-	return zunoPopByte();
-}
-
-void Serial1_Write(BYTE value) {
-	zunoPushByte(value);
-	zunoPushByte(ZUNO_FUNC_SERIAL1_WRITE);
-	zunoCall();
-}
-
-void Serial1_Println(const char* bufPointer) {
-	BYTE i = 0;
-	while ((bufPointer[i] != 0) && (i < 100)) {
-		Serial1_Write(bufPointer[i]);
-		i++;
-	}
-	Serial1_Write('\n');
-}
-
-void Serial1_Print(const char* bufPointer, BYTE size) {
-	BYTE i = 0;
-	while (i < size) {
-		Serial1_Write(bufPointer[i]);
-		i++;
-	}
-}
-
-void Serial1_Print_char(BYTE value) {
-	if (value >= 100) {
-      	Serial1_Write((value / 100) + 0x30);
-	}
-
-	if (value >= 10) {
-  		Serial1_Write(((value / 10) % 10) + 0x30);
-	}
-	Serial1_Write((value % 10) + 0x30);
-}
-//
 /* ----------------------------------------------------------------------------
-									Serial1
+									DHT
 -------------------------------------------------------------------------------*/
 
+/* ----------------------------------------------------------------------------
+									One Wire
+-------------------------------------------------------------------------------*/
 
+/* ----------------------------------------------------------------------------
+									One Wire
+-------------------------------------------------------------------------------*/
+
+/* -----------------------------------------------------------------------------
+									  EEPROM
+--------------------------------------------------------------------------------*/
+WORD reinterpPOINTER(byte * ptr)
+{
+	return (WORD)ptr;
+}
+/* -----------------------------------------------------------------------------
+									  EEPROM
+--------------------------------------------------------------------------------*/
+
+/* ------------------------------
+		WakeUP on keyscanner
+   ------------------------------
+*/
+void zunoSetupKeyScannerWU(byte cols_num)
+{
+	 zunoPushByte(cols_num);
+	 zunoPushByte(ZUNO_FUNC_KS_WU_SETUP);
+     zunoCall();	
+
+}
 
 /* ----------------------------------------------------------------------------
 							Z-Wave communication
@@ -373,13 +372,21 @@ void zunoCallback(void) {
 void begin_callback_code(void) __naked {
     __asm
           .area ABSCODE (ABS,CODE)
-          .org 0x8100        // YOUR FUNCTION'S DESIRED ADDRESS HERE.
+          .org 0x8020        // YOUR FUNCTION'S DESIRED ADDRESS HERE.
     __endasm;
 }
 
+
+//extern word g_write_counter;
+//extern word g_write_counter2;
+
+
 void zunoJumpTable(void) {
+	
+
 	BYTE requested_function = zunoPopByte();
 	
+
 	switch(requested_function) {
 		case ZUNO_JUMP_TABLE_SETUP:
 		InitArduinoEnvironment();

@@ -25,8 +25,11 @@ compiler.path={runtime.tools.zuno_toolchain.path}/zuno_toolchain/
 
 # ZUNO compile patterns
 # --------------------
+
+recipe.hooks.sketch.prebuild.1.pattern = {runtime.tools.zuno_toolchain.path}/zuno_toolchain/compiler build "{build.path}/{build.project_name}" -r "{runtime.platform.path}" 
+
 recipe.c.o.pattern=
-recipe.cpp.o.pattern={runtime.tools.zuno_toolchain.path}/zuno_toolchain/compiler build "{build.path}/{build.project_name}" -r {runtime.platform.path} -p {runtime.tools.zuno_toolchain.path}/zuno_toolchain/sdcc/bin/ -o '-mmcs51 --out-fmt-ihx --model-large --verbose --debug --use-stdout --code-loc 0x8000 --xram-loc 0x3000' 
+recipe.cpp.o.pattern=
 recipe.S.o.pattern=
 recipe.ar.pattern=
 recipe.c.combine.pattern=
@@ -58,7 +61,7 @@ tools.zprog.erase.pattern="{cmd.path}" erase -d {serial.port}
 
 tools.zprog.bootloader.params.verbose=-v
 tools.zprog.bootloader.params.quiet=-q
-tools.zprog.bootloader.pattern="{cmd.path}" boot -p {runtime.platform.path}/bootloaders/ -d {serial.port}
+tools.zprog.bootloader.pattern="{cmd.path}" boot -p "{runtime.platform.path}/bootloaders/" -d {serial.port}
 
 
 # USB Default Flags
@@ -66,3 +69,7 @@ tools.zprog.bootloader.pattern="{cmd.path}" boot -p {runtime.platform.path}/boot
 # - from numeric vendor ID, set to Unknown otherwise
 build.usb_manufacturer="Unknown"
 build.usb_flags=-DUSB_VID={build.vid} -DUSB_PID={build.pid} '-DUSB_MANUFACTURER={build.usb_manufacturer}' '-DUSB_PRODUCT={build.usb_product}'
+
+
+
+
