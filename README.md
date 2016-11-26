@@ -10,3 +10,6 @@ Z-Uno is a fully DIY product. It is made for those who are limited by existing c
 Z-Uno programming is done by writing sketch in simplified C language (language reference: https://z-uno.z-wave.me/Reference) and loaded into Z-Uno using Arduino IDE. Many examples and comprehensive tutorials will help you to make your own project. See https://z-uno.z-wave.me/examples
 
 Being Z-Wave Plus certified device, Z-Uno is the perfect companion for you RaZberry gateway (https://razberry.z-wave.me). Z-Uno is compatible with other controllers too.
+
+# Z-Uno project roadmap
+Z-Uno TODO list is available here: https://gist.github.com/PoltoS/85d9bceedfa5d77ae4d2dafa6f063d55. Version in [] is the expected release to include the feature in question.
