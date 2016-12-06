@@ -114,11 +114,40 @@ DWORD pulseIn(s_pin pin, byte level, DWORD timeout)
 	return timeout;	
 }
 
+#define DELAYUS_STATIC_LOOP_CYCLES 14
+#define DELAYUS_STATIC_LOOP_SUB    9
+
+// The minimum delay is 9 uS
+// The precision is about 4 us
+// Function more precise for intervals 
+// interval = 9 + n*4
+// 9 13 17 21 25 29 33 37 41 45 49 ... 97 ... 101 ... 16009
+// Any other interval will be moved to nearest low value of this raw  
+void delayMicroseconds(word us)
+{
+	NOPS(1);
+	if(us<DELAYUS_STATIC_LOOP_SUB)
+	{
+		us = DELAYUS_STATIC_LOOP_SUB;
+	}
+	else
+	{
+		NOPS(5);
+	}
+	us -= DELAYUS_STATIC_LOOP_SUB;
+	us >>= 2; // every loop tuned to 4 useconds
+	while(us--)
+	{
+		NOPS(DELAYUS_STATIC_LOOP_CYCLES);
+	}
+}
+
 /// math
 long map(long x, long in_min, long in_max, long out_min, long out_max)
 {
   return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }
+
 
 #if 0
 void testZunoCall()

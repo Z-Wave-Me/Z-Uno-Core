@@ -2,8 +2,8 @@
 
 #include "Arduino.h"
 
-// Light-weight library for KeyPad
-// (c) Z-Wave>ME for Z-Uno project
+
+// Lightwieght realisation of Keypad controller 
 
 
 #define MAX_SCAN_KEYS 3
@@ -38,22 +38,27 @@ class ZMEKeypad
 	public:
 		ZMEKeypad(BYTE * colums, BYTE numcols, BYTE * rows, BYTE numrows);
 
-		// This function have to be called in loop repeatedly
-		BYTE scanKeys(BYTE * key_actions);		// Return the number of pressed keys as the name of function
-												// Te first parameter is using to return state of keys	
-		// To make abstraction from hardware we use virtual function
+		// You have to poll this function in the loop
+		// Returns number of pressed keys
+		// OUT: key_actions 
+		BYTE scanKeys(BYTE * key_actions);		
+
+		// You can use this as superclass and overrite these functions
+		// for another hartware. 
 		virtual void m_pinMode(BYTE pin, BYTE mode) { pinMode(pin, mode);};
 		virtual BYTE m_pinGet(BYTE pin) { return digitalRead(pin); };
 		virtual void m_pinSet(BYTE pin, BYTE value) { digitalWrite(pin, value); };
 
-		// Initializing of keyscanner
+		// Initializes keyscanner
 		void begin();
 		void clearKeys(){mon_keys = 0;};
 
-		// To make KeyScanner more universaly - we can customize some time intervals 
+		// You can setup hold/debounce intervals in the 10th of microseconds
 		void setHoldTime(BYTE tm){hold_time = tm;};
 		void setDebounceTime(BYTE tm){debounce_time = tm;};
 
+		// Checks if all the buttons was released
+		BYTE isIdled(){return mon_keys == 0;};
 
 	private:
 

@@ -19,7 +19,10 @@
 #include "Wire.h"
 
 
-//#define BMP085_DEBUG 1
+#define BMP180_DEBUG 0
+
+
+#define DEBUG_SERIAL Serial1
 
 
 #define _delay_ms(d) delay(d)
@@ -55,20 +58,23 @@ boolean ZUNO_BMP180::begin(uint8_t mode) {
 }
 void     ZUNO_BMP180::dumpInternal()
 {
-  Serial.print("ac1 = "); Serial.println(ac1, DEC);
-  Serial.print("ac2 = "); Serial.println(ac2, DEC);
-  Serial.print("ac3 = "); Serial.println(ac3, DEC);
-  Serial.print("ac4 = "); Serial.println(ac4, DEC);
-  Serial.print("ac5 = "); Serial.println(ac5, DEC);
-  Serial.print("ac6 = "); Serial.println(ac6, DEC);
+  DEBUG_SERIAL.println("---  BMP180 parameters ---");
+  DEBUG_SERIAL.print("ac1 = "); DEBUG_SERIAL.print(ac1, DEC); DEBUG_SERIAL.print(" HEX:"); DEBUG_SERIAL.println(ac1, HEX);
+  DEBUG_SERIAL.print("ac2 = "); DEBUG_SERIAL.print(ac2, DEC); DEBUG_SERIAL.print(" HEX:"); DEBUG_SERIAL.println(ac2, HEX);
+  DEBUG_SERIAL.print("ac3 = "); DEBUG_SERIAL.print(ac3, DEC); DEBUG_SERIAL.print(" HEX:"); DEBUG_SERIAL.println(ac3, HEX);
+  DEBUG_SERIAL.print("ac4 = "); DEBUG_SERIAL.print((unsigned int)ac4, DEC); DEBUG_SERIAL.print(" HEX:"); DEBUG_SERIAL.println(ac4, HEX);
+  DEBUG_SERIAL.print("ac5 = "); DEBUG_SERIAL.print((unsigned int)ac5, DEC); DEBUG_SERIAL.print(" HEX:"); DEBUG_SERIAL.println(ac5, HEX);
+  DEBUG_SERIAL.print("ac6 = "); DEBUG_SERIAL.print((unsigned int)ac6, DEC); DEBUG_SERIAL.print(" HEX:"); DEBUG_SERIAL.println(ac6, HEX);
 
-  Serial.print("b1 = "); Serial.println(b1, DEC);
-  Serial.print("b2 = "); Serial.println(b2, DEC);
+  DEBUG_SERIAL.print("b1 = "); DEBUG_SERIAL.print(b1, DEC); DEBUG_SERIAL.print(" HEX:"); DEBUG_SERIAL.println(b1, HEX);
+  DEBUG_SERIAL.print("b2 = "); DEBUG_SERIAL.print(b2, DEC); DEBUG_SERIAL.print(" HEX:"); DEBUG_SERIAL.println(b2, HEX);
 
-  Serial.print("mb = "); Serial.println(mb, DEC);
+  DEBUG_SERIAL.print("mb = "); DEBUG_SERIAL.print(mb, DEC); DEBUG_SERIAL.print(" HEX:"); DEBUG_SERIAL.println(mb, HEX);
   
-  Serial.print("mc = "); Serial.println(mc, DEC);
-  Serial.print("md = "); Serial.println(md, DEC);
+  DEBUG_SERIAL.print("mc = "); DEBUG_SERIAL.print(mc, DEC); DEBUG_SERIAL.print(" HEX:"); DEBUG_SERIAL.println(mc, HEX);
+  DEBUG_SERIAL.print("md = "); DEBUG_SERIAL.print(md, DEC); DEBUG_SERIAL.print(" HEX:"); DEBUG_SERIAL.println(md, HEX);
+  DEBUG_SERIAL.println("--- ****************** ---");
+  
 }
 uint16_t ZUNO_BMP180::readRawTemperature(void) {
   write8(BMP085_CONTROL, BMP085_READTEMPCMD);
@@ -116,6 +122,9 @@ int32_t ZUNO_BMP180::readPressure(void) {
   X2 /= (X1 + md);
   //1) => B5 => B6 
   long B6 = (X1 + X2) - 4000;
+  #if BMP180_DEBUG
+  DEBUG_SERIAL.print("B6 = "); DEBUG_SERIAL.println(B6, DEC); ;
+  #endif
 
   //2) X1
   // X1 = (B2*(B6*B6)/2^12)/2^11
@@ -136,8 +145,10 @@ int32_t ZUNO_BMP180::readPressure(void) {
   B3 += X1 + X2;
   B3 <<= oversampling;
   B3 >>= 2;
-  B3 = UP-B3; // B7
-  B3 *= (50000 >> oversampling); 
+  #if BMP180_DEBUG
+  DEBUG_SERIAL.print("B3 = "); DEBUG_SERIAL.println(B3, DEC); ;
+  #endif
+
   // 5)
   // X1 = AC3*B6/2^13
   X1 = ac3;
@@ -157,8 +168,28 @@ int32_t ZUNO_BMP180::readPressure(void) {
   B4 += 32768;
   B4 *= ac4;
   B4 >>= 15;
+  #if BMP180_DEBUG
+  DEBUG_SERIAL.print("B4 = "); DEBUG_SERIAL.println(B4, DEC);
+  #endif
 
-  long p = B3 < 0x80000000 ? (B3 << 1) / B4 : (B3/B4) << 1;
+
+
+  // B7
+  unsigned long B7 = UP-B3; // B7
+  B7 *= (50000 >> oversampling); 
+
+  #if BMP180_DEBUG
+  DEBUG_SERIAL.print("B7 = "); DEBUG_SERIAL.println(B7, DEC);
+  #endif
+
+
+  long p = (B7 & 0x80000000) ? (B7/B4) << 1 : (B7 << 1) / B4 ;
+  
+  #if BMP180_DEBUG
+  DEBUG_SERIAL.print("p = "); DEBUG_SERIAL.println(p, DEC);
+  #endif
+
+
   X1 = p >> 8;
   X1 *= X1;
   X1 *= 3038;
