@@ -123,11 +123,23 @@ sample code bearing this copyright.
 #include "ZUNO_OneWire.h"
 
 
+// GLOBAL VARS OF MODULE
+// SEARCH
+// ---------------------------------------------------------------
+extern byte ows_id_bit_number;
+extern byte ows_last_zero, ows_rom_byte_number, ows_search_result;
+extern byte ows_id_bit, ows_cmp_id_bit;
+extern byte ows_rom_byte_mask, ows_search_direction;
+extern byte ows_ROM_NO[8];
+// ---------------------------------------------------------------
+
+
 void interupts_on(unsigned char en);
 
 OneWire::OneWire(s_pin pin): bus_pin(pin)
 {
 	pinMode(bus_pin, INPUT);
+  reset_search();
 }
 
 
@@ -178,13 +190,13 @@ void OneWire::write(byte v, byte power)
 
     	if((bitMask & v))
     	{
-    		delayMicroseconds(5);
+    		delayMicroseconds(10);
     		digitalWrite(bus_pin, 1);
-    		delayMicroseconds(90);
+    		delayMicroseconds(55);
     	}	
     	else
     	{
-    		delayMicroseconds(90);
+    		delayMicroseconds(65);
     		digitalWrite(bus_pin, 1);
     		delayMicroseconds(5);
     	}
@@ -207,14 +219,14 @@ byte OneWire::read()
     	noInterrupts();	
   		pinMode(bus_pin, OUTPUT);
     	digitalWrite(bus_pin, 0);
-		delayMicroseconds(2);
-		pinMode(bus_pin, INPUT);	// let pin float, pull up will raise
-		delayMicroseconds(8);
-		r = digitalRead(bus_pin);
-		delayMicroseconds(80);
-		interrupts(); 
-		if (r) 
-			res |= bitMask;
+		  delayMicroseconds(3);
+		  pinMode(bus_pin, INPUT);	// let pin float, pull up will raise
+		  delayMicroseconds(10);
+		  r = digitalRead(bus_pin);
+		  delayMicroseconds(53);
+		  interrupts(); 
+		  if (r) 
+			 res |= bitMask;
     }
     return res;
 }
@@ -249,6 +261,204 @@ void OneWire::readROM(byte * rom)
     	rom[i] = read();
 
 } 
+bool   OneWire::read_bit()
+{
+    bool r;
+    noInterrupts(); 
+    pinMode(bus_pin, OUTPUT);
+    digitalWrite(bus_pin, 0);
+    delayMicroseconds(3);
+    pinMode(bus_pin, INPUT);  // let pin float, pull up will raise
+    delayMicroseconds(7);
+    r = digitalRead(bus_pin);
+    delayMicroseconds(53);
+    interrupts();
+    return r != 0;
+}
+void   OneWire::write_bit(bool bit)
+{
+      //Serial0.println("BIT");
+      noInterrupts();
+      pinMode(bus_pin, OUTPUT);
+      digitalWrite(bus_pin, 0);
+      if(bit)
+      {
+        delayMicroseconds(10);
+        digitalWrite(bus_pin, 1);
+        delayMicroseconds(55);
+      } 
+      else
+      {
+        delayMicroseconds(65);
+        digitalWrite(bus_pin, 1);
+        delayMicroseconds(5);
+      }
+      interrupts();
+}
+
+//
+// Perform a search. If this function returns a '1' then it has
+// enumerated the next device and you may retrieve the ROM from the
+// OneWire::address variable. If there are no devices, no further
+// devices, or something horrible happens in the middle of the
+// enumeration then a 0 is returned.  If a new device is found then
+// its address is copied to newAddr.  Use OneWire::reset_search() to
+// start over.
+//
+// --- Replaced by the one from the Dallas Semiconductor web site ---
+//--------------------------------------------------------------------------
+// Perform the 1-Wire Search Algorithm on the 1-Wire bus using the existing
+// search state.
+// Return TRUE  : device found, ROM number in ROM_NO buffer
+//        FALSE : device not found, end of search
+//
+// ------------------------------------------------------------
+// We use global vars here to minimize stack usage
+byte ows_id_bit_number;
+byte ows_last_zero, ows_rom_byte_number, ows_search_result;
+byte ows_id_bit, ows_cmp_id_bit;
+byte ows_rom_byte_mask, ows_search_direction;
+byte ows_ROM_NO[8];
+// ------------------------------------------------------------
+
+void OneWire::reset_search()
+{
+    LastDiscrepancy = 0;
+    LastDeviceFlag = FALSE;
+    LastFamilyDiscrepancy = 0;
+    byte i = 7;
+    while(i--)
+      ows_ROM_NO[i] = 0; 
+}
+bool OneWire::search(uint8_t *newAddr)
+{
+   
+   // initialize for search
+   ows_id_bit_number = 1;
+   ows_last_zero = 0;
+   ows_rom_byte_number = 0;
+   ows_rom_byte_mask = 1;
+   ows_search_result = false;
+
+   // if the last call was not the last one
+   if (!LastDeviceFlag)
+   {
+      // 1-Wire reset
+      if (!reset())
+      {
+         // reset the search
+         LastDiscrepancy = 0;
+         LastDeviceFlag = false;
+         LastFamilyDiscrepancy = 0;
+         return false;
+      }
+
+      // issue the search command
+      write(0xF0);
+
+      // loop to do the search
+      do
+      {
+        // serial number search direction write bit
+         //write_bit(1); 
+         // read a bit and its complement
+         ows_id_bit = read_bit();
+         ows_cmp_id_bit = read_bit();
+
+         //Serial0.print(0x80 | ows_id_bit << 1 | ows_cmp_id_bit ,HEX);
+
+
+         // check for no devices on 1-wire
+         if ((ows_id_bit == 1) && (ows_cmp_id_bit == 1))
+            break;
+         // all devices coupled have 0 or 1
+         if (ows_id_bit != ows_cmp_id_bit)
+         {
+              ows_search_direction = ows_id_bit;  // bit write value for search
+         }
+         else
+         {
+              // if this discrepancy if before the Last Discrepancy
+              // on a previous next then pick the same as last time
+              if (ows_id_bit_number < LastDiscrepancy)
+              {
+                  ows_search_direction = ows_ROM_NO[ows_rom_byte_number];
+                  ows_search_direction &= ows_rom_byte_mask;
+                  ows_search_direction =  (ows_search_direction > 0);
+              }    
+              else
+              {
+                  // if equal to last pick 1, if not then pick 0
+                  ows_search_direction = (ows_id_bit_number == LastDiscrepancy);
+
+              }
+
+               // if 0 was picked then record its position in LastZero
+              if (ows_search_direction == 0)
+              {
+                ows_last_zero = ows_id_bit_number;
+
+                  // check for Last discrepancy in family
+                if (ows_last_zero < 9)
+                    LastFamilyDiscrepancy = ows_last_zero;
+              }
+        }            
+        // set or clear the bit in the ROM byte rom_byte_number
+        // with mask rom_byte_mask
+        if (ows_search_direction)
+        {
+          ows_ROM_NO[ows_rom_byte_number] |= ows_rom_byte_mask;
+        }
+        else
+        {
+          ows_ROM_NO[ows_rom_byte_number] &= ~(ows_rom_byte_mask);
+        }
+        // serial number search direction write bit
+        write_bit(ows_search_direction);
+
+        // increment the byte counter id_bit_number
+        // and shift the mask rom_byte_mask
+        ows_id_bit_number++;
+        ows_rom_byte_mask <<= 1;
+
+        // if the mask is 0 then go to new SerialNum byte rom_byte_number and reset mask
+        if (ows_rom_byte_mask == 0)
+        {
+            ows_rom_byte_number++;
+            ows_rom_byte_mask = 1;
+        }
+         
+      }
+      while(ows_rom_byte_number < 8);  // loop until through all ROM bytes 0-7
+
+      // if the search was successful then
+      if (ows_id_bit_number > 64)
+      {
+         // search successful so set LastDiscrepancy,LastDeviceFlag,search_result
+         LastDiscrepancy = ows_last_zero;
+
+         // check for last device
+         if (LastDiscrepancy == 0)
+            LastDeviceFlag = true;
+
+         ows_search_result = true;
+      }
+   }
+
+   // if no device found then reset counters so next 'search' will be like a first
+   if (!ows_search_result || !ows_ROM_NO[0])
+   {
+      LastDiscrepancy = 0;
+      LastDeviceFlag = false;
+      LastFamilyDiscrepancy = 0;
+      ows_search_result = false;
+   }
+   for (byte i = 0; i < 8; i++) 
+      newAddr[i] = ows_ROM_NO[i];
+   return ows_search_result;
+
+}
+
 byte OneWire::crc8(byte *addr, byte len)
 {
 	uint8_t crc = 0;

@@ -84,42 +84,7 @@ class TwoWire : public Stream
 
 };
 
-/*
-// OLD version without s_pin
-class TwoWire : public Stream
-{
-  private:
-    
-    uint8_t func_vec;
-    uint8_t txAddress;
-    uint8_t available_bytes;
-    uint8_t state;
-    uint8_t b_flags;
-    uint8_t sucess_code;
-    //uint8_t output_buff[MAX_WIRE_OUTPUT_BUFF];
-    
-  public:
-    TwoWire(uint8_t func_vec);
-    void begin();
-    void beginTransmission(uint8_t, uint8_t forced_write = false);
-    uint8_t endTransmission(uint8_t stop = true);
-    uint8_t requestFrom(uint8_t, uint8_t, bool stop = true);
-    virtual size_t write(uint8_t);
-    virtual int available(void);
-    virtual int read(void);
-    virtual int peek(void);
-    virtual void flush(void);
-    
 
-    size_t write(unsigned long n) { return write((uint8_t)n); }
-    size_t write(long n) { return write((uint8_t)n); }
-    size_t write(unsigned int n) { return write((uint8_t)n); }
-    size_t write(int n) { return write((uint8_t)n); }
-
-  //private:
-    //  byte output_buff[MAX_WIRE_OUTPUT_BUFF];
-};
-*/
 extern TwoWire Wire;
 
 

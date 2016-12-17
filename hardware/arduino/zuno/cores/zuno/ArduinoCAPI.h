@@ -20,9 +20,7 @@ void zunoSendAssociationCommand(BYTE group, BYTE assoc_type, BYTE param1, BYTE p
 void zunoSendDeviceToSleep(void);
 BYTE zunoGetWakeReason(void);
 
-void delayMicroseconds(unsigned int value);
-void exactlyMicrosecond();
-void delayCycles(byte value);
+void delayLoops(byte v);
 void NOPS(byte i);
 
 // interrupts

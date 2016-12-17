@@ -191,6 +191,7 @@ void delay(DWORD value) {
 	}
 }
 
+/*
 void delayMicroseconds(unsigned int value) {
     __asm
     mov	r6,dpl
@@ -206,8 +207,16 @@ LOOP:    nop
 EXIT:    ret
 CONTINUE:    djnz r7,LOOP
     __endasm;
-}
+}*/
 
+void delayLoops(byte v) {
+    __asm
+    mov	r6,dpl
+delayLoops_LOOP:    
+    djnz r6,delayLoops_LOOP
+    ret
+    __endasm;
+}
 
 
 
@@ -323,11 +332,13 @@ void zunoCallback(void) {
 		if (channel_and_cmd_type == 0) {
 			return;
 		}
+		/*
 		if (channel == 3) {
 			digitalWrite(5,HIGH);
 		} else if (channel == 2) {
 			digitalWrite(5,LOW);
-		}
+		}*/
+
 		//no shift, vecause channels start from 1 both in Z-Wave and in our storage array
 		if ((zunoChannelSetupArray[channel].getter != NULL) && (channel_and_cmd_type != 0)) {
 			switch(size) {
@@ -380,14 +391,16 @@ void begin_callback_code(void) __naked {
 //extern word g_write_counter;
 //extern word g_write_counter2;
 
+BYTE g_requested_function;
+BYTE __code * g_p_code_space;
 
 void zunoJumpTable(void) {
 	
 
-	BYTE requested_function = zunoPopByte();
+	g_requested_function = zunoPopByte();
 	
 
-	switch(requested_function) {
+	switch(g_requested_function) {
 		case ZUNO_JUMP_TABLE_SETUP:
 		InitArduinoEnvironment();
 		break;
@@ -402,15 +415,15 @@ void zunoJumpTable(void) {
 
 		case ZUNO_GET_CHANNELS_ADDRESS:
 		{
-			BYTE __code * p_code_space = (BYTE __code *) zunoChannelSetupArray;
-			zunoPushWord((WORD)p_code_space);
+			g_p_code_space = (BYTE __code *) zunoChannelSetupArray;
+			zunoPushWord((WORD)g_p_code_space);
 		}
 		break; 
 
 		case ZUNO_GET_ASSOCIATIONS_ADDRESS:
 		{
-			BYTE __code * p_code_space = (BYTE __code *) zunoAssociationSetupArray;
-			zunoPushWord((WORD)p_code_space);
+			g_p_code_space = (BYTE __code *) zunoAssociationSetupArray;
+			zunoPushWord((WORD)g_p_code_space);
 		}
 		break;
 
