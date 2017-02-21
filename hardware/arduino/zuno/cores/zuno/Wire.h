@@ -31,12 +31,14 @@
 #define SDA_PIN  10
 
 
+#define NACK_ON_ADDRESS             2
+#define NACK_ON_DATA                4
 
 class I2CDriver
 {
 
     public:
-    I2CDriver(s_pin scl = 9, s_pin sda = 10);
+    I2CDriver(s_pin scl = SCL_PIN, s_pin sda = SDA_PIN);
     void bind(void);
     void start(void);   
     void stop(void);   
@@ -44,7 +46,7 @@ class I2CDriver
     byte read(byte ack);
 
   private:
-
+      byte twi_start;
       s_pin _scl;
       s_pin _sda;
      
@@ -75,6 +77,10 @@ class TwoWire : public Stream
     virtual int read(void);
     virtual int peek(void);
     virtual void flush(void);
+    // Sometimes we need connection status before we 
+    // call endTransmission. getStatus() routine do it right way.
+    uint8_t getStatus(){return sucess_code; };
+
     
 
     size_t write(unsigned long n) { return write((uint8_t)n); }

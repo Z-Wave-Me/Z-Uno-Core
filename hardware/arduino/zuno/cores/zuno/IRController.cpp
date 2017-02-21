@@ -132,15 +132,15 @@ extern byte * ir_buff;
 extern byte ir_m_prescaller;
 extern byte ir_detected_nbits;
 // encoder varriables
-extern byte ir_offset;
-extern byte ir_length;
+extern word ir_offset;
+extern word ir_length;
 extern word ir_current_width;
 extern word ir_current_divider;
 extern byte ir_current_mark;
 extern byte ir_match_flags;
 extern word ir_fill_width;
 extern byte ir_fill_mark;
-extern byte ir_fill_last_offset;
+extern word ir_fill_last_offset;
 
 // detected carrier periods
 extern byte ir_carrier_low;
@@ -1273,7 +1273,7 @@ void IRController::send_raw16(word * data)
 {
 
 	
-	byte i;
+	word i;
 	ir_offset = 0;
 
 	for(i=1;i<=data[0];i++)
@@ -1291,7 +1291,7 @@ void IRController::send_raw16(word * data)
 bool IRController::equals_raw16(word * data)
 {
 
-	byte i;
+	word i;
 	ir_offset = 0;
 	ir_match_flags 	= IR_ENCODER_FLAG_CONVERT_US;
 	
@@ -1312,7 +1312,7 @@ bool IRController::equals_raw16(word * data)
 }
 void IRController::recv_raw16(word * data)
 {
-	byte raw16_count   	= 0;	
+	word raw16_count   	= 0;	
 	ir_offset 			= 0;
 	ir_match_flags 		= IR_ENCODER_FLAG_CONVERT_US;
 
@@ -1339,15 +1339,15 @@ IRController IR;
 byte * ir_buff;
 byte ir_m_prescaller;
 byte ir_detected_nbits;
-byte ir_offset;
-byte ir_length;
+word ir_offset;
+word ir_length;
 word ir_current_width;
 word ir_current_divider;
 byte ir_current_mark;
 byte ir_match_flags;
 word ir_fill_width;
 byte ir_fill_mark;
-byte ir_fill_last_offset;
+word ir_fill_last_offset;
 byte ir_carrier_low;
 byte ir_carrier_hi;
 unsigned long ir_mask;

@@ -46,5 +46,7 @@ typedef enum tmElementsFields{
 //#define true 	TRUE
 //#define false	FALSE
 
+#include "string.h"
+
 
 #endif // ARDUINO_LIKE_TYPES__

@@ -7,11 +7,17 @@
 void pinMode(BYTE pin, BYTE mode);
 BYTE digitalRead(BYTE pin);
 void digitalWrite(BYTE pin, BYTE value);
+void digitalToggle(byte pin);
 void delay(DWORD value);
 WORD analogRead(BYTE pin);
-void analogWrite(BYTE pin, BYTE value);
+void analogWrite(BYTE pin, WORD value);
 DWORD millis();
 
+void analogReference(BYTE ref);
+void analogReadResolution(BYTE bits);
+void analogWriteResolution(BYTE bits);
+
+void zunoADCAdvConfig(BYTE flags);
 // WakeUp on KS
 void zunoSetupKeyScannerWU(byte cols_num);
 // Z-Uno Systems calls
@@ -22,6 +28,15 @@ BYTE zunoGetWakeReason(void);
 
 void delayLoops(byte v);
 void NOPS(byte i);
+
+void zunoExtIntMode(byte inum, byte mode);
+void zunoGPTInit(byte flags);
+void zunoGPTEnable(byte bEnable);
+void zunoGPTSet(word interval);
+
+
+
+
 
 // interrupts
 void noInterrupts();

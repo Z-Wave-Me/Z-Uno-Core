@@ -30,15 +30,6 @@
 #ifndef __SDCC_STRING_H
 #define __SDCC_STRING_H 1
 
-#ifndef NULL
-# define NULL (void *)0
-#endif
-
-#ifndef __SIZE_T_DEFINED
-# define __SIZE_T_DEFINED
-  typedef unsigned int size_t;
-#endif
-
 /* Bounds-checking interfaces from annex K of the C11 standard. */
 #if defined (__STDC_WANT_LIB_EXT1__) && __STDC_WANT_LIB_EXT1__
 

@@ -6,10 +6,29 @@ __xdata __at (ZUNO_STACK_TOP_ADDRESS) unsigned char zunoStackTop; //
 __xdata __at (ZUNO_DELAY_SAFE_STACK_ADDRESS) unsigned char stack_pointer_outside;
 __xdata __at (ZUNO_DELAY_USER_STACK_DELTA_ADDRESS) unsigned char user_stack_pointer_delta;
 
+// ISR map
+// RET code in all strings by-default
+/*
+__code __at (0x8020) BYTE ISR_TABLE[3*ZUNO_ISR_MAX] = {
+                                                0x22, 0x00, 0x00,  // RET = 0x22 ; LCALL = 0x12 
+                                                0x22, 0x00, 0x00,
+                                                0x22, 0x00, 0x00,
+                                                0x22, 0x00, 0x00,
+                                                0x22, 0x00, 0x00,
+                                                0x22, 0x00, 0x00,
+                                                0x22, 0x00, 0x00,
+                                                0x22, 0x00, 0x00,
+                                              };
+
+*/
+
+
 
 #include "Custom.h"
 
 __sfr __at (0x81) SP;
+
+__xdata byte * g_ptr_config = 0x2F00;
 
 void noInterrupts()
 {
@@ -23,6 +42,7 @@ void NOPS(byte i)
 {
 	
 }
+//void zunoExtInt(byte mode, byte )
 
 // Дополнительный код
 
@@ -140,16 +160,34 @@ void digitalWrite(BYTE pin, BYTE value) {
 	zunoCall();
 }
 
+void analogReference(BYTE ref)
+{
+
+	g_ptr_config[ZUNO_CFG_BYTE_ADC_REF] = ref;
+	//g_ptr_config[0] = ref;
+}
+void analogReadResolution(BYTE bits)
+{
+	g_ptr_config[ZUNO_CFG_BYTE_ADC_RES] = bits;	
+}
+void zunoADCAdvConfig(BYTE flags)
+{
+	g_ptr_config[ZUNO_CFG_BYTE_ADC_ADV] = flags;	
+}
+
 WORD analogRead(BYTE pin) {
 	zunoPushByte(pin);
 	zunoPushByte(ZUNO_FUNC_ANALOG_READ);
 	zunoCall();
 	return zunoPopWord();
 }
-
-void analogWrite(BYTE pin, BYTE value) {
+void analogWriteResolution(BYTE bits)
+{
+	g_ptr_config[ZUNO_CFG_BYTE_PWM_RES] = bits;	
+}
+void analogWrite(BYTE pin, WORD value) {
 	zunoPushByte(pin);
-	zunoPushByte(value);
+	zunoPushWord(value);
 	zunoPushByte(ZUNO_FUNC_ANALOG_WRITE);
 	zunoCall();
 }
@@ -382,7 +420,7 @@ void zunoCallback(void) {
 void begin_callback_code(void) __naked {
     __asm
           .area ABSCODE (ABS,CODE)
-          .org 0x8020        // YOUR FUNCTION'S DESIRED ADDRESS HERE.
+          .org 0x8040        // YOUR FUNCTION'S DESIRED ADDRESS HERE.
     __endasm;
 }
 
@@ -443,4 +481,46 @@ void end_callback_code(void) __naked {
     __asm
         .area CSEG (REL,CODE)
     __endasm;
+}
+
+void xdata8051_init(void) {
+  __asm
+  ;
+  ; check there is any user xdata
+  MOV r0,#l_XINIT
+  MOV a,r0
+  ORL a,#(l_XINIT >> 8)
+  JZ  EXIT
+  ;
+  ;
+  ;
+  ; load registers
+  ; r0-1
+  MOV r1,#((l_XINIT+255) >> 8)
+  MOV r2,#s_XINIT
+  MOV r3,#(s_XINIT >> 8)
+  MOV r4,#s_XISEG
+  MOV r5,#(s_XISEG >> 8)
+CYCLE: clr a
+  MOV dpl,r2
+  MOV dph,r3
+  MOVc  a,@a+dptr
+  INC dptr
+  MOV r2, dpl
+  MOV r3, dph
+  MOV dpl,r4
+  MOV dph,r5
+  MOVX  @dptr,a
+  INC dptr
+  MOV r4,dpl
+  MOV r5,dph
+  DJNZ  r0,CYCLE
+  DJNZ  r1,CYCLE
+EXIT:
+  __endasm;
+}
+
+void InitArduinoEnvironment(void) {
+  xdata8051_init();
+  setup();
 }

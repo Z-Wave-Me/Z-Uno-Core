@@ -2,7 +2,7 @@
 #define __ZUNO_DEFINES___
 
 #define ZUNO_CORES_SW_VERSION_MAJOR 		2
-#define ZUNO_CORES_SW_VERSION_MINOR 		07
+#define ZUNO_CORES_SW_VERSION_MINOR 		08
 
 
 #define ZUNO_PIN_STATE_HIGH 				1
@@ -28,6 +28,7 @@
 #define CTRL_GROUP_3 							3
 #define CTRL_GROUP_4 							4
 #define CTRL_GROUP_5 							5
+
 
 #define ZUNO_STACK_SIZE 		50
 #define ZUNO_STACK_ADDRESS 		9001  //must be more the 0x2000 (XDATA_UPPER)
@@ -99,6 +100,14 @@ enum {
 
 	ZUNO_FUNC_TEST = 0xFE
 };
+enum 
+{
+	ZUNO_CFG_BYTE_ADC_RES,
+	ZUNO_CFG_BYTE_ADC_REF,
+	ZUNO_CFG_BYTE_ADC_ADV,
+	ZUNO_CFG_BYTE_PWM_RES
+
+};
 
 enum {
 	ZUNO_SENSOR_BINARY_GETTER,
@@ -136,6 +145,45 @@ enum
 	ZUNO_FWUPGRADE_AUTHRADIO_ANY	= 0xFFFFFFFF
 
 };
+
+enum
+{
+	ZUNO_ISR_INT0,
+	ZUNO_ISR_INT1,
+	ZUNO_ISR_ZEROX,
+	ZUNO_ISR_GPTIMER,
+	ZUNO_ISR_10MSTIMER,
+
+	ZUNO_ISR_MAX  = 0x08	
+};
+
+
+#define ZUNO_EXT_INT0 	0
+#define ZUNO_EXT_INT1 	1
+#define ZUNO_EXT_ZEROX 	2
+
+
+#define ZUNO_EXT_TRIGGER_DISABLED 		0
+#define ZUNO_EXT_TRIGGER_FALLING_EDGE 	1
+#define ZUNO_EXT_TRIGGER_RISING_EDGE 	2
+#define ZUNO_EXT_TRIGGER_LOW_LEVEL		3
+#define ZUNO_EXT_TRIGGER_HIGH_LEVEL		4
+
+
+
+#define ZUNO_ISR_TABLE_ADDR 0x8020
+
+#define ZUNO_SETUP_ISR_INT0(FUNCTION_NAME)   	__code __at (ZUNO_ISR_TABLE_ADDR) 		ZUNO_ISR_DESCRIPTION ISR_VEC_INT0 =  { 0x02, FUNCTION_NAME}
+#define ZUNO_SETUP_ISR_INT0_DEFAULT()   	 	__code __at (ZUNO_ISR_TABLE_ADDR) 		ZUNO_ISR_DESCRIPTION ISR_VEC_INT0 =  { 0x22, 0x0000}
+#define ZUNO_SETUP_ISR_INT1(FUNCTION_NAME)   	__code __at (ZUNO_ISR_TABLE_ADDR + 3) 	ZUNO_ISR_DESCRIPTION ISR_VEC_INT1 =  { 0x02, FUNCTION_NAME}
+#define ZUNO_SETUP_ISR_INT1_DEFAULT()   	 	__code __at (ZUNO_ISR_TABLE_ADDR + 3) 	ZUNO_ISR_DESCRIPTION ISR_VEC_INT1 =  { 0x22, 0x0000}
+#define ZUNO_SETUP_ISR_ZEROX(FUNCTION_NAME)  	__code __at (ZUNO_ISR_TABLE_ADDR + 6) 	ZUNO_ISR_DESCRIPTION ISR_VEC_ZERX =  { 0x02, FUNCTION_NAME}
+#define ZUNO_SETUP_ISR_ZEROX_DEFAULT()   	 	__code __at (ZUNO_ISR_TABLE_ADDR + 6) 	ZUNO_ISR_DESCRIPTION ISR_VEC_ZERX =  { 0x22, 0x0000}
+#define ZUNO_SETUP_ISR_GPTIMER(FUNCTION_NAME)  	__code __at (ZUNO_ISR_TABLE_ADDR + 9) 	ZUNO_ISR_DESCRIPTION ISR_VEC_GPTM =  { 0x02, FUNCTION_NAME}
+#define ZUNO_SETUP_ISR_GPTIMER_DEFAULT()   	 	__code __at (ZUNO_ISR_TABLE_ADDR + 9) 	ZUNO_ISR_DESCRIPTION ISR_VEC_GPTM =  { 0x22, 0x0000}
+#define ZUNO_SETUP_ISR_10MSTIMER(FUNCTION_NAME) __code __at (ZUNO_ISR_TABLE_ADDR + 12) 	ZUNO_ISR_DESCRIPTION ISR_VEC_10TM =  { 0x02, FUNCTION_NAME}
+#define ZUNO_SETUP_ISR_10MSTIMER_DEFAULT()   	__code __at (ZUNO_ISR_TABLE_ADDR + 12) 	ZUNO_ISR_DESCRIPTION ISR_VEC_10TM =  { 0x22, 0x0000}
+
 
 //Sensor Binary types
 #define ZUNO_SENSOR_BINARY_TYPE_GENERAL_PURPOSE 		0x01
@@ -558,6 +606,39 @@ enum {
 #define CHANGE 1
 #define FALLING 2
 #define RISING 3
+
+// ADC REF
+// set it up via  analogReference()
+// ZUno specific
+#define ADC_HIGH_EXTERNAL	0x00  // Use pin A0 as external High reference source						
+#define ADC_HIGH_INTERNAL	0x01  // Use built-in 1.2V source as Hight reference 							
+#define ADC_HIGH_VCC		0x02  // Use VCC as High reference
+#define ADC_LOW_EXTERNAL	0x00  // Use pin A1 as external Low reference source							
+#define ADC_LOW_GND			0x04  // Use GND as Low reference							
+// Arduino-like								
+#define DEFAULT 	(ADC_HIGH_VCC | ADC_LOW_GND) 		// VCC for High reference and GND for Low reference 
+#define INTERNAL 	(ADC_HIGH_INTERNAL | ADC_LOW_GND)  	// 1.2V internal reference source for Hight reference and GND for Low Reference
+#define EXTERNAL 	(ADC_HIGH_EXTERNAL | ADC_LOW_GND) 	// pin A0 for High reference, GND for Low reference
+
+// Advanced ADC options
+// set it up via  zunoADCAdvConfig()								
+#define ZUNO_ADC_ADV_BUFFERED 0x01
+#define ZUNO_ADC_ADV_AZP128   0x00
+#define ZUNO_ADC_ADV_AZP256   0x40
+#define ZUNO_ADC_ADV_AZP512   0x80
+#define ZUNO_ADC_ADV_AZP1024  0xC0
+
+// GPT constants
+
+#define ZUNO_GPT_SCALE1024    0x04
+#define ZUNO_GPT_IMWRITE	  0x40	
+#define ZUNO_GPT_CYCLIC		  0x08	
+
+
+
+
+
+
 
 
 #endif // #define __ZUNO_DEFINES___

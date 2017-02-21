@@ -4,6 +4,7 @@
 #define DEBUG_TEMP_CONV  0
 DS18B20Sensor::DS18B20Sensor(OneWire * ow):
         my_ow(ow),
+        current_resolution(DS18B20_RESOLUTION_12BIT),
         current_delay(75) // in 10th of microseconds == 750ms
 {
 
@@ -124,7 +125,7 @@ int DS18B20Sensor::getTempC100(byte * addr)
     Serial0.println("}");
     #endif
 
-    temp = dallas_data[1] & 0x07; // For all other bits we have 1 when temperature < 0
+    temp = dallas_data[1]; // For all other bits we have 1 when temperature < 0
     temp <<= 8;
     temp |= dallas_data[0];
 
@@ -144,11 +145,6 @@ int DS18B20Sensor::getTempC100(byte * addr)
     // 16/100 => 4/25 => temp *= 25; tem/=4;
     temp *= 25;
     temp >>= 2;
-
-    // Fix sign of value
-    if(dallas_data[1] & 0x80)
-        temp = -temp;
-
     
 
     return temp;

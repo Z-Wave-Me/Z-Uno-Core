@@ -31,7 +31,7 @@ BYTE digitalRead(BYTE pin);
 void digitalWrite(BYTE pin, BYTE value);
 void delay(DWORD value);
 WORD analogRead(BYTE pin);
-void analogWrite(BYTE pin, BYTE value);
+void analogWrite(BYTE pin, WORD value);
 //**********************************************
 void setup(void);
 void loop(void);
@@ -51,6 +51,11 @@ typedef struct _ZUNO_CHANNEL_PROPERTIES_DESCRIPTION
 	GENERIC_POINTER setter;
 } ZUNO_CHANNEL_PROPERTIES_DESCRIPTION;
 
+typedef struct _ZUNO_ISR_DESCRIPTION
+{
+	BYTE insr_num;
+	GENERIC_POINTER handler;
+} ZUNO_ISR_DESCRIPTION;
 
 typedef struct _ZUNO_ASSOCIATION_PROPERTIES_DESCRIPTION
 {
