@@ -5,7 +5,7 @@ ZUNO_SETUP_ISR_INT0(int0_handler);
 ZUNO_SETUP_ISR_INT1(int1_handler);
 ZUNO_SETUP_ISR_ZEROX(int_zeroX_handler);
 ZUNO_SETUP_ISR_GPTIMER(gpt_handler);
-ZUNO_SETUP_ISR_10MSTIMER(m10ms_handler);
+ZUNO_SETUP_ISR_1MSTIMER(m10ms_handler);
 
 
 unsigned long g_count_int0 = 0;
