@@ -68,21 +68,21 @@ uint16_t BH1750::readLightLevel(uint8_t addr) {
 
   uint16_t level;
 
-  Wire.beginTransmission(addr);
   Wire.requestFrom(addr, 2);
 
   level = Wire.read();
   level <<= 8;
   level |= Wire.read();
 
-  Wire.endTransmission();
-
 #if BH1750_DEBUG == 1
   Serial.print("Raw light level: ");
   Serial.println(level);
 #endif
 
-  level = level/1.2; // convert to lux
+  //level = level/1.2; // convert to lux
+
+  level *= 6;
+  level /= 5;
 
 #if BH1750_DEBUG == 1
   Serial.print("Light level: ");
