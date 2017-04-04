@@ -4,13 +4,16 @@
  
 #include <ZUNO_PN532.h>
 
-// создаём объект для работы со сканером
+// Creating an object to drive PN532 chip
 PN532 pn532;
 
 // LED pin number
 #define LED_PIN 13
 
-#define MY_SERIAL Serial0
+// For some cases use UART (Serial0/Serial1)
+// It's a most comfortable way for debugging
+// By default we use built-in USB CDC (Serial)
+#define MY_SERIAL Serial
 
 
 // some globals variables

@@ -131,7 +131,7 @@ class IRReceiverParams
 		IRReceiverParams(byte fl = 0,
 						 byte msp = IR_MS_PRESCALLER_4MHZ, 
 						 byte crp = IR_MS_PRESCALLER_8MHZ,
-						 byte ts = IR_TRAILSPACE_16K, 
+						 byte ts = IR_TRAILSPACE_32K, 
 						 byte av = IR_AVERAGER_8P, 
 						 byte gr =  IR_GLITCH_REMOVER_500NS):
 										flags(fl),

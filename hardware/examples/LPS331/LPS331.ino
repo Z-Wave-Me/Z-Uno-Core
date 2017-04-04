@@ -1,9 +1,12 @@
 #include <ZUNO_LPS331.h>
 
-// создаём объект для работы со сканером
+// Creating a sensor object...
 LPS331 lps331;
 
-#define MY_SERIAL Serial0
+// For some cases use UART (Serial0/Serial1)
+// It's a most comfortable way for debugging
+// By default we use built-in USB CDC
+#define MY_SERIAL Serial
 
 void setup() {
   

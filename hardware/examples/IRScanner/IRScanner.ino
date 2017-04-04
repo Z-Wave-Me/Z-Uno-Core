@@ -13,8 +13,6 @@
 // and fraquency of your IR-controller matches.
 // The most popular is 38 KHz. SAMSUNG/NEC/LG/...
 // SONY uses 40KHz, but in most cases its commands can be detected on 38KHz too. 
-
-
 // Traditionally IR-receivers like VISHAY TSOP31238/TSOP312* 
 // have inverted output. 
 // It means that received MARK has LOW level and
@@ -23,14 +21,13 @@
 IRReceiverParams ir_receiver(IR_FLAGS_IO_INVERTED);
 IRCommand_t ir_cmd;
 
-
-
 // LED pin number
 #define LED_PIN 13
 
-#define MY_SERIAL Serial0
-
-
+// For some cases use UART (Serial0/Serial1)
+// It's a most comfortable way for debugging
+// By default we use built-in USB CDC
+#define MY_SERIAL Serial
 
 void setup() {
   
@@ -45,13 +42,10 @@ void setup() {
   IR.begin(&ir_receiver);
   IR.scan();
 
-
-
 }
 
 byte ir_state;
 word raw_data[200];
-
 
 void loop() {
 
@@ -65,7 +59,7 @@ void loop() {
       // IR-Controller received a data 
       digitalWrite(LED_PIN, HIGH);
       
-      byte i; 
+      word i; 
       
       // Extract data in RAW16 format
       // see IRController.h for detailed descriptions
@@ -119,7 +113,5 @@ void loop() {
 
 
   delay(500);
-  
-
   
 }

@@ -1,5 +1,8 @@
 #include <ZUNO_AM2320.h>
-#define MY_SERIAL Serial0
+// For some cases use UART (Serial0/Serial1)
+// It's a most comfortable way for debugging
+// By default we use built-in USB CDC (Serial)
+#define MY_SERIAL Serial
 
 AM2320 am2320;
 

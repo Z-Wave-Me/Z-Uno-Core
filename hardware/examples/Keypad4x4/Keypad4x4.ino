@@ -1,5 +1,5 @@
 
-// This skethc demonstrate use of KeyPad 4x4 with Z-Uno
+// This sketch demonstrates using of KeyPad 4x4 with Z-Uno
 #include <ZMEKeypad.h> 
 // Define number of rows
 #define ROWS  4    

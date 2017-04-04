@@ -21,7 +21,10 @@ DS18B20Sensor ds18b20(&ow);
 byte sensor_roms[ROM_SIZE*MAX_SENSOR];
 byte number_of_sensors;
 
-#define MY_SERIAL Serial0
+// For some cases use UART (Serial0/Serial1)
+// It's a most comfortable way for debugging
+// By default we use built-in USB CDC (Serial)
+#define MY_SERIAL Serial
 
 #define ROM_DATA(index) (&sensor_roms[index*ROM_SIZE])
 void printROM(byte * rom)

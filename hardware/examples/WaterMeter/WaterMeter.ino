@@ -46,7 +46,11 @@ byte hot_debounce = DEBOUNCE_COUNT;
 ZUNO_SETUP_CHANNELS(ZUNO_METER(ZUNO_METER_TYPE_WATER, METER_RESET_ENABLE, ZUNO_METER_WATER_SCALE_METERS3, METER_SIZE_FOUR_BYTES, METER_PRECISION_THREE_DECIMALS, getterCold, resetterCold),
                     ZUNO_METER(ZUNO_METER_TYPE_WATER, METER_RESET_ENABLE, ZUNO_METER_WATER_SCALE_METERS3, METER_SIZE_FOUR_BYTES, METER_PRECISION_THREE_DECIMALS, getterHot, resetterHot));
 
-#define MY_SERIAL Serial0
+
+// For some cases use UART (Serial0/Serial1)
+// It's a most comfortable way for debugging
+// By default we use built-in USB CDC (Serial)
+#define MY_SERIAL Serial
 
 byte my_crc8(byte * data, byte count)
 {

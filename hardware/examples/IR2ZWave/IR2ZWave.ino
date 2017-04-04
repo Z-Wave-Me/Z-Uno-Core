@@ -31,7 +31,11 @@ word raw_data[200];
 // LED pin number
 #define LED_PIN 13
 
-#define MY_SERIAL Serial0
+// For some cases use UART (Serial0/Serial1)
+// It's a most comfortable way for debugging
+// By default we use built-in USB CDC
+#define MY_SERIAL Serial
+
 #define SWITCH_ON 0xff
 #define SWITCH_OFF 0
 
