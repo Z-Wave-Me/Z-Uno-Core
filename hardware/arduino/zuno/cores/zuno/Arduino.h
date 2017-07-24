@@ -5,7 +5,9 @@
 #include "HardwareSerial.h" // Поддержка Serial
 // Все обычные С-функции
 #include "ArduinoCAPI.h"
+#include "ZunoChannels.h"
 #include "HLCore.h"
+
 
 // Хидеры SDCC
 #include "math.h"

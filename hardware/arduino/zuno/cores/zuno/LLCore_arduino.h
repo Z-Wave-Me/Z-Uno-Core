@@ -39,61 +39,12 @@ void InitArduinoEnvironment(void);
 
 BYTE zme_strlen(char * str);
 
-
-// System Datatypes
-// -----------------------------------------------------------------
-typedef struct _ZUNO_CHANNEL_PROPERTIES_DESCRIPTION
-{
-	BYTE channel_cmd_class;
-	BYTE channel_sensor_type;
-	BYTE channel_multilevel_properties;
-	GENERIC_POINTER getter;
-	GENERIC_POINTER setter;
-} ZUNO_CHANNEL_PROPERTIES_DESCRIPTION;
-
+// System low-level types...
 typedef struct _ZUNO_ISR_DESCRIPTION
 {
 	BYTE insr_num;
 	GENERIC_POINTER handler;
 } ZUNO_ISR_DESCRIPTION;
-
-typedef struct _ZUNO_ASSOCIATION_PROPERTIES_DESCRIPTION
-{
-	BYTE association_type;
-	BYTE association_param;
-} ZUNO_ASSOCIATION_PROPERTIES_DESCRIPTION;
-
-typedef struct _ZUNO_SLEEPING_MODE_PROPERTIES_DESCRIPTION
-{
-	BYTE current_mode;
-	BYTE parameter;
-	GENERIC_POINTER handler;
-} ZUNO_SLEEPING_MODE_PROPERTIES_DESCRIPTION;
-// -----------------------------------------------------------------
-
-#define ZUNO_SETUP_CHANNELS(...) 	\
-								__code ZUNO_CHANNEL_PROPERTIES_DESCRIPTION zunoChannelSetupArray[]= \
-								{ \
-									{0x42, 0x42, 0x42, 0x4242, 0x4242}, \
-									__VA_ARGS__, \
-									{0x43, 0x43, 0x43, 0x4343, 0x4343} \
-								}
-// !! remove
-// Reverse compatibility
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  								
-#define ZUNO_SETUP_FREQUENCY(VALUE)  BYTE ___dummy_freq
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  								
-
-#define ZUNO_SETUP_DEBUG_MODE(VALUE) 		\
-								__code BYTE zunoDebugParameter = VALUE
-// System externs
-// -----------------------------------------------------------------
-extern __code ZUNO_CHANNEL_PROPERTIES_DESCRIPTION zunoChannelSetupArray[];
-extern __code ZUNO_ASSOCIATION_PROPERTIES_DESCRIPTION zunoAssociationSetupArray[];
-extern __code ZUNO_SLEEPING_MODE_PROPERTIES_DESCRIPTION zunoSleepingModeSetupStruct;
-extern __code BYTE zunoDebugParameter;
-// -----------------------------------------------------------------
-
 
 /************************************************
 			end of Variables

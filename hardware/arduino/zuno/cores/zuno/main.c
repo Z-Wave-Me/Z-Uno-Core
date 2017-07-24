@@ -3,7 +3,7 @@
 #pragma preproc_asm +
 
 // Signature
-__code __at (0x8000) char lookupString[] = "LOOK UP ARDUINO HEX CODE";
+__code __at (0x8000) char lookupString[] = "ZMEZUNO";
 
 
 

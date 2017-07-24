@@ -35,9 +35,6 @@ void zunoGPTEnable(byte bEnable);
 void zunoGPTSet(word interval);
 
 
-
-
-
 // interrupts
 void noInterrupts();
 void interrupts();
@@ -46,6 +43,10 @@ void interrupts();
 long map(long x, long in_min, long in_max, long out_min, long out_max);
 
 
+void zunoAddChannel(byte type, byte st, byte p);
+void zunoAddAssociation(byte t);
+void zunoCommitConfig();
+void zunoStartLearn(BYTE timeout);
 
 
 #endif // ARDUINO_ZUNO_C_API

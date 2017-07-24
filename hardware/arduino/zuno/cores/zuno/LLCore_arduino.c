@@ -1,34 +1,45 @@
 #include "LLCore_arduino.h"
-
+#include "ZunoChannels.h"
 
 __xdata __at (ZUNO_STACK_ADDRESS) unsigned char zunoStack[ZUNO_STACK_SIZE]; //
 __xdata __at (ZUNO_STACK_TOP_ADDRESS) unsigned char zunoStackTop; //
 __xdata __at (ZUNO_DELAY_SAFE_STACK_ADDRESS) unsigned char stack_pointer_outside;
 __xdata __at (ZUNO_DELAY_USER_STACK_DELTA_ADDRESS) unsigned char user_stack_pointer_delta;
 
-// ISR map
-// RET code in all strings by-default
-/*
-__code __at (0x8020) BYTE ISR_TABLE[3*ZUNO_ISR_MAX] = {
-                                                0x22, 0x00, 0x00,  // RET = 0x22 ; LCALL = 0x12 
-                                                0x22, 0x00, 0x00,
-                                                0x22, 0x00, 0x00,
-                                                0x22, 0x00, 0x00,
-                                                0x22, 0x00, 0x00,
-                                                0x22, 0x00, 0x00,
-                                                0x22, 0x00, 0x00,
-                                                0x22, 0x00, 0x00,
-                                              };
-
-*/
-
-
 
 #include "Custom.h"
 
 __sfr __at (0x81) SP;
 
-__xdata byte * g_ptr_config = 0x2F00;
+byte * g_ptr_config = 0x2F00;
+
+ZUNOChannelHandler_t * callback_data = ( ZUNOChannelHandler_t *)CALLBACK_TRANSLATION_ADDR;
+zuno_sketch_t * g_user_sketch = (zuno_sketch_t *)SKETCH_USERSTRUCT_ADDRESS;
+
+void zunoCallback(void);
+void __zuno_autosetup(void);
+
+void zunoAddChannel(byte type, byte st, byte p)
+{
+	if(g_user_sketch->n_channels > ZUNO_MAX_MULTI_CHANNEL_NUMBER)
+		return;
+	g_user_sketch->channels[g_user_sketch->n_channels].main_type = type;
+	g_user_sketch->channels[g_user_sketch->n_channels].sub_type = st;
+	g_user_sketch->channels[g_user_sketch->n_channels].prop = p;
+	g_user_sketch->n_channels++;
+}
+void zunoAddAssociation(byte t)
+{
+	if(g_user_sketch->n_assocs > ZUNO_MAX_ASSOC_NUMBER)
+		return;
+	g_user_sketch->asociations[g_user_sketch->n_assocs] = t;
+	g_user_sketch->n_assocs++;
+}
+void zunoCommitConfig()
+{
+	zunoPushByte(ZUNO_FUNC_COMMIT_CONFIG);
+	zunoCall();
+}
 
 void noInterrupts()
 {
@@ -359,8 +370,19 @@ void zunoSendAssociationCommand(BYTE group, BYTE assoc_type, BYTE param1, BYTE p
 	zunoPushByte(ZUNO_FUNC_ASSOCIATION_SEND);
 	zunoCall();
 }
+void zunoStartLearn(BYTE timeout)
+{
+	zunoPushByte(timeout);
+	zunoPushByte(ZUNO_FUNC_LEARN);
+	zunoCall();
+}
+/*
+void zunoCallback(void) {
+	//BYTE channel_and_cmd_type = zunoPopByte();
+	//BYTE channel = channel_and_cmd_type / 2;
+}*/
 
-
+/*
 void zunoCallback(void) {
 	BYTE channel_and_cmd_type = zunoPopByte();
 	BYTE channel = channel_and_cmd_type / 2;
@@ -370,14 +392,9 @@ void zunoCallback(void) {
 		if (channel_and_cmd_type == 0) {
 			return;
 		}
-		/*
-		if (channel == 3) {
-			digitalWrite(5,HIGH);
-		} else if (channel == 2) {
-			digitalWrite(5,LOW);
-		}*/
 
 		//no shift, vecause channels start from 1 both in Z-Wave and in our storage array
+		
 		if ((zunoChannelSetupArray[channel].getter != NULL) && (channel_and_cmd_type != 0)) {
 			switch(size) {
 				case 1:
@@ -412,7 +429,7 @@ void zunoCallback(void) {
 			(*((VOID_FUNC_POINTER_BYTE)zunoChannelSetupArray[channel].setter))(value);
 		}
 	}
-}
+}*/
 /* ----------------------------------------------------------------------------
 							Z-Wave communication
 -------------------------------------------------------------------------------*/
@@ -450,27 +467,27 @@ void zunoJumpTable(void) {
 		zunoCallback();
 		break;
 
-		case ZUNO_GET_CHANNELS_ADDRESS:
-		{
-			g_p_code_space = (BYTE __code *) zunoChannelSetupArray;
-			zunoPushWord((WORD)g_p_code_space);
-		}
-		break; 
+		// case ZUNO_GET_CHANNELS_ADDRESS:
+		// {
+		// 	g_p_code_space = (BYTE __code *) zunoChannelSetupArray;
+		// 	zunoPushWord((WORD)g_p_code_space);
+		// }
+		// break; 
 
-		case ZUNO_GET_ASSOCIATIONS_ADDRESS:
-		{
-			g_p_code_space = (BYTE __code *) zunoAssociationSetupArray;
-			zunoPushWord((WORD)g_p_code_space);
-		}
-		break;
+		// case ZUNO_GET_ASSOCIATIONS_ADDRESS:
+		// {
+		// 	g_p_code_space = (BYTE __code *) zunoAssociationSetupArray;
+		// 	zunoPushWord((WORD)g_p_code_space);
+		// }
+		// break;
 
-		case ZUNO_GET_SLEEPING_MODE:
-		zunoPushByte(zunoSleepingModeSetupStruct.current_mode);
-		break;
+		// case ZUNO_GET_SLEEPING_MODE:
+		// zunoPushByte(zunoSleepingModeSetupStruct.current_mode);
+		// break;
 
-		case ZUNO_GET_DEBUG_MODE_PARAM:
-		zunoPushByte(zunoDebugParameter);
-		break;
+		// case ZUNO_GET_DEBUG_MODE_PARAM:
+		// zunoPushByte(zunoDebugParameter);
+		// break;
 
 		default:
 		break;
@@ -522,5 +539,6 @@ EXIT:
 
 void InitArduinoEnvironment(void) {
   xdata8051_init();
+  __zuno_autosetup();
   setup();
 }
