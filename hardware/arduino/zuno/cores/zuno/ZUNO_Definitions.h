@@ -100,6 +100,8 @@ enum {
 	ZUNO_FUNC_COMMIT_CONFIG,
 	ZUNO_FUNC_LEARN,
 
+	ZUNO_FUNC_SPI0_TXDMA,
+
 	ZUNO_FUNC_TEST = 0xFE
 };
 enum 
@@ -655,11 +657,11 @@ enum
 #define ZUNO_ADD_ASSOCIATION(TYPE) zunoAddAssociation(TYPE)
 #define ZUNO_GET_CONFIG_STATE() (g_ptr_config[ZUNO_CFG_BYTE_USERMODE])
 
-#define ZUNO_MODE_SLEEPING() (g_user_sketch->flags |= 0x01)
-#define ZUNO_MODE_FLIRS() (g_user_sketch->flags |= 0x03)
-#define ZUNO_MODE_ALWAYS_AWAKE() (g_user_sketch->flags &= ~(0x03))
-#define ZUNO_DEBUG_ON() (g_user_sketch->flags |= (0x80))
-#define ZUNO_DEBUG_OFF() (g_user_sketch->flags &= ~(0x80))
+#define ZUNO_MODE_SLEEPING() g_user_sketch->flags |= 0x01
+#define ZUNO_MODE_FLIRS() g_user_sketch->flags |= 0x03
+#define ZUNO_MODE_ALWAYS_AWAKE() g_user_sketch->flags &= ~(0x03)
+#define ZUNO_DEBUG_ON() g_user_sketch->flags |= (0x80)
+#define ZUNO_DEBUG_OFF() g_user_sketch->flags &= ~(0x80)
 #define ZUNO_COMMIT_CONFIG() zunoCommitConfig()
 
 #define SETTER_BIT 0x01
