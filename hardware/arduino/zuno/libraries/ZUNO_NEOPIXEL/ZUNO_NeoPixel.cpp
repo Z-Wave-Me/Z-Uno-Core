@@ -89,8 +89,8 @@ void NeoPixel::show()
 		np_tmp  = pixel_buffer[i];
 		np_tmp  *= brightness;
 		np_tmp  /= 255;
-		
-		cb = pixel_buffer[i];
+
+		cb = np_tmp; //pixel_buffer[i];
 
 		while(j)
 		{
