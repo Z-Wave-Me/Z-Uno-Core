@@ -262,6 +262,7 @@ enum
 
 
 
+
 // Sensor Multilevel types
 #define ZUNO_SENSOR_MULTILEVEL_TYPE_TEMPERATURE		                                   	0x01
 #define ZUNO_SENSOR_MULTILEVEL_TYPE_GENERAL_PURPOSE_VALUE		                        0x02
@@ -427,7 +428,10 @@ enum
 //
 #define ZUNO_NO_CHANNEL 													{0, 0, 0, 0, 0}
 #define ZUNO_SWITCH_BINARY(GETTER, SETTER)   								{ZUNO_SWITCH_BINARY_CHANNEL_NUMBER, 0, 0, (void*)GETTER, (void*)SETTER}
+#define ZUNO_SIREN(GETTER, SETTER)   										{ZUNO_SIREN_CHANNEL_NUMBER, 0, 0, (void*)GETTER, (void*)SETTER}
+#define ZUNO_FLOWSTOP(GETTER, SETTER)   									{ZUNO_FLOWSTOP_CHANNEL_NUMBER, 0, 0, (void*)GETTER, (void*)SETTER}
 #define ZUNO_SWITCH_MULTILEVEL(GETTER, SETTER) 								{ZUNO_SWITCH_MULTILEVEL_CHANNEL_NUMBER, 0, 0, (void*)GETTER, (void*)SETTER}
+#define ZUNO_BLINDS(GETTER, SETTER)											{ZUNO_BLINDS_CHANNEL_NUMBER, 0, 0, (void*)GETTER, (void*)SETTER}
 #define ZUNO_SENSOR_BINARY(TYPE, GETTER) 									{ZUNO_SENSOR_BINARY_CHANNEL_NUMBER, TYPE, ZUNO_NOTIFICATION_TURNED_ON, (void*)GETTER, (void*)MACRO_CAST_POINTER_TO_VOID(0)}
 #define ZUNO_SENSOR_MULTILEVEL(TYPE, SCALE, SIZE, PRECISION, GETTER) 		{ZUNO_SENSOR_MULTILEVEL_CHANNEL_NUMBER, TYPE, SENSOR_MULTILEVEL_PROPERTIES_COMBINER(SCALE, SIZE, PRECISION), (void*)GETTER, MACRO_CAST_POINTER_TO_VOID(0)}
 
@@ -657,11 +661,18 @@ enum
 #define ZUNO_ADD_ASSOCIATION(TYPE) zunoAddAssociation(TYPE)
 #define ZUNO_GET_CONFIG_STATE() (g_ptr_config[ZUNO_CFG_BYTE_USERMODE])
 
-#define ZUNO_MODE_SLEEPING() g_user_sketch->flags |= 0x01
-#define ZUNO_MODE_FLIRS() g_user_sketch->flags |= 0x03
-#define ZUNO_MODE_ALWAYS_AWAKE() g_user_sketch->flags &= ~(0x03)
-#define ZUNO_DEBUG_ON() g_user_sketch->flags |= (0x80)
-#define ZUNO_DEBUG_OFF() g_user_sketch->flags &= ~(0x80)
+
+#define SKETCH_FLAG_SLEEPING	0x01
+#define SKETCH_FLAG_FLIRS		0x03
+#define SKETCH_FLAG_DEBUF		0x80
+
+
+
+#define ZUNO_MODE_SLEEPING() g_user_sketch->flags |= SKETCH_FLAG_SLEEPING
+#define ZUNO_MODE_FLIRS() g_user_sketch->flags |= SKETCH_FLAG_FLIRS
+#define ZUNO_MODE_ALWAYS_AWAKE() g_user_sketch->flags &= ~(SKETCH_FLAG_FLIRS)
+#define ZUNO_DEBUG_ON() g_user_sketch->flags |= (SKETCH_FLAG_DEBUF)
+#define ZUNO_DEBUG_OFF() g_user_sketch->flags &= ~(SKETCH_FLAG_DEBUF)
 #define ZUNO_COMMIT_CONFIG() zunoCommitConfig()
 
 #define SETTER_BIT 0x01
