@@ -101,19 +101,19 @@ byte processCmd() {
 			response("CLEAN_CHANNELS_OK");
 			break;
 		case AT_CMD_ADD_CHANNEL:
-			ZUNO_ADD_CHANNEL(param[0], param[1], param[2]);
+			ZUNO_ADD_CHANNEL(byte(param[0]), byte(param[1]), byte(param[2]));
 			response("ADD_CHANNEL_OK");
 			break;
 		case AT_CMD_ADD_ASSOCIATION:
-			ZUNO_ADD_ASSOCIATION(param[0]);
+			ZUNO_ADD_ASSOCIATION(byte(param[0]));
 			response("ADD_ASSOCIATION_OK");
 			break;	
 		case AT_CMD_CONFIG_FLAGS:
-			g_user_sketch->flags = param[0];
+			g_user_sketch->flags = byte(param[0]);
 			response("CFG_FLAGS_OK");
 			break;
 		case AT_CMD_LEARN:
-			zunoStartLearn(param[0]);
+			zunoStartLearn(byte(param[0]));
 			response("LEARN_OK");
 			break;
 		case AT_CMD_CONFIG_COMMIT:
@@ -123,16 +123,16 @@ byte processCmd() {
 			response("COMMIT_CONFIG");
 			break;
 		case AT_CMD_CHANNEL_SET:
-			channel_value[param[0]] = param[1];
+			channel_value[byte(param[0]) - 1] = param[1];
 			response("CHANNEL_SET_OK");
 			break;
 		case AT_CMD_CHANNEL_GET:
-			param[1] = channel_value[param[0]];
+			param[1] = channel_value[byte(param[0]) - 1];
 			resp_count = 2;
 			response("CHANNEL_VALUE");
 			break;
 		case AT_CMD_SEND_REPORT:
-			zunoSendReport(byte(param[0])+1);
+			zunoSendReport(byte(param[0]));
 			response("SEND_REPORT_OK");
 			break;
 		case AT_CMD_SEND_ASSOC:
@@ -228,7 +228,7 @@ void makeUnsolicitedReports() {
 	while (channel_to_update != 0) {
 		if (channel_to_update & m) {
 			resp_count = 2;
-			param[0] = i;
+			param[0] = i + 1;
 			param[1] = channel_value[i];
 			response("CHANNEL_CHANGED");
 		}
@@ -261,7 +261,7 @@ void zunoCallback(void) {
 	byte mask = 1 << (index & 0x07);
 
 	if (callback_data->type & SETTER_BIT) {
- 	 	channel_value[index] = callback_data->param.dwParam;
+ 	 	channel_value[index] = callback_data->param.bParam;
 
  	 	// Data for unsolicited reports
 		channel_to_update |= mask;
