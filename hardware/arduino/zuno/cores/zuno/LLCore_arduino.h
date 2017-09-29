@@ -26,18 +26,12 @@ void zunoPushWord(WORD value);
 void zunoPushDword(DWORD value);
 void zunoCall(void);
 //********************************
-void pinMode(BYTE pin, BYTE mode);
-BYTE digitalRead(BYTE pin);
-void digitalWrite(BYTE pin, BYTE value);
 void delay(DWORD value);
-WORD analogRead(BYTE pin);
-void analogWrite(BYTE pin, WORD value);
+void delayLoops(byte v);
 //**********************************************
 void setup(void);
 void loop(void);
 void InitArduinoEnvironment(void);
-
-BYTE zme_strlen(char * str);
 
 // System low-level types...
 typedef struct _ZUNO_ISR_DESCRIPTION

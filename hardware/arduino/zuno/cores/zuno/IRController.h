@@ -129,7 +129,7 @@ class IRReceiverParams
 	public:
 
 		IRReceiverParams(byte fl = 0,
-						 byte msp = IR_MS_PRESCALLER_4MHZ, 
+						 byte msp = IR_MS_PRESCALLER_2MHZ, 
 						 byte crp = IR_MS_PRESCALLER_8MHZ,
 						 byte ts = IR_TRAILSPACE_32K, 
 						 byte av = IR_AVERAGER_8P, 

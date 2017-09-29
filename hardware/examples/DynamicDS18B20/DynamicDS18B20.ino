@@ -1,8 +1,8 @@
 // Multiple temperature sensors DS18B20
 #include "ZUNO_DS18B20.h"
 #define DS18B20_BUS_PIN 11                  // Pin to which 1-Wire bus is connected
-#define MAX_SENSORS     10                  // Number of DS18B20 sensors supported (equals to maximum number of channels for Z-Uno) 
-#define MY_SERIAL       Serial              // Serial interface that we use for debug
+#define MAX_SENSORS     32                  // Number of DS18B20 sensors supported (equals to maximum number of channels for Z-Uno) 
+#define MY_SERIAL       Serial0             // Serial interface that we use for debug
 
 OneWire ow(DS18B20_BUS_PIN);                // Software 1-Wire BUS
 DS18B20Sensor ds18b20(&ow);                 // connect DS18B20 class to it
@@ -13,9 +13,25 @@ byte addresses[ADDR_SIZE * MAX_SENSORS];        // Here we store all the scanned
 byte number_of_sensors;                     // Number of sensors found
 word temperature[MAX_SENSORS];              // Here we store temperatures
 
+void dumpData(BYTE * data)
+{
+  byte i;
+  for(i=0;i<16;i++)
+  {
+    Serial0.print(data[i], HEX);
+    Serial0.print(' ');
+  }
+  Serial0.print('\n');
+}
+byte tmp_dmp[16];
 void setup() {
   // DBG output
+  //MY_SERIAL.end();
   MY_SERIAL.begin(115200);
+  /*
+  memcpy(tmp_dmp, syscall_data.param_data, 16);
+  Serial0.print("Last Call data:");
+  dumpData(tmp_dmp);*/
   MY_SERIAL.println("Scanning DS18B20 sensors...");
   // Scanning sensors on the bus every time we starting a sketch
   number_of_sensors = ds18b20.findAllSensors(addresses);
@@ -77,8 +93,8 @@ void zunoCallback(void)
     // We use zero based index of the channel instead of typical 
     // Getter/Setter index of Z-Uno. 
     // See enum ZUNO_CHANNEL*_GETTER/ZUNO_CHANNEL*_SETTER in ZUNO_Definitions.h 
-    byte index = callback_data->type;
+    byte index = callback_data.type;
     index >>= 1;
     index --;
-    callback_data->param.wParam = temperature[index];
+    callback_data.param.wParam = temperature[index];
 }

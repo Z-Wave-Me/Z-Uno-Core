@@ -1,10 +1,15 @@
 #include "Arduino.h"
 
-#include "ZUNO_call_proto.h"
+#include "ZUNO_Channels.h"
 
-DWORD g_pulse_timeout_us = 0; // in microseconds
-DWORD g_pulse_timeout_loops = 0; // in cycles == 1s
+DWORD g_pulse_timeout_us = 0; 		// in microseconds
+DWORD g_pulse_timeout_loops = 0;	 // in cycles == 1s
+extern XBYTE stack_pointer_outside;
+extern XBYTE user_stack_pointer_delta;
 
+/* ----------------------------------------------------------------------------
+							Arduiino-like functions
+-------------------------------------------------------------------------------*/
 
 // calculate micros
 // 
@@ -37,27 +42,18 @@ DWORD g_pulse_timeout_loops = 0; // in cycles == 1s
 #define LOOPS_TO_US(L) L *= F_CONTANT_NANOS; L += C_CONTANT_NANOS; L /= 1000;    
 #define US_TO_LOOPS(U) U *= 1000; U -= C_CONTANT_NANOS; U /= F_CONTANT_NANOS;
 
-
-void setPulseTimeout(DWORD timeout)
-{
-	
+void setPulseTimeout(DWORD timeout) {
 	g_pulse_timeout_us = timeout;
-
 	US_TO_LOOPS(timeout);
-
 	g_pulse_timeout_loops = timeout;
 }
 // Be careful. Don't use values < 500uS for timeout
-DWORD pulseIn(s_pin pin, byte level, DWORD timeout)
-{
+DWORD pulseIn(s_pin pin, byte level, DWORD timeout) {
 	DWORD width = 0;
 	//DWORD timeout;
 	byte  port_mask = 1 << (pin - 9);
-	
-
 	// If you change timeout...
-	if(timeout != g_pulse_timeout_us)
-	{
+	if(timeout != g_pulse_timeout_us) {
 		// ... it takes about 500uS for 8051
 		// don't do it every time
 		setPulseTimeout(timeout); 
@@ -66,24 +62,18 @@ DWORD pulseIn(s_pin pin, byte level, DWORD timeout)
 	timeout = g_pulse_timeout_loops;
 	if(!level)
 		port_mask = 0;	
-	
-	
 	noInterrupts();
 	// wait for any previous pulse to end
-	while(digitalRead(pin) == port_mask)
-	{
-		if(!timeout) 
-		{	
+	while(digitalRead(pin) == port_mask) {
+		if(!timeout) {	
 			interrupts();
 			return 0;
 		}
 		timeout--;
 	}
 	// wait for the pulse to start
-	while(digitalRead(pin) != port_mask)
-	{
-		if(!timeout) 
-		{	
+	while(digitalRead(pin) != port_mask) {
+		if(!timeout) {	
 			interrupts();
 			return 0;
 		}	
@@ -92,11 +82,9 @@ DWORD pulseIn(s_pin pin, byte level, DWORD timeout)
 	
 	width = timeout;
 	// wait for the pulse to stop
-	while(digitalRead(pin) == port_mask)
-	{
+	while(digitalRead(pin) == port_mask) {
 		width--;
-		if(!width)
-		{	
+		if(!width) {	
 			interrupts();
 			return 0;
 		}	
@@ -104,7 +92,6 @@ DWORD pulseIn(s_pin pin, byte level, DWORD timeout)
 	interrupts();
 
 	timeout -= width;
-
 
 	// time = c  + cycles * f
 	// see below
@@ -117,14 +104,21 @@ DWORD pulseIn(s_pin pin, byte level, DWORD timeout)
 #define DELAYUS_STATIC_LOOP_CYCLES 14
 #define DELAYUS_STATIC_LOOP_SUB    9
 
+// Just a simple busy-waiting loop
+void delayLoops(byte v) {
+	zunoASM("\nmov r6,dpl\n"
+			"delayLoops_LOOP:\n"    
+    		"djnz r6,delayLoops_LOOP\n"
+    		"ret\n");
+}
+
 // The minimum delay is 9 uS
 // The precision is about 4 us
 // Function more precise for intervals 
 // interval = 9 + n*4
 // 9 13 17 21 25 29 33 37 41 45 49 ... 97 ... 101 ... 16009
 // Any other interval will be moved to nearest low value of this raw  
-void delayMicroseconds(word us)
-{
+void delayMicroseconds(word us) {
 	NOPS(1);
 	if(us<DELAYUS_STATIC_LOOP_SUB)
 	{
@@ -141,36 +135,74 @@ void delayMicroseconds(word us)
 		NOPS(DELAYUS_STATIC_LOOP_CYCLES);
 	}
 }
-
+DWORD millis(void) {
+	zunoSysCall(ZUNO_FUNC_MILLIS);
+	return SYSRET_DW;
+}
+void delay(dword value) {
+	zunoLCALL(SAVE_SKETCHCONTENT_SUBROUTINE);
+	zunoSysCall(ZUNO_FUNC_DELAY_MS, value); // We have to setup value of before we call this function to avoid stack loss
+	if(SYSRET_B == 0xFF)
+		return;
+	user_stack_pointer_delta = zunoGI("SP");
+	user_stack_pointer_delta -= stack_pointer_outside;
+	zunoLCALL(SAVE_USERSTACK_SUBROUTINE);
+	zunoSI("SP", stack_pointer_outside); //is the next we store before entering
+	return;
+}
 /// math
 long map(long x, long in_min, long in_max, long out_min, long out_max)
 {
   return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }
-
-
-#if 0
-void testZunoCall()
-{
-	word  w1 = 0xAABB;
-	DWORD dw1 = 0xCCDDEEF0;
-
-	zunoPushDword(dw1);
-	zunoPushWord(w1);
-	zunoPushByte(ZUNO_FUNC_TEST);
-	zunoCall();
-
-	w1 = zunoPopWord();
-	dw1 = zunoPopDWORD();
-
-	#if 1
-	// DBG
-	Serial0.println("TEST_FUNC Result");
-	Serial0.println(w1, HEX);
-	Serial0.println(dw1, HEX);
-	Serial0.println("----------------");
-	
-	#endif
-	
+/* ----------------------------------------------------------------------------
+							Z-Uno Z-Wave network configuration
+-------------------------------------------------------------------------------*/
+void zunoAddChannel(byte type, byte st, byte p) {
+	if(g_user_sketch.n_channels > ZUNO_MAX_MULTI_CHANNEL_NUMBER)
+		return;
+	g_user_sketch.channels[g_user_sketch.n_channels].main_type = type;
+	g_user_sketch.channels[g_user_sketch.n_channels].sub_type = st;
+	g_user_sketch.channels[g_user_sketch.n_channels].prop = p;
+	g_user_sketch.n_channels++;
 }
-#endif
+void zunoAddAssociation(byte t) {
+	if(g_user_sketch.n_assocs > ZUNO_MAX_ASSOC_NUMBER)
+		return;
+	g_user_sketch.asociations[g_user_sketch.n_assocs] = t;
+	g_user_sketch.n_assocs++;
+}
+/* ----------------------------------------------------------------------------
+							Z-Uno config parameters
+-------------------------------------------------------------------------------*/
+void zunoLoadCFGParam(byte param_number, dword * value) {
+	param_number -= 64;
+	param_number <<= 2;
+	zunoSysCall(ZUNO_FUNC_EEPROM_READ, dword(START_CONFIGPARAM_EEPROM_ADDR + param_number), word(4), value);
+}
+void zunoSaveCFGParam(byte param_number, dword * value) {
+	param_number -= 64;
+	param_number <<= 2;
+	zunoSysCall(ZUNO_FUNC_EEPROM_WRITE, dword(START_CONFIGPARAM_EEPROM_ADDR + param_number), word(4), value); 
+}
+/* ----------------------------------------------------------------------------
+									GPIO
+-------------------------------------------------------------------------------*/
+BYTE digitalRead(BYTE pin) {
+	zunoSysCall(ZUNO_FUNC_DIGITAL_READ, byte(pin));
+	return SYSRET_B;
+}
+WORD analogRead(BYTE pin) {
+	zunoSysCall(ZUNO_FUNC_ANALOG_READ, byte(pin));
+	return SYSRET_W;
+}
+// Broken subroutine
+// Memset was broken in stdlibrary of SDCC
+void _zme_memset(byte * ptr, byte val, int count)
+{
+	while(count--)
+	{
+		*ptr = val;
+		ptr++;
+	}
+}

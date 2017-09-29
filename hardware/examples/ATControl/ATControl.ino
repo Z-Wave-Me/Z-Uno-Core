@@ -9,7 +9,7 @@
 // Serial1 fot UART1 
 #define MY_SERIAL Serial
 
-#define MAX_CHANNELS 10 // The maximum number of channels supported by Z-Uno 
+#define MAX_CHANNELS 32 // The maximum number of channels supported by Z-Uno 
 
 // Commands
 enum {
@@ -109,7 +109,7 @@ byte processCmd() {
 			response("ADD_ASSOCIATION_OK");
 			break;	
 		case AT_CMD_CONFIG_FLAGS:
-			g_user_sketch->flags = byte(param[0]);
+			g_user_sketch.flags = byte(param[0]);
 			response("CFG_FLAGS_OK");
 			break;
 		case AT_CMD_LEARN:
@@ -253,15 +253,15 @@ void zunoCallback(void) {
 	// We use zero based index of the channel instead of typical Getter/Setter index of Z-Uno. 
 	// See enum ZUNO_CHANNEL*_GETTER/ZUNO_CHANNEL*_SETTER in ZUNO_Definitions.h
 
-	byte index = callback_data->type;
+	byte index = callback_data.type;
 
 	index >>= 1;
 	index --;
 	byte bi = index / 8;
 	byte mask = 1 << (index & 0x07);
 
-	if (callback_data->type & SETTER_BIT) {
- 	 	channel_value[index] = callback_data->param.bParam;
+	if (callback_data.type & SETTER_BIT) {
+ 	 	channel_value[index] = callback_data.param.bParam;
 
  	 	// Data for unsolicited reports
 		channel_to_update |= mask;
@@ -271,6 +271,6 @@ void zunoCallback(void) {
 			channel_to_update |= ((word)mask) << 8;
 		}
 	} else {
-		callback_data->param.dwParam = channel_value[index];
+		callback_data.param.dwParam = channel_value[index];
 	}
 }

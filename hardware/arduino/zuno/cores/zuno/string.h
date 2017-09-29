@@ -90,11 +90,6 @@ extern char *strstr (const char *haystack, const char *needle);
 extern char *strtok (char * /* restrict*/ str, const char * /*restrict*/ delim);
 
 /* Miscanelleous functions: */
-#ifdef __SDCC_BROKEN_STRING_FUNCTIONS
-extern void *memset (void *s, unsigned char c, size_t n); /* c should be int according to standard. */
-#else
-extern void *memset (void *s, int c, size_t n);
-#endif
 
 /* extern char *strerror(int errnum); */
 extern size_t strlen (const char *s);

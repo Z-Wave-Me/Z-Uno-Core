@@ -37,24 +37,24 @@ class Print
     
     size_t print(char *);
     size_t print(char);
-    size_t print(unsigned char, int = DEC);
-    size_t print(int, int = DEC);
-    size_t print(unsigned int, int = DEC);
-    size_t print(long, int = DEC);
-    size_t print(unsigned long, int = DEC);
-    size_t print(float, int = 2);
-    size_t print(double, int = 2);
+    size_t print(unsigned char, uint8_t = DEC);
+    size_t print(int, uint8_t = DEC);
+    size_t print(unsigned int, uint8_t = DEC);
+    size_t print(long, uint8_t = DEC);
+    size_t print(unsigned long, uint8_t = DEC);
+    size_t print(float, uint8_t = 2);
+    size_t print(double, uint8_t = 2);
 
 
     size_t println(char *);
     size_t println(char);
-    size_t println(unsigned char, int = DEC);
-    size_t println(int, int = DEC);
-    size_t println(unsigned int, int = DEC);
-    size_t println(long, int = DEC);
-    size_t println(unsigned long, int = DEC);
-    size_t println(float, int = 2);
-    size_t println(double, int = 2);
+    size_t println(unsigned char, uint8_t = DEC);
+    size_t println(int, uint8_t = DEC);
+    size_t println(unsigned int, uint8_t = DEC);
+    size_t println(long, uint8_t = DEC);
+    size_t println(unsigned long, uint8_t = DEC);
+    size_t println(float, uint8_t = 2);
+    size_t println(double, uint8_t = 2);
     
     size_t println(void);
 

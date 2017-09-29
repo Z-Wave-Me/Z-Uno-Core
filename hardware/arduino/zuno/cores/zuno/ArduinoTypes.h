@@ -5,21 +5,24 @@
 typedef unsigned char 	boolean;
 typedef unsigned char 	uint8_t;
 typedef unsigned char 	s_pin;
-typedef unsigned short  uint16_t;
+typedef unsigned int    uint16_t;
 typedef unsigned long   uint32_t;
 
 typedef char 	int8_t;
-typedef short  int16_t;
+typedef int    int16_t;
 typedef long   int32_t;
 
 
-typedef unsigned short size_t;
+typedef unsigned int 	size_t;
 typedef unsigned char   BYTE;
-typedef unsigned short  WORD;
+typedef unsigned int  	WORD;
 typedef unsigned long   DWORD;
+typedef unsigned char   XBYTE;
 
-#define byte 	BYTE
-#define word    WORD
+typedef unsigned char   byte;
+typedef unsigned int    word;
+typedef unsigned long   dword;
+
 #define bool 	BYTE
 
 #define TRUE    1

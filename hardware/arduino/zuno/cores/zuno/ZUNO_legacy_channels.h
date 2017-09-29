@@ -4,7 +4,6 @@
 #include "ZUNO_Definitions.h"
 
 #define VOID_FUNC_POINTER_VOID (void *)
-//typedef void (*VOID_FUNC_POINTER_VOID) (void);
 typedef void * GENERIC_POINTER;
 
 // System Datatypes
@@ -50,9 +49,17 @@ typedef struct _ZUNO_SLEEPING_MODE_PROPERTIES_DESCRIPTION
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  								
 #define ZUNO_SETUP_FREQUENCY(VALUE)  BYTE ___dummy_freq
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  								
-
 #define ZUNO_SETUP_DEBUG_MODE(VALUE) 		\
 								BYTE zunoDebugParameter = VALUE
+
+#define ZUNO_SETUP_BATTERY_LEVELS(L,H) 		\
+								word zunoBatteryLow = L; \
+								word zunoBatteryHigh = H 
+								
+#define ZUNO_SETUP_CFGPARAMETER_HANDLER(H) 		\
+								GENERIC_POINTER zunoCFGHandler = ((void*)H)
+#define ZUNO_SETUP_BATTERY_HANDLER(H) 		\
+								GENERIC_POINTER zunoBatteryHandler = ((void*)H)
 
 #endif // ZUNO_LEGACY_CHANNELS
 // -----------------------

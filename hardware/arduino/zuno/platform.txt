@@ -18,7 +18,7 @@ compiler.sdccPath={runtime.tools.zuno_toolchain.path}/zuno_toolchain/sdcc/bin/
 tools.zprog.cmd.path={runtime.tools.zuno_toolchain.path}/zuno_toolchain/compiler
 tools.zprog.cmd.path.windows={runtime.tools.zuno_toolchain.path}/zuno_toolchain/compiler.exe
 
-tools.zprog.upload.pattern="{cmd.path}" prog "{build.path}/{build.project_name}" -d {serial.port} -fr {build.rf_freq} --param "sec={build.security}" --param "mcmd={build.multicmd}"
+tools.zprog.upload.pattern="{cmd.path}" prog "{build.path}/{build.project_name}" -d {serial.port} -fr {build.rf_freq} --param "sec={build.security}" --param "mcmd={build.multicmd}" --param "logging={build.log_mode}" -n {build.nvm_clean}
 
 # Default "compiler.path" is correct, change only if you want to overidde the initial value
 compiler.path={runtime.tools.zuno_toolchain.path}/zuno_toolchain/
@@ -26,22 +26,29 @@ compiler.path={runtime.tools.zuno_toolchain.path}/zuno_toolchain/
 # ZUNO compile patterns
 # --------------------
 
-recipe.hooks.sketch.prebuild.1.pattern = {runtime.tools.zuno_toolchain.path}/zuno_toolchain/compiler build "{build.path}/{build.project_name}" -r "{runtime.platform.path}" 
+recipe.hooks.sketch.prebuild.1.pattern = {runtime.tools.zuno_toolchain.path}/zuno_toolchain/compiler build "{build.path}/{build.project_name}" -r "{runtime.platform.path}" -i1_8 -idv {runtime.ide.version}
 
 recipe.c.o.pattern=
-recipe.cpp.o.pattern=
+recipe.cpp.o.pattern={runtime.tools.zuno_toolchain.path}/zuno_toolchain/compiler dummy -t "{source_file}"
 recipe.S.o.pattern=
-recipe.ar.pattern=
-recipe.c.combine.pattern=
+recipe.ar.pattern={runtime.tools.zuno_toolchain.path}/zuno_toolchain/compiler dummy
+recipe.c.combine.pattern={runtime.tools.zuno_toolchain.path}/zuno_toolchain/compiler dummy
 recipe.objcopy.eep.pattern=
 recipe.objcopy.hex.pattern=
 
+## Preprocessor
+preproc.includes.flags=
+recipe.preproc.includes= {runtime.tools.zuno_toolchain.path}/zuno_toolchain/compiler arduino_preproc1 "{source_file}" -r "{runtime.platform.path}"
+preproc.macros.flags=
+recipe.preproc.macros= {runtime.tools.zuno_toolchain.path}/zuno_toolchain/compiler arduino_preproc  "{source_file}"  -r "{runtime.platform.path}"
+
+
 ## Compute size
 
-recipe.size.pattern={runtime.tools.zuno_toolchain.path}/zuno_toolchain/compiler size "{build.path}/{build.project_name}" 
-recipe.size.regex=^(?:rom:)\s+([0-9]+).*
-recipe.size.regex.data=^(?:ram:)\s+([0-9]+).*
-recipe.size.regex.eeprom=^(?:ram:)\s+([0-9]+).*
+recipe.size.pattern={runtime.tools.zuno_toolchain.path}/zuno_toolchain/compiler size "{build.path}/{build.project_name}" -i1_8 -idv {runtime.ide.version}
+recipe.size.regex=^(?:\.text)\s+([0-9]+).*
+recipe.size.regex.data=^(?:\.ram)\s+([0-9]+).*
+recipe.size.regex.eeprom=^(?:\.eeprom)\s+([0-9]+).*
 
 # ZUNO Uploader/Programmers tools
 # ------------------------------

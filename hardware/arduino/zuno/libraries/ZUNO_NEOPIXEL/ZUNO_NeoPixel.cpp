@@ -24,7 +24,7 @@
  */
 
 #include "ZUNO_NeoPixel.h"
-#include "ZUNO_call_proto.h"
+#include "ZUNO_Channels.h"
 #include "SPI.h"
 #include "ArduinoCAPI.h"
 
@@ -114,12 +114,8 @@ void NeoPixel::show()
 			j--;
 		}	
 	}
-	
-	zunoPushByte(0);
-	zunoPushByte(dma_buff_size);
-	zunoPushByte(ZUNO_FUNC_SPI0_TXDMA);
-    zunoCall();	
-
+	zunoSysCall(ZUNO_FUNC_SPI0_TXDMA, dma_buff_size, byte(0));
+    
 }
 void NeoPixel::setBrightness(byte b)
 {

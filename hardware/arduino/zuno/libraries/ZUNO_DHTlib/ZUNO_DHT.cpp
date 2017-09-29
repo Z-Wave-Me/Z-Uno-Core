@@ -22,7 +22,7 @@ DHT::DHT(uint8_t pin, uint8_t type): _pin(pin)
 void DHT::begin(void) {
   // set up the pins!
   pinMode(_pin, INPUT_PULLUP);
-  _lastreadtime = 0;
+  _lastreadtime = 0xFFFFFFF;
 }
 
 // returns temperature in 10 th of Celsius

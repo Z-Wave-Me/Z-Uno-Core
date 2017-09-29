@@ -2,7 +2,30 @@
 #define __ZUNO_DEFINES___
 
 #define ZUNO_CORES_SW_VERSION_MAJOR 		2
-#define ZUNO_CORES_SW_VERSION_MINOR 		10
+#define ZUNO_CORES_SW_VERSION_MINOR 		11
+
+
+// Addressing
+#define MAX_GLOBAL_CFG  						16
+#define ZUNO_STACK_SIZE 						50
+// DATA
+#define ZUNO_DELAY_USER_STACK_POINTER_ADDRESS 	0x6E
+// XDATA
+#define ZUNO_STACK_ADDRESS 						0x2329 
+#define ZUNO_STACK_TOP_ADDRESS 					0x2328 
+#define ZUNO_DELAY_SAFE_STACK_ADDRESS 			(ZUNO_STACK_SIZE + ZUNO_STACK_ADDRESS + 1)  
+#define ZUNO_DELAY_USER_STACK_DELTA_ADDRESS 	(ZUNO_DELAY_SAFE_STACK_ADDRESS + 1)
+#define SKETCH_USERSTRUCT_ADDRESS 				0x2E00
+#define ZUNO_GLOBAL_CFG_ADDR					0x2F00
+#define CALLBACK_TRANSLATION_ADDR   			0x3800  // At the high addresses of user XDATA
+#define SYSCALL_TRANSLATION_ADDR				0x3810
+// CODE SPACE
+#define ZUNO_ISR_TABLE_ADDR 					0x8020
+#define SAVE_SKETCHCONTENT_SUBROUTINE 			0xFF00
+#define SAVE_USERSTACK_SUBROUTINE 				0xFFA0
+// EEPROM
+#define START_CONFIGPARAM_EEPROM_ADDR			0x2000
+
 
 
 #define ZUNO_PIN_STATE_HIGH 				1
@@ -17,6 +40,7 @@
 #define A1 									1
 #define A2 									2
 #define A3 									3
+#define BATTERY								4
 
 #define PWM1 									0
 #define PWM2 									1
@@ -29,15 +53,6 @@
 #define CTRL_GROUP_4 							4
 #define CTRL_GROUP_5 							5
 
-
-#define ZUNO_STACK_SIZE 		50
-#define ZUNO_STACK_ADDRESS 		9001  //must be more the 0x2000 (XDATA_UPPER)
-#define ZUNO_STACK_TOP_ADDRESS 	9000  //must be more the 0x2000 (XDATA_UPPER)
-#define ZUNO_DELAY_SAFE_STACK_ADDRESS 	(ZUNO_STACK_SIZE + ZUNO_STACK_ADDRESS + 1)  //must be more the 0x2000 (XDATA_UPPER)
-#define ZUNO_DELAY_USER_STACK_DELTA_ADDRESS 		(ZUNO_DELAY_SAFE_STACK_ADDRESS + 1)
-
-#define ZUNO_DELAY_USER_STACK_POINTER_ADDRESS 		0x6E
-#define ZUNO_CHANNEL_SETUP_ARRAY_ADDRESS 			(0x8020)
 
 #define ZUNO_PIN_MODE_OUTPUT 				0
 #define ZUNO_PIN_MODE_INPUT  				1
@@ -55,7 +70,7 @@
 #define MAX(A,B)  (A > B ? A : B)
 #define MIN(A,B)  (A < B ? A : B)
 
-	
+// SYSCALL NUMBERS	
 enum {
 	ZUNO_FUNC_PIN_MODE,
 	ZUNO_FUNC_DIGITAL_WRITE,
@@ -80,8 +95,6 @@ enum {
 	ZUNO_FUNC_SERIAL0_AVAILABLE,
 	ZUNO_FUNC_SERIAL0_READ,
 	ZUNO_FUNC_SERIAL0_WRITE,
-	ZUNO_FUNC_GO_SLEEP,
-	ZUNO_FUNC_GET_WAKE_UP_REASON,
 	ZUNO_FUNC_MILLIS,
 	ZUNO_FUNC_SPI0_INIT,
 	ZUNO_FUNC_SPI0_ENABLE,
@@ -90,7 +103,6 @@ enum {
 	ZUNO_FUNC_EEPROM_WRITE,
 	ZUNO_FUNC_NZRAM_READ,
 	ZUNO_FUNC_NZRAM_WRITE,
-	ZUNO_FUNC_KS_WU_SETUP,
 	ZUNO_FUNC_IR_SETUP,
 	ZUNO_FUNC_IR_LEARN_RESET,
 	ZUNO_FUNC_IR_IO,
@@ -99,18 +111,49 @@ enum {
 	ZUNO_FUNC_SETUP_FWUPGRADE,
 	ZUNO_FUNC_COMMIT_CONFIG,
 	ZUNO_FUNC_LEARN,
-
 	ZUNO_FUNC_SPI0_TXDMA,
-
+	ZUNO_FUNC_INT0_WUP_LEVEL,
+	ZUNO_FUNC_BEAMCOUNT,
+	ZUNO_FUNC_DBGSENDDATA,
 	ZUNO_FUNC_TEST = 0xFE
 };
+// INTERNAL LOGGING EVENTS 
+enum{
+	ZUNO_LOGGING_EVENT_START 	= 					0x00,
+	ZUNO_LOGGING_EVENT_GOSLEEP 	= 					0x01,
+	ZUNO_LOGGING_EVENT_RESCUEMODE = 				0x10,
+	ZUNO_LOGGING_EVENT_SETDEFAULT = 				0x11,
+	ZUNO_LOGGING_EVENT_LEARNCOMPLETE = 				0x12,
+	ZUNO_LOGGING_EVENT_WRONGCONFIGDATA = 			0x20,
+	ZUNO_LOGGING_EVENT_ASSOCIATIONSEND_DROPPED = 	0x90,
+	ZUNO_LOGGING_EVENT_POLICY_DROPPED = 			0x91,
+	ZUNO_LOGGING_EVENT_STACKOVERFLOW 		= 		0xA0,
+	ZUNO_LOGGING_EVENT_PARAMSTACKOVERFLOW 	= 		0xA1,
+	ZUNO_LOGGING_EVENT_PARAMSTACKUNDERFLOW 	= 		0xA2,
+	ZUNO_LOGGING_EVENT_CHANNELNOTFOUND 	= 			0xA7,
+	ZUNO_LOGGING_EVENT_WRONGUSERCODE 	= 			0xB0
+};
+// WAKEUP REASONS
+enum 
+{	
+	ZUNO_WAKEUP_REASON_HARDRESET,
+	ZUNO_WAKEUP_REASON_WUT,	
+	ZUNO_WAKEUP_REASON_RADIO,
+	ZUNO_WAKEUP_REASON_SOFTRESET,
+	ZUNO_WAKEUP_REASON_INT1,
+	ZUNO_WAKEUP_REASON_POR,
+	ZUNO_WAKEUP_REASON_USBSUSPEND 	
+};
+// SHARED CONFIGURATION VARIABLES
 enum 
 {
 	ZUNO_CFG_BYTE_ADC_RES,
 	ZUNO_CFG_BYTE_ADC_REF,
 	ZUNO_CFG_BYTE_ADC_ADV,
 	ZUNO_CFG_BYTE_PWM_RES,
-	ZUNO_CFG_BYTE_USERMODE
+	ZUNO_CFG_BYTE_USERMODE,
+	ZUNO_CFG_BYTE_WUP_REASON,
+	ZUNO_CFG_BYTE_SLEEPLOCK
 
 };
 
@@ -124,16 +167,13 @@ enum {
 	ZUNO_METER_GETTER,
 };
 
+// USER-MODE CALLBACKS
 enum {
 	ZUNO_JUMP_TABLE_SETUP, 			//0
 	ZUNO_JUMP_TABLE_LOOP, 			//1
 	ZUNO_JUMP_TABLE_CALLBACK,		//2
-	ZUNO_GET_CHANNELS_ADDRESS, 		//3
-	ZUNO_GET_ASSOCIATIONS_ADDRESS,  //4
-	ZUNO_GET_SLEEPING_MODE, 		//5
-	ZUNO_GET_DEBUG_MODE_PARAM, 		//6
 };
-
+// KNOWN CHANNEL TYPES
 enum {
 	ZUNO_SWITCH_BINARY_CHANNEL_NUMBER = 1, 			//0x01
 	ZUNO_SWITCH_MULTILEVEL_CHANNEL_NUMBER, 			//0x02
@@ -146,14 +186,16 @@ enum {
 	ZUNO_BLINDS_CHANNEL_NUMBER,
 	ZUNO_END_OF_SUPPORTED_CC_NUM,
 };
-
+// FW UPGRADE AUTHORIZATIONS
 enum
 {
 	ZUNO_FWUPGRADE_AUTHRADIO_LOCKED = 0,
 	ZUNO_FWUPGRADE_AUTHRADIO_ANY	= 0xFFFFFFFF
 
 };
-
+// ----------------------------------------------------------
+// ISR
+// ----------------------------------------------------------
 enum
 {
 	ZUNO_ISR_INT0,
@@ -170,16 +212,11 @@ enum
 #define ZUNO_EXT_INT1 	1
 #define ZUNO_EXT_ZEROX 	2
 
-
 #define ZUNO_EXT_TRIGGER_DISABLED 		0
 #define ZUNO_EXT_TRIGGER_FALLING_EDGE 	1
 #define ZUNO_EXT_TRIGGER_RISING_EDGE 	2
 #define ZUNO_EXT_TRIGGER_LOW_LEVEL		3
 #define ZUNO_EXT_TRIGGER_HIGH_LEVEL		4
-
-
-
-#define ZUNO_ISR_TABLE_ADDR 0x8020
 
 #define ZUNO_SETUP_ISR_INT0(FUNCTION_NAME)   	__code __at (ZUNO_ISR_TABLE_ADDR) 		ZUNO_ISR_DESCRIPTION ISR_VEC_INT0 =  { 0x02, FUNCTION_NAME}
 #define ZUNO_SETUP_ISR_INT0_DEFAULT()   	 	__code __at (ZUNO_ISR_TABLE_ADDR) 		ZUNO_ISR_DESCRIPTION ISR_VEC_INT0 =  { 0x22, 0x0000}
@@ -192,8 +229,11 @@ enum
 #define ZUNO_SETUP_ISR_1MSTIMER(FUNCTION_NAME)  __code __at (ZUNO_ISR_TABLE_ADDR + 12) 	ZUNO_ISR_DESCRIPTION ISR_VEC_1TM  =  { 0x02, FUNCTION_NAME}
 #define ZUNO_SETUP_ISR_1MSTIMER_DEFAULT()   	__code __at (ZUNO_ISR_TABLE_ADDR + 12) 	ZUNO_ISR_DESCRIPTION ISR_VEC_1TM  =  { 0x22, 0x0000}
 
+// ----------------------------------------------------------
+// CHANNELS CONFIGURAION HELPERS/CONSTANTS 
+// ----------------------------------------------------------
 
-//Sensor Binary types
+// Sensor Binary types
 #define ZUNO_SENSOR_BINARY_TYPE_GENERAL_PURPOSE 		0x01
 #define ZUNO_SENSOR_BINARY_TYPE_SMOKE 					0x02
 #define ZUNO_SENSOR_BINARY_TYPE_CO 						0x03
@@ -212,10 +252,7 @@ enum
 #define ZUNO_METER_TYPE_ELECTRIC	                    0x01
 #define ZUNO_METER_TYPE_GAS		                        0x02
 #define ZUNO_METER_TYPE_WATER		                    0x03
-
 #define ZUNO_METER_RESETABLE		                    0x80
-
-
 #define ZUNO_METER_ELECTRIC_SCALE_KWH	                 0x00
 #define ZUNO_METER_ELECTRIC_SCALE_KVAH		             0x01
 #define ZUNO_METER_ELECTRIC_SCALE_WATTS		             0x02
@@ -224,31 +261,23 @@ enum
 #define ZUNO_METER_ELECTRIC_SCALE_AMPS		     		 0x05
 #define ZUNO_METER_ELECTRIC_SCALE_POWERFACTOR		     0x06
 #define ZUNO_METER_ELECTRIC_SCALE_MST		  			 0x07
-
 #define ZUNO_METER_GAS_SCALE_METERS3	                 0x00
 #define ZUNO_METER_GAS_SCALE_FEET3		             	 0x01
 #define ZUNO_METER_GAS_SCALE_PULSECOUNT		    		 0x03
-
 #define ZUNO_METER_WATER_SCALE_METERS3	                 0x00
 #define ZUNO_METER_WATER_SCALE_FEET3		             0x01
 #define ZUNO_METER_WATER_SCALE_GALLONS		             0x02
 #define ZUNO_METER_WATER_SCALE_PULSECOUNT		    	 0x03
 #define ZUNO_METER_WATER_SCALE_MST		    	 		 0x07
-
-//Sensor Multilevel scales,sizes,precisions
-#define METER_PRECISION_ZERO_DECIMALS 					0x00
-#define METER_PRECISION_ONE_DECIMAL 					0x01
-#define METER_PRECISION_TWO_DECIMALS 					0x02
-#define METER_PRECISION_THREE_DECIMALS 					0x03
-
-#define METER_RESET_ENABLE 												0x01
-#define METER_RESET_DISABLE 												0x00
-
-
-#define METER_SIZE_ONE_BYTE 											0x01
-#define METER_SIZE_TWO_BYTES 											0x02
-#define METER_SIZE_FOUR_BYTES 											0x04
-
+#define METER_PRECISION_ZERO_DECIMALS 					 0x00
+#define METER_PRECISION_ONE_DECIMAL 					 0x01
+#define METER_PRECISION_TWO_DECIMALS 					 0x02
+#define METER_PRECISION_THREE_DECIMALS 					 0x03
+#define METER_RESET_ENABLE 								 0x01
+#define METER_RESET_DISABLE 							 0x00
+#define METER_SIZE_ONE_BYTE 							 0x01
+#define METER_SIZE_TWO_BYTES 							 0x02
+#define METER_SIZE_FOUR_BYTES 							 0x04
 #define METER_PROPERTIES_COMBINER(SCALE,SIZE,PRECISION) \
 			(((SIZE-1) & 0x03) << 6)| \
 			((SCALE & 0x07)) | \
@@ -297,118 +326,81 @@ enum
 #define ZUNO_SENSOR_MULTILEVEL_TYPE_MOISTURE                                            0x1F
 #define ZUNO_SENSOR_MULTILEVEL_TYPE_FREQUENCY                                           0x20
 #define ZUNO_SENSOR_MULTILEVEL_TYPE_TIME                                                0x21
-
-
 //Sensor Multilevel scales,sizes,precisions
 #define SENSOR_MULTILEVEL_PRECISION_ZERO_DECIMALS 									0x00
 #define SENSOR_MULTILEVEL_PRECISION_ONE_DECIMAL 									0x01
 #define SENSOR_MULTILEVEL_PRECISION_TWO_DECIMALS 									0x02
-
 #define SENSOR_MULTILEVEL_SIZE_ONE_BYTE 											0x01
 #define SENSOR_MULTILEVEL_SIZE_TWO_BYTES 											0x02
 #define SENSOR_MULTILEVEL_SIZE_FOUR_BYTES 											0x04
 
 // Air temperature
 #define SENSOR_MULTILEVEL_SCALE_CELSIUS 											0x00 
-
 //General purpose
 #define SENSOR_MULTILEVEL_SCALE_PERCENTAGE_VALUE									0x00 
-
 //Luminance
 #define SENSOR_MULTILEVEL_SCALE_LUX													0x01
-
 //Power
 #define SENSOR_MULTILEVEL_SCALE_WATT												0x00
 #define SENSOR_MULTILEVEL_SCALE_BTU_PER_HOUR										0x01
-
 //Humidity
 #define SENSOR_MULTILEVEL_SCALE_PERCENTAGE_VALUE									0x00 
-
-
 //Moisture
 #define SENSOR_MULTILEVEL_SCALE_PERCENTAGE_VALUE									0x00
-
 //Velocity
 #define SENSOR_MULTILEVEL_SCALE_METERS_PER_SECOND	 								0x00
-
 //Athmospheric pressure
 #define SENSOR_MULTILEVEL_SCALE_KILO_PASCAL 										0x00
-
 //Barometric pressure
 #define SENSOR_MULTILEVEL_SCALE_KILOPASCAL										0x00
-
 //Solar radiation
 #define SENSOR_MULTILEVEL_SCALE_WAVELENGTH_PER_SQUARE_METER								0x00
-
 //Dew point
 #define SENSOR_MULTILEVEL_SCALE_CELSIUS											0x00
-
 //Rain rate
 #define SENSOR_MULTILEVEL_SCALE_MILLIMETERS_PER_HOUR									0x00
-
 //Tide level
 #define SENSOR_MULTILEVEL_SCALE_METER											0x00
-
 //Weight
 #define SENSOR_MULTILEVEL_SCALE_KILOGRAM										0x00
-
 //Voltage
 #define SENSOR_MULTILEVEL_SCALE_VOLT											0x00
-
 //Current
 #define SENSOR_MULTILEVEL_SCALE_AMPERE											0x00
-
 //CO2 level
 #define SENSOR_MULTILEVEL_SCALE_PARTS_PER_MILLION										0x00
-
 //Air flow
 #define SENSOR_MULTILEVEL_SCALE_CUBIC_METER_PER_HOUR									0x00
-
 //Tank capacity
 #define SENSOR_MULTILEVEL_SCALE_LITER											0x00
-
 //Distance
 #define SENSOR_MULTILEVEL_SCALE_METER											0x00
-
 //Angle position
 #define SENSOR_MULTILEVEL_SCALE_PERCENTAGE_VALUE								0x00
-
 //Rotation
 #define SENSOR_MULTILEVEL_SCALE_REVOLUTION_PER_MINUTE  							0x00
-
 //Water temperature
 #define SENSOR_MULTILEVEL_SCALE_CELSIUS											0x00
-
 //Soil temperature
 #define SENSOR_MULTILEVEL_SCALE_CELSIUS											0x00
-
 //Seismic intensity 
 #define SENSOR_MULTILEVEL_SCALE_MERCALLI										0x00
-
 //Seismic magnitude 
 #define SENSOR_MULTILEVEL_SCALE_LOCAL											0x00
-
 //Ultraviolet
 #define SENSOR_MULTILEVEL_SCALE_ULTRAVIOLET_INDEX								0x00
-
 //Electrical conductivity 
 #define SENSOR_MULTILEVEL_SCALE_SIEMENS_PER_METER								0x00
-
 //Electrical resistivity 
 #define SENSOR_MULTILEVEL_SCALE_OHM_METER										0x00
-
 //Loudness
 #define SENSOR_MULTILEVEL_SCALE_DECIBELS										0x00
-
 //Frequency
 #define SENSOR_MULTILEVEL_SCALE_HERTZ											0x00
-
 //Time
 #define SENSOR_MULTILEVEL_SCALE_SECOND											0x00
-
 //Target temperature
 #define SENSOR_MULTILEVEL_SCALE_CELSIUS											0x00
-
 //Sensor Multilevel Properties
 #define SENSOR_MULTILEVEL_PROPERTIES_SIZE_MASK                                      0x07
 #define SENSOR_MULTILEVEL_PROPERTIES_SCALE_SHIFT                                    0x03
@@ -419,7 +411,6 @@ enum
 			(SIZE & SENSOR_MULTILEVEL_PROPERTIES_SIZE_MASK) | \
 			((SCALE << SENSOR_MULTILEVEL_PROPERTIES_SCALE_SHIFT) & SENSOR_MULTILEVEL_PROPERTIES_SCALE_MASK) | \
 			((PRECISION << SENSOR_MULTILEVEL_PROPERTIES_PRECISION_SHIFT) & SENSOR_MULTILEVEL_PROPERTIES_PRECISION_MASK)
-
 #define MACRO_CAST_POINTER_TO_VOID(FUNCTION) 										FUNCTION //((VOID_FUNC_POINTER_VOID) FUNCTION)
 
 // Sensor Binary also has a Notification CC, binded to it
@@ -515,7 +506,6 @@ enum {
 
 //TODO #define ZUNO_ASSOCIATION_GROUP_COLOR_CONTROL 		 		{}
 //TODO #define ZUNO_ASSOCIATION_GROUP_THERMOSTAT_CONTROL 		 	{}
-//TODO #define ZUNO_ASSOCIATION_GROUP_DOOR_LOCK_CONTROL 		 	{}
 
 
 // -----------------------------------------------------------------
@@ -536,22 +526,7 @@ enum {
 // -----------------------------------------------------------------
 				
 
-#define ZUNO_MAX_MULTI_CHANNEL_NUMBER 					10
-
-#define ZUNO_REPORT_NO_IMMEDIATE_VALUE 		0xffff
-#define zunoSendReport(CHANNEL)  			zunoSendUncolicitedReport(CHANNEL,ZUNO_REPORT_NO_IMMEDIATE_VALUE)
-
-#define ZUNO_DIMMING_UP				0
-#define ZUNO_DIMMING_DOWN 			1
-#define ZUNO_DIMMING_START			1
-#define ZUNO_DIMMING_STOP 			0
-
-#define zunoSendToGroupSetValueCommand(GROUP,VALUE) 					zunoSendAssociationCommand(GROUP,ZUNO_ASSOC_BASIC_SET_NUMBER,VALUE,0)
-#define zunoSendToGroupDimmingCommand(GROUP,DIRECTION,START_STOP) 		zunoSendAssociationCommand(GROUP,ZUNO_ASSOC_BASIC_SET_AND_DIM_NUMBER,DIRECTION,START_STOP)
-#define zunoSendToGroupScene(GROUP,SCENE_NUMBER) 						zunoSendAssociationCommand(GROUP,ZUNO_ASSOC_SCENE_ACTIVATION_NUMBER,SCENE_NUMBER,0)
-#define zunoSendToGroupDoorlockControl(GROUP,OPEN_CLOSE) 				zunoSendAssociationCommand(GROUP,ZUNO_ASSOC_DOORLOCK_CONTROL_NUMBER,OPEN_CLOSE,0)
-
-
+#define ZUNO_MAX_MULTI_CHANNEL_NUMBER 					32
 
 // SPI
 // -----------------------------------------------------------------
@@ -568,37 +543,6 @@ enum {
 #define MSBFIRST     0x01
 #define LSBFIRST     0x00
 // -----------------------------------------------------------------
-
-
-// Для совместимости с библиотеками Arduino используем определение частоты процессора
-#define F_CPU			  16000000
-// Версия Arduino
-#define ARDUINO 		    152	
-#define DEG_TO_RAD 			0.017453292519
-#define RAD_TO_DEG 			57.29577951308
-#define EULER 				2.718281828459
-
-#define min(a,b) 				((a)<(b)?(a):(b))
-#define max(a,b) 				((a)>(b)?(a):(b))
-#define abs(x) 					((x)>0?(x):-(x))
-#define constrain(amt,low,high) ((amt)<(low)?(low):((amt)>(high)?(high):(amt)))
-#define round(x)     			((x)>=0?(long)((x)+0.5):(long)((x)-0.5))
-#define radians(deg) 			((deg)*DEG_TO_RAD)
-#define degrees(rad) 			((rad)*RAD_TO_DEG)
-#define sq(x) 					((x)*(x))
- 
-// Битовые операции
-#define bitRead(value, bit) (((value) >> (bit)) & 0x01)
-#define bitSet(value, bit) ((value) |= (1UL << (bit)))
-#define bitClear(value, bit) ((value) &= ~(1UL << (bit)))
-#define bitWrite(value, bit, bitvalue) (bitvalue ? bitSet(value, bit) : bitClear(value, bit))
-#define _BV(bit) (1 << (bit))
-
-
-#define lowByte(w) ((uint8_t) ((w) & 0xff))
-#define highByte(w) ((uint8_t) ((w) >> 8))
-								
-#define _NOP()  NOPS(1)
 
 
 #define CHANGE 1
@@ -638,9 +582,8 @@ enum {
 #define SKETCH_FLAG_DEBUG 			0x80
 #define SKETCH_FLAG_FLIRS			0x03
 #define SKETCH_FLAG_SLEEPING		0x01
-#define SKETCH_USERSTRUCT_ADDRESS 	0x2E00
-#define CALLBACK_TRANSLATION_ADDR   0x2D00 
-#define MAIN_SKETCH_CONFIG_ADDR     0x7200
+#define ZUNO_MAX_PARAMDATA		   	12	
+
 enum
 {
 	ZUNO_CONFIG_DEFAULT,
@@ -648,9 +591,9 @@ enum
 	ZUNO_CONFIG_CURRENT
 };
 
-#define ZUNO_CLEAR_CHANNELS() g_user_sketch->n_channels = 0
-#define ZUNO_CLEAR_ASSOCIATIONS() g_user_sketch->n_assocs = 0
-#define ZUNO_CLEAR_FLAGS() g_user_sketch->flags = 0
+#define ZUNO_CLEAR_CHANNELS() g_user_sketch.n_channels = 0
+#define ZUNO_CLEAR_ASSOCIATIONS() g_user_sketch.n_assocs = 0
+#define ZUNO_CLEAR_FLAGS() g_user_sketch.flags = 0
 #define ZUNO_START_CONFIG() ZUNO_CLEAR_FLAGS();\
 							ZUNO_CLEAR_CHANNELS();\
 							ZUNO_CLEAR_ASSOCIATIONS()
@@ -661,43 +604,89 @@ enum
 #define ZUNO_ADD_ASSOCIATION(TYPE) zunoAddAssociation(TYPE)
 #define ZUNO_GET_CONFIG_STATE() (g_ptr_config[ZUNO_CFG_BYTE_USERMODE])
 
-
-
-
-
-
-#define ZUNO_MODE_SLEEPING() g_user_sketch->flags |= SKETCH_FLAG_SLEEPING
-#define ZUNO_MODE_FLIRS() g_user_sketch->flags |= SKETCH_FLAG_FLIRS
-#define ZUNO_MODE_ALWAYS_AWAKE() g_user_sketch->flags &= ~(SKETCH_FLAG_FLIRS)
-#define ZUNO_DEBUG_ON() g_user_sketch->flags |= (SKETCH_FLAG_DEBUF)
-#define ZUNO_DEBUG_OFF() g_user_sketch->flags &= ~(SKETCH_FLAG_DEBUF)
+#define ZUNO_MODE_SLEEPING() g_user_sketch.flags |= SKETCH_FLAG_SLEEPING
+#define ZUNO_MODE_FLIRS() g_user_sketch.flags |= SKETCH_FLAG_FLIRS
+#define ZUNO_MODE_ALWAYS_AWAKE() g_user_sketch.flags &= ~(SKETCH_FLAG_FLIRS)
+#define ZUNO_DEBUG_ON() g_user_sketch.flags |= (SKETCH_FLAG_DEBUG)
+#define ZUNO_DEBUG_OFF() g_user_sketch.flags &= ~(SKETCH_FLAG_DEBUG)
 #define ZUNO_COMMIT_CONFIG() zunoCommitConfig()
 
 #define SETTER_BIT 0x01
+#define CONFIG_DATA_FLAG 0x40
+
 enum
 {
-	ZUNO_CHANNEL1_GETTER = (1 << 1),
-	ZUNO_CHANNEL1_SETTER = (1<<1) | 1,
+	ZUNO_CHANNEL1_GETTER = (1<<1),
+	ZUNO_CHANNEL1_SETTER = (1<<1) | SETTER_BIT,
 	ZUNO_CHANNEL2_GETTER = (2<<1),
-	ZUNO_CHANNEL2_SETTER = (2<<1) | 1,
+	ZUNO_CHANNEL2_SETTER = (2<<1) | SETTER_BIT,
 	ZUNO_CHANNEL3_GETTER = (3<<1),
-	ZUNO_CHANNEL3_SETTER = (3<<1) | 1,
+	ZUNO_CHANNEL3_SETTER = (3<<1) | SETTER_BIT,
 	ZUNO_CHANNEL4_GETTER = (4<<1),
-	ZUNO_CHANNEL4_SETTER = (4<<1) | 1,	
+	ZUNO_CHANNEL4_SETTER = (4<<1) | SETTER_BIT,	
 	ZUNO_CHANNEL5_GETTER = (5<<1),
-	ZUNO_CHANNEL5_SETTER = (5<<1) | 1,
+	ZUNO_CHANNEL5_SETTER = (5<<1) | SETTER_BIT,
 	ZUNO_CHANNEL6_GETTER = (6<<1),
-	ZUNO_CHANNEL6_SETTER = (6<<1) | 1,
+	ZUNO_CHANNEL6_SETTER = (6<<1) | SETTER_BIT,
 	ZUNO_CHANNEL7_GETTER = (7<<1),
-	ZUNO_CHANNEL7_SETTER = (7<<1) | 1,
+	ZUNO_CHANNEL7_SETTER = (7<<1) | SETTER_BIT,
 	ZUNO_CHANNEL8_GETTER = (8<<1),
-	ZUNO_CHANNEL8_SETTER = (8<<1) | 1,
+	ZUNO_CHANNEL8_SETTER = (8<<1) | SETTER_BIT,
 	ZUNO_CHANNEL9_GETTER = (9<<1),
-	ZUNO_CHANNEL9_SETTER = (9<<1) | 1,
+	ZUNO_CHANNEL9_SETTER = (9<<1) | SETTER_BIT,
 	ZUNO_CHANNEL10_GETTER = (10<<1),
-	ZUNO_CHANNEL10_SETTER = (10<<1) | 1
+	ZUNO_CHANNEL10_SETTER = (10<<1) | SETTER_BIT,
+	ZUNO_CHANNEL11_GETTER = (11<<1),
+	ZUNO_CHANNEL11_SETTER = (11<<1) | SETTER_BIT,
+	ZUNO_CHANNEL12_GETTER = (12<<1),
+	ZUNO_CHANNEL12_SETTER = (12<<1) | SETTER_BIT,
+	ZUNO_CHANNEL13_GETTER = (13<<1),
+	ZUNO_CHANNEL13_SETTER = (13<<1) | SETTER_BIT,
+	ZUNO_CHANNEL14_GETTER = (14<<1),
+	ZUNO_CHANNEL14_SETTER = (14<<1) | SETTER_BIT,	
+	ZUNO_CHANNEL15_GETTER = (15<<1),
+	ZUNO_CHANNEL15_SETTER = (15<<1) | SETTER_BIT,
+	ZUNO_CHANNEL16_GETTER = (16<<1),
+	ZUNO_CHANNEL16_SETTER = (16<<1) | SETTER_BIT,
+	ZUNO_CHANNEL17_GETTER = (17<<1),
+	ZUNO_CHANNEL17_SETTER = (17<<1) | SETTER_BIT,
+	ZUNO_CHANNEL18_GETTER = (18<<1),
+	ZUNO_CHANNEL18_SETTER = (18<<1) | SETTER_BIT,
+	ZUNO_CHANNEL19_GETTER = (19<<1),
+	ZUNO_CHANNEL19_SETTER = (19<<1) | SETTER_BIT,
+	ZUNO_CHANNEL20_GETTER = (20<<1),
+	ZUNO_CHANNEL20_SETTER = (20<<1) | SETTER_BIT,
+	ZUNO_CHANNEL21_GETTER = (21<<1),
+	ZUNO_CHANNEL21_SETTER = (21<<1) | SETTER_BIT,
+	ZUNO_CHANNEL22_GETTER = (22<<1),
+	ZUNO_CHANNEL22_SETTER = (22<<1) | SETTER_BIT,
+	ZUNO_CHANNEL23_GETTER = (23<<1),
+	ZUNO_CHANNEL23_SETTER = (23<<1) | SETTER_BIT,
+	ZUNO_CHANNEL24_GETTER = (24<<1),
+	ZUNO_CHANNEL24_SETTER = (24<<1) | SETTER_BIT,	
+	ZUNO_CHANNEL25_GETTER = (25<<1),
+	ZUNO_CHANNEL25_SETTER = (25<<1) | SETTER_BIT,
+	ZUNO_CHANNEL26_GETTER = (26<<1),
+	ZUNO_CHANNEL26_SETTER = (26<<1) | SETTER_BIT,
+	ZUNO_CHANNEL27_GETTER = (27<<1),
+	ZUNO_CHANNEL27_SETTER = (27<<1) | SETTER_BIT,
+	ZUNO_CHANNEL28_GETTER = (28<<1),
+	ZUNO_CHANNEL28_SETTER = (28<<1) | SETTER_BIT,
+	ZUNO_CHANNEL29_GETTER = (29<<1),
+	ZUNO_CHANNEL29_SETTER = (29<<1) | SETTER_BIT,
+	ZUNO_CHANNEL30_GETTER = (30<<1),
+	ZUNO_CHANNEL30_SETTER = (30<<1) | SETTER_BIT,
+	ZUNO_CHANNEL31_GETTER = (31<<1),
+	ZUNO_CHANNEL31_SETTER = (31<<1) | SETTER_BIT,
+	ZUNO_CHANNEL32_GETTER = (32<<1),
+	ZUNO_CHANNEL32_SETTER = (32<<1) | SETTER_BIT,
+	ZUNO_BATTERY_GETTER = 0x80
 };
 
+#define ZUNO_WUPFLAGS_INT1_LOW     0x00
+#define ZUNO_WUPFLAGS_INT1_HIGH    0x01
+#define ZUNO_WUPFLAGS_INT1_KEYSCAN 0x02
 
+#define F_CPU			  16000000
 
 #endif // #define __ZUNO_DEFINES___

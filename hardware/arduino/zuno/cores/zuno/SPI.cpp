@@ -1,7 +1,8 @@
 #include "SPI.h"
 
 #include "ZUNO_Definitions.h"
-#include "ZUNO_call_proto.h"
+//#include "ZUNO_call_proto.h"
+#include "ZUNO_Channels.h"
 
 #define SPI_BEGIN_FUNC_VEC(n) (n + 0)
 #define SPI_ENABLE_FUNC_VEC(n) (n + 1)
@@ -56,81 +57,41 @@ void SPIClass::begin()
 }
 void SPIClass::beginTransaction(SPISettings * settings)
 {
-
-
   uint8_t speed = settings->getClock();
   uint8_t mode = settings->getMode();
   uint8_t border = settings->getBitOrder();
-
-
   if  (  (speed > SPI_SPEED_1_MHZ) || (mode > SPI_MODE3) || (border > MSBFIRST)) {
     // unsupported values
     return;
   }
-
-  zunoPushByte(speed | (mode << 2) | (border << 4));
-  zunoPushByte(SPI_BEGIN_FUNC_VEC(begin_func_vec));
-  zunoCall();
-
-  zunoPushByte(TRUE);
-  zunoPushByte(SPI_ENABLE_FUNC_VEC(begin_func_vec));
-  zunoCall();
-
+  zunoSysCall(SPI_BEGIN_FUNC_VEC(begin_func_vec), byte(speed | (mode << 2) | (border << 4)));
+  zunoSysCall(SPI_ENABLE_FUNC_VEC(begin_func_vec), byte(TRUE));
 }
 uint8_t SPIClass::transfer(uint8_t data)
 {
-   uint8_t ret;
-
    data_tmp = data;
-
-   zunoPushWord(reinterpPOINTER(&data_tmp));
-   zunoPushByte(1);
-   zunoPushByte(SPI_TRANSFER_FUNC_VEC(begin_func_vec));
-   zunoCall(); 
-
+   zunoSysCall(SPI_TRANSFER_FUNC_VEC(begin_func_vec), byte(1), &data_tmp);
    return data_tmp;
 }
 uint16_t SPIClass::transfer16(uint16_t data)
 {
-    uint8_t in_out[2];
-    uint8_t i;
-    WORD    result =0;
-    
+    uint8_t in_out[2]; 
     in_out[0] = data >> 8;
     in_out[1] = data & 0xFF;
-    
-    zunoPushWord(reinterpPOINTER(in_out));
-    zunoPushByte(2);
-    zunoPushByte(SPI_TRANSFER_FUNC_VEC(begin_func_vec));
-    zunoCall(); 
-    
-    result = in_out[0];
-    result <<= 8;
-    result += in_out[1];
-
-    return result;
-       
+    zunoSysCall(SPI_TRANSFER_FUNC_VEC(begin_func_vec), byte(2), &in_out); 
+    return *((word*)in_out);  
 }
 void SPIClass::transfer(void *buf, size_t count)
 {
-    zunoPushWord(reinterpPOINTER((BYTE*)buf));
-    zunoPushByte(count);
-    zunoPushByte(SPI_TRANSFER_FUNC_VEC(begin_func_vec));
-    zunoCall(); 
-    
+    zunoSysCall(SPI_TRANSFER_FUNC_VEC(begin_func_vec), byte(count), buf); 
 }
 void SPIClass::endTransaction(void)
 {
-    zunoPushByte(FALSE);
-    zunoPushByte(SPI_ENABLE_FUNC_VEC(begin_func_vec));
-    zunoCall();
-
+    zunoSysCall(SPI_ENABLE_FUNC_VEC(begin_func_vec), byte(FALSE));
 }
 void SPIClass::end()
 { 
-    zunoPushByte(FALSE);
-    zunoPushByte(SPI_ENABLE_FUNC_VEC(begin_func_vec));
-    zunoCall();
+    zunoSysCall(SPI_ENABLE_FUNC_VEC(begin_func_vec), byte(FALSE));
 }
 // Глобальная переменнная для SPI0
 SPIClass SPI0(ZUNO_FUNC_SPI0_INIT);

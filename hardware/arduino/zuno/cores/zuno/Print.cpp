@@ -66,12 +66,12 @@ size_t Print::print(char c)
   return write(c);
 }
 
-size_t Print::print(unsigned char b, int base)
+size_t Print::print(unsigned char b, uint8_t base)
 {
   return printNumber((unsigned long)b, base);
 }
 
-size_t Print::print(int n, int base)
+size_t Print::print(int n, uint8_t base)
 {
   byte add_sz = 0;
   if (base == 0) 
@@ -86,12 +86,12 @@ size_t Print::print(int n, int base)
   return printNumber(((unsigned long)n)&0xFFFF, base) + add_sz; 
 }
 
-size_t Print::print(unsigned int n, int base)
+size_t Print::print(unsigned int n, uint8_t base)
 {
   return print(((unsigned long) n) & 0xFFFF, base);
 }
 
-size_t Print::print(long n, int base)
+size_t Print::print(long n, uint8_t base)
 {
   byte add_sz = 0;
   if (base == 0) 
@@ -107,7 +107,7 @@ size_t Print::print(long n, int base)
   
 }
 
-size_t Print::print(unsigned long n, int base)
+size_t Print::print(unsigned long n, uint8_t base)
 {
   if (base == 0) 
     return write(n);
@@ -115,11 +115,11 @@ size_t Print::print(unsigned long n, int base)
   
 }
 
-size_t Print::print(float n, int digits)
+size_t Print::print(float n, uint8_t digits)
 {
   return printFloat(n, digits);
 }
-size_t Print::print(double n, int digits)
+size_t Print::print(double n, uint8_t digits)
 {
   return printFloat((double)n, digits);
 }
@@ -161,48 +161,48 @@ size_t Print::println(char c)
   return 1+NEW_LINE_ADDN;
 }
 
-size_t Print::println(unsigned char b, int base)
+size_t Print::println(unsigned char b, uint8_t base)
 {
   print(b, base);
   JUST_NEW_LINE;
   return g_n+NEW_LINE_ADDN;
 }
 
-size_t Print::println(int num, int base)
+size_t Print::println(int num, uint8_t base)
 {
   print(num, base);
   JUST_NEW_LINE;
   return g_n+NEW_LINE_ADDN;
 }
 
-size_t Print::println(unsigned int num, int base)
+size_t Print::println(unsigned int num, uint8_t base)
 {
   print(num, base);
   JUST_NEW_LINE;
   return g_n+NEW_LINE_ADDN;
 }
 
-size_t Print::println(long num, int base)
+size_t Print::println(long num, uint8_t base)
 {
   print(num, base);
   JUST_NEW_LINE;
   return g_n+NEW_LINE_ADDN;
 }
 
-size_t Print::println(unsigned long num, int base)
+size_t Print::println(unsigned long num, uint8_t base)
 {
   print(num, base);
   JUST_NEW_LINE;
   return g_n+NEW_LINE_ADDN;
 }
 
-size_t Print::println(float num, int digits)
+size_t Print::println(float num, uint8_t digits)
 {
   printFloat(num, digits);
   JUST_NEW_LINE;
   return g_n+NEW_LINE_ADDN;
 }
-size_t Print::println(double num, int digits)
+size_t Print::println(double num, uint8_t digits)
 {
   printFloat((float)num, digits);
   JUST_NEW_LINE;
@@ -242,60 +242,6 @@ size_t Print::printNumber(unsigned long n, uint8_t base) {
   return g_n;
 }
 
-/*
-
-size_t  Print::printByteArr(uint8_t * bytearr, uint8_t len, uint8_t base) {
-  
-  uint8_t i;
-  uint8_t num;
-  char    c;
-  uint8_t have_one_non_zero = false;
-
-  g_n = 0;
-  
-
-
-  
-  // prevent crash if called with base == 1
-  if (base < 2) base = 10;
-
-  // На всякий случай!
-  g_digit_len = 0;
-
-  for(g_i=0; g_i<len; g_i++)
-  {
-        if(g_digit_order)
-           num = bytearr[g_i];
-        else
-           num = bytearr[len - g_i - 1];
-
-        // Убираем лидирующие нули
-        if(num == 0 && !have_one_non_zero && g_i != len-1)
-           continue; 
-        have_one_non_zero = true; 
-
-        do
-        {
-            c   = num % base;
-            num /= base;
-            g_digit_buffer[g_digit_len++] = c < 10 ? c + '0' : c + 'A' - 10; 
-
-        }while(num);
-        
-        g_n += g_digit_len;
-        while(g_digit_len)
-        {
-            g_digit_len--;
-            write(g_digit_buffer[g_digit_len]);
-            
-        }
-      
-  }
-
-
-  return g_n;
-}
-*/
 size_t Print::printFloat(float number, uint8_t digits) 
 { 
   g_n = 0;

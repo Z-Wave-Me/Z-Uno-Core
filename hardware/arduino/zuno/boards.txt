@@ -4,7 +4,8 @@ menu.cpu=Processor
 menu.Frequency=Frequency
 menu.Security=Security
 menu.MuliCommand=Multicommand
-
+menu.LogOutput=Logging
+menu.NVMClean=Erase NVM
 ##############################################################
 zuno.name=Z-Wave>ME Z-Uno
 
@@ -56,7 +57,6 @@ zuno.menu.Frequency.ANz.build.rf_freq = ANZ
 zuno.menu.Frequency.Ch.build.rf_freq = CN
 zuno.menu.Frequency.Hk.build.rf_freq = HK
 
-
 zuno.menu.Security.Off = Disabled
 zuno.menu.Security.On = Enabled
 zuno.menu.Security.Off.build.security = 0
@@ -66,3 +66,26 @@ zuno.menu.MuliCommand.Off = Disabled
 zuno.menu.MuliCommand.On = Enabled
 zuno.menu.MuliCommand.Off.build.multicmd = 0
 zuno.menu.MuliCommand.On.build.multicmd = 1
+
+zuno.menu.LogOutput.Off = Disabled
+zuno.menu.LogOutput.Radio = Radio
+zuno.menu.LogOutput.UART0 = UART0
+zuno.menu.LogOutput.RUART = Radio + UART0
+zuno.menu.LogOutput.Off.build.log_mode 		= 0
+zuno.menu.LogOutput.Radio.build.log_mode 	= 1
+zuno.menu.LogOutput.UART0.build.log_mode 	= 2
+zuno.menu.LogOutput.RUART.build.log_mode 	= 3
+
+zuno.menu.NVMClean.Off=Disabled
+zuno.menu.NVMClean.User=User Space
+zuno.menu.NVMClean.System=System Space
+zuno.menu.NVMClean.All=All
+zuno.menu.NVMClean.Off.build.nvm_clean=off
+zuno.menu.NVMClean.User.build.nvm_clean=user
+zuno.menu.NVMClean.System.build.nvm_clean=system
+zuno.menu.NVMClean.All.build.nvm_clean=all
+
+
+
+
+
