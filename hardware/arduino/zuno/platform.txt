@@ -68,7 +68,7 @@ tools.zprog.erase.pattern="{cmd.path}" erase -d {serial.port}
 
 tools.zprog.bootloader.params.verbose=-v
 tools.zprog.bootloader.params.quiet=-q
-tools.zprog.bootloader.pattern="{cmd.path}" boot -p "{runtime.platform.path}/bootloaders/" -d {serial.port}
+tools.zprog.bootloader.pattern="{cmd.path}" boot -p "{runtime.platform.path}/bootloaders/" -d {serial.port} -fr {build.rf_freq} --param "sec={build.security}"
 
 
 # USB Default Flags

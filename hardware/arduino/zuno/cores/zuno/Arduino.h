@@ -1,6 +1,7 @@
 #pragma once
 #include "ArduinoTypes.h"
 #include "ZUNO_Definitions.h"
+#include "binary.h" // to make somebody that don't use hexadecimal values happy
 // Additional libraries with "pluses"
 #include "HardwareSerial.h" // Serial support
 // All common c-style fubctions

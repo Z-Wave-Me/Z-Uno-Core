@@ -46,6 +46,8 @@ zuno.menu.Frequency.Il = Israel
 zuno.menu.Frequency.ANz = Australia & New Zealand, Brazil
 zuno.menu.Frequency.Ch = China
 zuno.menu.Frequency.Hk = Hong Kong
+zuno.menu.Frequency.Jp = Japan
+zuno.menu.Frequency.Kr = Korea
 
 
 zuno.menu.Frequency.Ru.build.rf_freq = RU
@@ -56,6 +58,8 @@ zuno.menu.Frequency.Il.build.rf_freq = IL
 zuno.menu.Frequency.ANz.build.rf_freq = ANZ
 zuno.menu.Frequency.Ch.build.rf_freq = CN
 zuno.menu.Frequency.Hk.build.rf_freq = HK
+zuno.menu.Frequency.Jp.build.rf_freq = JP
+zuno.menu.Frequency.Kr.build.rf_freq = KR
 
 zuno.menu.Security.Off = Disabled
 zuno.menu.Security.On = Enabled
