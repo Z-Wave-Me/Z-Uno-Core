@@ -24,23 +24,48 @@
 #include "Wire.h"
 
 
-
-#define _sendTWIcommand(D) Wire.beginTransmission(SSD1306_ADDR);\
-  						   Wire.write(SSD1306_COMMAND);\
-  						   Wire.write(D);\
-  						   Wire.endTransmission();	
-
-OLED::OLED()
-{ 
-}
-/*
-void OLED::sendTWIcommand(byte d)
-{
+// Macroses to make code clean
+// ----------------------------------------------------------------------------------------------------------------
+#define _sendTWIcommand(D) g_oled_command = D; OLED_writeCommand();
+#define _sendTWIAddr(a1,a2,a3,a4) g_oled_addr1=a1;g_oled_addr2=a2;g_oled_addr3=a3;g_oled_addr4=a4;OLED_SetAdress();
+//-----------------------------------------------------------------------------------------------------------------
+extern byte g_oled_command;
+extern word g_oled_count;
+extern byte g_oled_cb;
+extern byte g_oled_addr1;
+extern byte g_oled_addr2;
+extern byte g_oled_addr3;
+extern byte g_oled_addr4;
+// -----------------------------------------------------
+// GLOBAL variables
+byte g_oled_command = 0;
+byte g_oled_addr1 = 0;
+byte g_oled_addr2 = 0;
+byte g_oled_addr3 = 0;
+byte g_oled_addr4 = 0;
+byte g_oled_cb;
+word g_oled_count;
+// -----------------------------------------------------
+// -----------------------------------------------------
+// Auxilary functions to reduce stack & memory usage
+// -----------------------------------------------------
+void OLED_writeCommand() {
 	Wire.beginTransmission(SSD1306_ADDR);
   	Wire.write(SSD1306_COMMAND);
-  	Wire.write();
-  	Wire.endTransmission();
-}*/
+  	Wire.write(g_oled_command);
+  	Wire.endTransmission();	
+}
+void OLED_SetAdress() {
+	_sendTWIcommand(SSD1306_SET_COLUMN_ADDR);
+	_sendTWIcommand(g_oled_addr1);
+	_sendTWIcommand(g_oled_addr2);
+	_sendTWIcommand(SSD1306_SET_PAGE_ADDR);
+	_sendTWIcommand(g_oled_addr3);
+	_sendTWIcommand(g_oled_addr4);
+}
+// -----------------------------------------------------
+OLED::OLED(){ 
+}
 void OLED::begin()
 {
 	
@@ -79,70 +104,33 @@ void OLED::begin()
 }
 void OLED::clrscr()
 {
-	_sendTWIcommand(SSD1306_SET_COLUMN_ADDR);
-	_sendTWIcommand(0);
-	_sendTWIcommand(127);
-
-	_sendTWIcommand(SSD1306_SET_PAGE_ADDR);
-	_sendTWIcommand(0);
-	_sendTWIcommand(3);
-
-
+	_sendTWIAddr(0,127,0,7);
 	Wire.beginTransmission(SSD1306_ADDR);
   	Wire.write(SSD1306_DATA_CONTINUE);
-  	word count = 512;
-  	while(count--)
-	{
+  	g_oled_count = 1024;
+  	while(g_oled_count--)
 		Wire.write(0x00);
-		//if((count % 16) == 0)
-		//	delay(1);
-	}
 	Wire.endTransmission();	
-	delay(5);
-
-	/*_sendTWIcommand(SSD1306_SET_COLUMN_ADDR);
-	_sendTWIcommand(0);
-	_sendTWIcommand(127);*/
-
-	_sendTWIcommand(SSD1306_SET_PAGE_ADDR);
-	_sendTWIcommand(4);
-	_sendTWIcommand(7);
-
-
-	Wire.beginTransmission(SSD1306_ADDR);
-  	Wire.write(SSD1306_DATA_CONTINUE);
-  	count = 512;
-  	while(count--)
-	{
-		Wire.write(0x00);
-		//if((count % 16) == 0)
-		//	delay(1);
-	}
-	Wire.endTransmission();	
-	_sendTWIcommand(SSD1306_SET_PAGE_ADDR);
-	_sendTWIcommand(0);
-	_sendTWIcommand(3);
-
 
 
 }
-void OLED::writeData(byte * pdata, byte p1, byte p2, byte c1, byte c2)
-{
-	_sendTWIcommand(SSD1306_SET_COLUMN_ADDR);
-	_sendTWIcommand(c1);
-	_sendTWIcommand(c2);
-
-	_sendTWIcommand(SSD1306_SET_PAGE_ADDR);
-	_sendTWIcommand(p1);
-	_sendTWIcommand(p2);
-
+// It's a bad idea to take there a lot of variables
+// Just pass pointer to structure like this
+// struct OLED_SPRITE_IMAGE { byte w; byte h; byte data[MAX_DATA]};
+// NOTICE: structure uses a native format of the display 
+// 		   w has pixel units,
+// 		   h has 8-pixel block units
+//         data  packed by columns. Each byte contains 8 verticals pixels of current column
+void OLED::writeData(byte * pdata) {
+	_sendTWIAddr(cx,cx+pdata[0],cy,cy+pdata[1]);
+	// Write data consiquently
 	Wire.beginTransmission(SSD1306_ADDR);
   	Wire.write(SSD1306_DATA_CONTINUE);
-
-  	word count = (p2 - p1 + 1)*(c2 - c1 + 1);
-	
-  	while(count--)
-	{
+  	g_oled_count = pdata[0]*pdata[1];
+  	// Shift to the beginning of the image data
+  	pdata += 2;
+  	// Go->>>
+  	while(g_oled_count--) {
 		Wire.write(*pdata);
 		pdata++;
 	}
@@ -253,75 +241,66 @@ byte SmallFont[]  =
 		0x00, 0x00, 0x82, 0x7C, 0x10, 0x00,   // }
 		0x00, 0x00, 0x06, 0x09, 0x09, 0x06    // ~ (Degrees)
 	};
-size_t OLED::write(uint8_t value)
-{
-	
-
-
+void OLED::write(uint8_t value) {
+	// Process carrage return
 	if(value == '\r')
-		return 0;
-	if(value == '\n')
-	{
-		cy = (cy + 1)%8;
+	{	
+		// Carrage return
 		cx = 0;	
-		return 0;
+		return;
 	}
-	
-
-	{
-		//writeData(&SmallFont[6*(value - 0x20)+4], cy, cy, cx, cx + 5);
-		_sendTWIcommand(SSD1306_SET_COLUMN_ADDR);
-		_sendTWIcommand(cx);
-		_sendTWIcommand(cx+5);
-
-		_sendTWIcommand(SSD1306_SET_PAGE_ADDR);
-		_sendTWIcommand(cy);
-		_sendTWIcommand(cy);
-
-		Wire.beginTransmission(SSD1306_ADDR);
-  		Wire.write(SSD1306_DATA_CONTINUE);
-
-  		byte count = 6;
-		word i = 6*(value - 0x20)+4;
-  		while(count--)
-		{
-			Wire.write(SmallFont[i]);//*pdata);
-			i++;
-			//pdata++;
-		}
-		Wire.endTransmission();	
-
-		cx += 6;
-		if((cx + 6) > 127)
-		{
-			cx = 0;
-			cy = (cy + 1)%8;
-		}
+	// Process NEWLINE
+	if(value == '\n') {
+		// Next line
+		cy = (cy + 1)%8;
+		// Carrage return
+		cx = 0;	
+		return;
 	}
-
-	return 1;
-
+	// We use small font and it uses only 6 raws of data
+	g_oled_cb = 6;
+	// Calculate start "pixel" of the symbol
+	// Font starts from the "space" symbol (CODE = 0x20)
+	// Every sybol uses 6 bytes of font 
+	g_oled_count = 6*(value - 0x20)+4;
+	// Setting up working area columns cx..cx+5, row = cy
+	_sendTWIAddr(cx,cx+5,cy,cy);
+	// Send data to display consiquently
+	Wire.beginTransmission(SSD1306_ADDR);
+  	Wire.write(SSD1306_DATA_CONTINUE);
+  	while(g_oled_cb--) {
+		Wire.write(SmallFont[g_oled_count]);
+		g_oled_count++;
+	}
+	Wire.endTransmission();	
+	// Increase the current position 
+	cx += 6;
+	// Increase the current line
+	if((cx + 6) > 127){
+		cx = 0;
+		cy = (cy + 1)%8;
+	}
 
 }
-void OLED::gotoXY(byte x, byte y)
-{
+void OLED::on() {
+	_sendTWIcommand(SSD1306_DISPLAY_ON);
+}
+void OLED::off() {
+	_sendTWIcommand(SSD1306_DISPLAY_OFF);
+}
+void OLED::gotoXY(byte x, byte y) {
 	cx = x;
 	cy = y;
 }
-void OLED::setBrightness(uint8_t value)
-{
+void OLED::setBrightness(uint8_t value) {
 	_sendTWIcommand(SSD1306_SET_CONTRAST_CONTROL);
 	_sendTWIcommand(value);
 }
-
-void OLED::invert(bool mode)
-{
-	if (mode)
-	{
+void OLED::invert(bool mode) {
+	if (mode) {
 		_sendTWIcommand(SSD1306_INVERT_DISPLAY);
 	}
-	else
-	{
+	else {
 		_sendTWIcommand(SSD1306_NORMAL_DISPLAY);
 	}
 }

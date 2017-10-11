@@ -21,42 +21,47 @@ class Print
 {
   private:
     int     write_error;
-    size_t printNumber(unsigned long, uint8_t);
-    size_t printFloat(float, uint8_t);
-    size_t printByteArr(uint8_t * bytearr, uint8_t len, uint8_t base);
+    uint8_t dump_line_size;
   protected:
     void setWriteError(int err = 1) { write_error = err; }
   public:
-    Print() { write_error = 0; }
+    Print() { write_error = 0; dump_line_size = 10;};
   
     int getWriteError() { return write_error; }
     void clearWriteError() { setWriteError(0); }
-  
-    virtual size_t write(uint8_t a){ return 0; };// = 0;
-    virtual size_t write(uint8_t *buffer, size_t size);
-    
-    size_t print(char *);
-    size_t print(char);
-    size_t print(unsigned char, uint8_t = DEC);
-    size_t print(int, uint8_t = DEC);
-    size_t print(unsigned int, uint8_t = DEC);
-    size_t print(long, uint8_t = DEC);
-    size_t print(unsigned long, uint8_t = DEC);
-    size_t print(float, uint8_t = 2);
-    size_t print(double, uint8_t = 2);
+    void setDumpLine(uint8_t line_size) {dump_line_size = line_size;};
 
 
-    size_t println(char *);
-    size_t println(char);
-    size_t println(unsigned char, uint8_t = DEC);
-    size_t println(int, uint8_t = DEC);
-    size_t println(unsigned int, uint8_t = DEC);
-    size_t println(long, uint8_t = DEC);
-    size_t println(unsigned long, uint8_t = DEC);
-    size_t println(float, uint8_t = 2);
-    size_t println(double, uint8_t = 2);
+    virtual void write(uint8_t a){ };// = 0;
+    virtual uint8_t write(uint8_t *buffer, size_t size);
     
-    size_t println(void);
+    uint8_t print(char *);
+    uint8_t print(char);
+    uint8_t print(unsigned char, uint8_t = DEC);
+    uint8_t print(int, uint8_t = DEC);
+    uint8_t print(unsigned int, uint8_t = DEC);
+    uint8_t print(long, uint8_t = DEC);
+    uint8_t print(unsigned long, uint8_t = DEC);
+    uint8_t print(float, uint8_t = 2);
+    uint8_t print(double, uint8_t = 2);
+    uint8_t fixPrint(long, uint8_t  = 2);
+    uint8_t fixPrint(int n, uint8_t precision);
+    word    dumpPrint(uint8_t *, uint8_t);
+   
+
+
+    uint8_t println(char *);
+    uint8_t println(char);
+    uint8_t println(unsigned char, uint8_t = DEC);
+    uint8_t println(int, uint8_t = DEC);
+    uint8_t println(unsigned int, uint8_t = DEC);
+    uint8_t println(long, uint8_t = DEC);
+    uint8_t println(unsigned long, uint8_t = DEC);
+    uint8_t println(float, uint8_t = 2);
+    uint8_t println(double, uint8_t = 2);
+    
+    
+    uint8_t println(void);
 
 };
 

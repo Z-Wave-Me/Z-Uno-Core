@@ -204,7 +204,7 @@ size_t Stream::readBytes(char *buffer, size_t length)
 {
   size_t count = 0;
   while (count < length) {
-    int c = timedRead();
+    uint8_t c = timedRead();
     if (c < 0) break;
     *buffer++ = (char)c;
     count++;
@@ -222,7 +222,7 @@ size_t Stream::readBytesUntil(char terminator, char *buffer, size_t length)
   if (length < 1) return 0;
   size_t index = 0;
   while (index < length) {
-    int c = timedRead();
+    uint8_t c = timedRead();
     if (c < 0 || c == terminator) break;
     *buffer++ = (char)c;
     index++;

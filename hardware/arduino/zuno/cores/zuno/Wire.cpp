@@ -270,7 +270,7 @@ uint8_t TwoWire::requestFrom(uint8_t addr, uint8_t count, bool stop)
 
     return available_bytes;
 }
-size_t TwoWire::write(uint8_t data)
+uint8_t TwoWire::write(uint8_t data)
 {
     byte res;
 
@@ -287,11 +287,11 @@ size_t TwoWire::write(uint8_t data)
     }
     return res; 
 }
-int TwoWire::available(void)
+uint8_t TwoWire::available(void)
 {
     return available_bytes;
 }
-int TwoWire::read(void)
+uint8_t TwoWire::read(void)
 {
     BYTE ret;
     if(state == STATE_TRANSMITION_STOPPED)
@@ -324,13 +324,6 @@ int TwoWire::read(void)
             state = STATE_TRANSMITION_STOPPED;
     }
     return ret;
-}
-int TwoWire::peek(void)
-{   
-    return 0;
-}
-void TwoWire::flush(void)
-{
 }
 I2CDriver defaultI2CDriver(SCL_PIN, SDA_PIN);
 TwoWire Wire(&defaultI2CDriver);

@@ -11,8 +11,6 @@
 #include "math.h"
 #include "stdlib.h"
 
-
-
 // To reduce code & stack usage
 // we use macroses instead of functions
 #define analogWriteResolution(B) 											g_ptr_config[ZUNO_CFG_BYTE_PWM_RES] = B	
@@ -33,18 +31,15 @@
 #define zunoSetWUOptions(options)											zunoSysCall(ZUNO_FUNC_INT0_WUP_LEVEL, byte(options))
 #define zunoSetBeamCountWU(count)											zunoSysCall(ZUNO_FUNC_BEAMCOUNT, byte(count))
 #define analogWrite(pin, value)												zunoSysCall(ZUNO_FUNC_ANALOG_WRITE, byte(pin), word(value))
-
 // Z-Wave helpers
-#define zunoSendReport(CHANNEL) \
-											zunoSendUncolicitedReport(CHANNEL)
-#define zunoSendToGroupSetValueCommand(GROUP,VALUE) \
-											zunoSendAssociationCommand(GROUP,ZUNO_ASSOC_BASIC_SET_NUMBER,VALUE,0)
-#define zunoSendToGroupDimmingCommand(GROUP,DIRECTION,START_STOP) 	\
-															zunoSendAssociationCommand(GROUP,ZUNO_ASSOC_BASIC_SET_AND_DIM_NUMBER,DIRECTION,START_STOP)
-#define zunoSendToGroupScene(GROUP,SCENE_NUMBER) 	\
-															zunoSendAssociationCommand(GROUP,ZUNO_ASSOC_SCENE_ACTIVATION_NUMBER,SCENE_NUMBER,0)
-#define zunoSendToGroupDoorlockControl(GROUP,OPEN_CLOSE) 	\
-															zunoSendAssociationCommand(GROUP,ZUNO_ASSOC_DOORLOCK_CONTROL_NUMBER,OPEN_CLOSE,0)		
+#define zunoSendReport(CHANNEL) 							zunoSendUncolicitedReport(CHANNEL)
+#define zunoSendToGroupSetValueCommand(GROUP,VALUE) 		zunoSendAssociationCommand(GROUP,ZUNO_ASSOC_BASIC_SET_NUMBER,VALUE,0)
+#define zunoSendToGroupDimmingCommand(GROUP,DIRECTION,START_STOP) 	zunoSendAssociationCommand(GROUP,ZUNO_ASSOC_BASIC_SET_AND_DIM_NUMBER,DIRECTION,START_STOP)
+#define zunoSendToGroupScene(GROUP,SCENE_NUMBER) 			zunoSendAssociationCommand(GROUP,ZUNO_ASSOC_SCENE_ACTIVATION_NUMBER,SCENE_NUMBER,0)
+#define zunoSendToGroupDoorlockControl(GROUP,OPEN_CLOSE) 	zunoSendAssociationCommand(GROUP,ZUNO_ASSOC_DOORLOCK_CONTROL_NUMBER,OPEN_CLOSE,0)	
+// Backward compatibility			
+// Deprecated functions
+#define zunoSetupKeyScannerWU(W) 	zunoSetWUOptions( W > 0 ? ZUNO_WUPFLAGS_INT1_KEYSCAN : 0x00)				
 															
 //#define delay(value)														zunoPushSysParam(0, dword(value)); Delay()
 // SDCC uses only float parameters for math and names functions with "f" suffix.

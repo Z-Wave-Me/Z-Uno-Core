@@ -58,6 +58,7 @@ extern XBYTE g_ptr_config[MAX_GLOBAL_CFG];
 #define SYSRET_BUFF(X)	syscall_data.ret_value.buffParam[X]
 
 void zunoSysCall(byte syscall_vector, ...);
+void zunoCall();
 #endif // __ZUNO_RAW_C
 
 

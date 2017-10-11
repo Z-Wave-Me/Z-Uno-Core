@@ -16,6 +16,10 @@ HardwareSerial::HardwareSerial(BYTE number) {
 void HardwareSerial::begin() {
 	zunoSysCall(FUNC_START(func_vec), word(1152));
 }
+void HardwareSerial::begin_(word baud)
+{
+	zunoSysCall(FUNC_START(func_vec),baud);	
+}
 void HardwareSerial::begin(DWORD baudrate) {
 	baudrate /= 100;
 	zunoSysCall(FUNC_START(func_vec), word(baudrate));
@@ -23,7 +27,7 @@ void HardwareSerial::begin(DWORD baudrate) {
 void HardwareSerial::end() {
 	zunoSysCall(FUNC_END(func_vec));
 }
-int HardwareSerial::available(void) {
+uint8_t HardwareSerial::available(void) {
 	zunoSysCall(FUNC_AVAILIABLE(func_vec));
 	return SYSRET_B;
 }
@@ -34,15 +38,14 @@ int HardwareSerial::peek(void) {
 	zunoSysCall(FUNC_READ(func_vec), byte(FALSE));
 	return SYSRET_B;
 }
-int HardwareSerial::read(void) {
+uint8_t HardwareSerial::read(void) {
 	zunoSysCall(FUNC_READ(func_vec), byte(TRUE));
 	return SYSRET_B;
 }
 void HardwareSerial::flush(void){
 }
-size_t HardwareSerial::write(uint8_t value) {
+void HardwareSerial::write(uint8_t value) {
 	zunoSysCall(FUNC_WRITE(func_vec), value);
-	return 1;
 }
 
 // Экземпляры классов - стиль как в Ардуино

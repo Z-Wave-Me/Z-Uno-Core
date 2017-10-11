@@ -1,7 +1,3 @@
-/*
-****************************************************************************
-****************************************************************************
-*/
 
 /*
   OLED_I2C.h - Arduino/chipKit library support for 128x64 pixel SSD1306 OLEDs
@@ -25,6 +21,7 @@
   examples and tools supplied with the library.
 
   Adoptated for Z-Uno project by Z-Wave>ME 2016
+  Reworked to reduce stack and memory usage by  Z-Wave>ME 2017
 */
 
 #ifndef OLED_I2C_h
@@ -85,15 +82,6 @@
 #include "Arduino.h"
 
 
-struct _current_font
-{
-	uint8_t* font;
-	uint8_t x_size;
-	uint8_t y_size;
-	uint8_t offset;
-	uint8_t numchars;
-	uint8_t inverted;
-};
 
 class OLED:public Print
 {
@@ -102,15 +90,14 @@ class OLED:public Print
 
 		void	begin();
 		void	setBrightness(uint8_t value);
-		void 	writeData(byte * pdata, byte p1, byte p2, byte c1, byte c2);
+		void 	writeData(byte * pdata);
 
 		void 	invert(bool mode);
 		void    clrscr();
 		void 	gotoXY(byte x, byte y);
-		virtual size_t write(uint8_t value);
-	private:
-		//void sendTWIcommand(byte d);
-
+		void    off();
+		void    on();
+		virtual void write(uint8_t value);
 	protected:
 		byte 	cx,cy;
 		

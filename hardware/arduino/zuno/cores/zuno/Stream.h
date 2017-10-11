@@ -31,16 +31,6 @@ struct MultiTarget {
 };
 
 
-// compatability macros for testing
-/*
-#define   getInt()            parseInt()
-#define   getInt(skipChar)    parseInt(skipchar)
-#define   getFloat()          parseFloat()
-#define   getFloat(skipChar)  parseFloat(skipChar)
-#define   getString( pre_string, post_string, buffer, length)
-readBytesBetween( pre_string, terminator, buffer, length)
-*/
-
 class Stream : public Print
 {
   protected:
@@ -51,8 +41,8 @@ class Stream : public Print
     int peekNextDigit(); // returns the next numeric digit in the stream or -1 if timeout
 
   public:
-    virtual int available(){return 0;}; //= 0;
-    virtual int read(){return 0;};  //= 0;
+    virtual uint8_t available(){return 0;}; //= 0;
+    virtual uint8_t read(){return 0;};  //= 0;
     virtual int peek(){return 0;};// = 0;
     virtual void flush(){};// = 0;
 

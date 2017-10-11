@@ -2,6 +2,7 @@
 
 #include "Stream.h"
 
+
 class HardwareSerial: public Stream
 {
 	private:
@@ -12,19 +13,20 @@ class HardwareSerial: public Stream
 		HardwareSerial(BYTE bfn);  // bfn = like ZUNO_FUNC_SERIAL1_BEGIN
 
     	void begin();
+        void begin_(word baud);
     	void begin(DWORD baud);
     	void end();
-    	virtual int available(void);
+    	virtual uint8_t available(void);
     	virtual int peek(void);
-    	virtual int read(void);
+    	virtual uint8_t read(void);
    
    		virtual void flush(void);
-    	virtual size_t write(uint8_t);
+    	virtual void write(uint8_t);
 
-    	size_t write(unsigned long n) { return write((uint8_t)n); }
-    	size_t write(long n) { return write((uint8_t)n); }
-    	size_t write(unsigned int n) { return write((uint8_t)n); }
-    	size_t write(int n) { return write((uint8_t)n); }
+    	uint8_t write(unsigned long n) {  write((uint8_t)n); return 1; }
+    	uint8_t write(long n) { write((uint8_t)n); return 1; }
+    	uint8_t write(unsigned int n) { write((uint8_t)n); return 1;}
+    	uint8_t write(int n) { write((uint8_t)n); return 1; }
 
 
 };

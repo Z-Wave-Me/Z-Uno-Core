@@ -34,6 +34,16 @@
 #define NACK_ON_ADDRESS             2
 #define NACK_ON_DATA                4
 
+// We use auxilary class I2CDriver to give user a capability 
+// to remap default I2C pins to another s_pins
+// We can do it this way
+// I2CDriver custom_I2C(11,12);
+// ...
+// void setup(){
+//      ...  
+//      Wire.bindDriver(&custom_I2C);   
+//  }  
+
 class I2CDriver
 {
 
@@ -51,7 +61,7 @@ class I2CDriver
       s_pin _sda;
      
 };
-class TwoWire : public Stream
+class TwoWire 
 {
   private:
     
@@ -72,21 +82,12 @@ class TwoWire : public Stream
     void beginTransmission(uint8_t, uint8_t forced_write = false);
     uint8_t endTransmission(uint8_t stop = true);
     uint8_t requestFrom(uint8_t, uint8_t, bool stop = true);
-    virtual size_t write(uint8_t);
-    virtual int available(void);
-    virtual int read(void);
-    virtual int peek(void);
-    virtual void flush(void);
-    // Sometimes we need connection status before we 
+    uint8_t write(uint8_t);
+    uint8_t available(void);
+    uint8_t read(void);
+    // Sometimes we have to know the status of connection before we 
     // call endTransmission. getStatus() routine do it right way.
     uint8_t getStatus(){return sucess_code; };
-
-    
-
-    size_t write(unsigned long n) { return write((uint8_t)n); }
-    size_t write(long n) { return write((uint8_t)n); }
-    size_t write(unsigned int n) { return write((uint8_t)n); }
-    size_t write(int n) { return write((uint8_t)n); }
 
 };
 

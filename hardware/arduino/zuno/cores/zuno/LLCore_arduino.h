@@ -15,15 +15,6 @@ typedef __code void (*VOID_FUNC_POINTER_BUFFER_BYTE) (const char *bufPointer, BY
 typedef __code void * GENERIC_POINTER;
 
 
-
-
-//Debug///
-BYTE zunoPopByte(void);
-WORD zunoPopWord(void);
-DWORD zunoPopDWORD(void);
-void zunoPushByte(BYTE value);
-void zunoPushWord(WORD value);
-void zunoPushDword(DWORD value);
 void zunoCall(void);
 //********************************
 void delay(DWORD value);

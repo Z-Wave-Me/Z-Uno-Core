@@ -10,6 +10,7 @@ __xdata __at (ZUNO_GLOBAL_CFG_ADDR)                     unsigned char           
 __xdata __at (ZUNO_DELAY_SAFE_STACK_ADDRESS)            unsigned char               stack_pointer_outside;
 __xdata __at (ZUNO_DELAY_USER_STACK_DELTA_ADDRESS)      unsigned char               user_stack_pointer_delta;
 
+__sbit __at (0x20) ea_save;
 
 void zunoCallback(void);
 void __zuno_autosetup(void);
@@ -37,6 +38,7 @@ void zunoJumpTable(void) {
         InitArduinoEnvironment();
         break;
         case ZUNO_JUMP_TABLE_LOOP:
+        ea_save = 1;
         loop();
         break;
         case ZUNO_JUMP_TABLE_CALLBACK:
