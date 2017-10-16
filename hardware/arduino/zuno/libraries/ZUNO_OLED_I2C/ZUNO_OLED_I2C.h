@@ -27,82 +27,47 @@
 #ifndef OLED_I2C_h
 #define OLED_I2C_h
 
-#define SSD1306_ADDR		0x3C
 
-#define LEFT	0
-#define RIGHT	9999
-#define CENTER	9998
+#define FONT_SYMBOLW_OFFSET     0
+#define FONT_SYMBOLH_OFFSET     1
+#define FONT_STARTSYMBOL_OFFSET 2
+#define FONT_DATA_OFFSET        3
 
-#define SSD1306_COMMAND			0x00
-#define SSD1306_DATA			0xC0
-#define SSD1306_DATA_CONTINUE	0x40
-
-#define RST_NOT_IN_USE	255
-
-// SSD1306 Commandset
-// ------------------
-// Fundamental Commands
-#define SSD1306_SET_CONTRAST_CONTROL					0x81
-#define SSD1306_DISPLAY_ALL_ON_RESUME					0xA4
-#define SSD1306_DISPLAY_ALL_ON							0xA5
-#define SSD1306_NORMAL_DISPLAY							0xA6
-#define SSD1306_INVERT_DISPLAY							0xA7
-#define SSD1306_DISPLAY_OFF								0xAE
-#define SSD1306_DISPLAY_ON								0xAF
-#define SSD1306_NOP										0xE3
-// Scrolling Commands
-#define SSD1306_HORIZONTAL_SCROLL_RIGHT					0x26
-#define SSD1306_HORIZONTAL_SCROLL_LEFT					0x27
-#define SSD1306_HORIZONTAL_SCROLL_VERTICAL_AND_RIGHT	0x29
-#define SSD1306_HORIZONTAL_SCROLL_VERTICAL_AND_LEFT		0x2A
-#define SSD1306_DEACTIVATE_SCROLL						0x2E
-#define SSD1306_ACTIVATE_SCROLL							0x2F
-#define SSD1306_SET_VERTICAL_SCROLL_AREA				0xA3
-// Addressing Setting Commands
-#define SSD1306_SET_LOWER_COLUMN						0x00
-#define SSD1306_SET_HIGHER_COLUMN						0x10
-#define SSD1306_MEMORY_ADDR_MODE						0x20
-#define SSD1306_SET_COLUMN_ADDR							0x21
-#define SSD1306_SET_PAGE_ADDR							0x22
-// Hardware Configuration Commands
-#define SSD1306_SET_START_LINE							0x40
-#define SSD1306_SET_SEGMENT_REMAP						0xA0
-#define SSD1306_SET_MULTIPLEX_RATIO						0xA8
-#define SSD1306_COM_SCAN_DIR_INC						0xC0
-#define SSD1306_COM_SCAN_DIR_DEC						0xC8
-#define SSD1306_SET_DISPLAY_OFFSET						0xD3
-#define SSD1306_SET_COM_PINS							0xDA
-#define SSD1306_CHARGE_PUMP								0x8D
-// Timing & Driving Scheme Setting Commands
-#define SSD1306_SET_DISPLAY_CLOCK_DIV_RATIO				0xD5
-#define SSD1306_SET_PRECHARGE_PERIOD					0xD9
-#define SSD1306_SET_VCOM_DESELECT						0xDB
 
 
 #include "Arduino.h"
 
-
-
+// ! Notice y-coord always defines in rows (8-pixels clocks)
+// It can be in interval [0;7]
+// It's a hardware feature. We can't use 1k of memory 
+// for inner software frame-buffer, so we use it "as is" 
+// x-coord we define in pixels   
 class OLED:public Print
 {
 	public:
 		OLED();
-
 		void	begin();
 		void	setBrightness(uint8_t value);
-		void 	writeData(byte * pdata);
-
+    // Writes bitmap contains in pdata from current position
+		void 	writeData(char * pdata);
 		void 	invert(bool mode);
-		void    clrscr();
+		void  clrscr();
 		void 	gotoXY(byte x, byte y);
-		void    off();
-		void    on();
+		void  off();
+		void  on();
+    void  setFont(char * font);
+    void  fillRect(byte w, byte h, byte fill);
 		virtual void write(uint8_t value);
+    
 	protected:
 		byte 	cx,cy;
-		
+    byte  symbol_w,symbol_h;
+    byte  start_symbol;  
+		byte * curr_font;
 
 
 };
+
+extern char * SmallFont;
 
 #endif
