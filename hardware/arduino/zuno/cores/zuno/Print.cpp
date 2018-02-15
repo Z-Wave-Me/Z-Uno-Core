@@ -189,7 +189,7 @@ word Print::dumpPrint(uint8_t * b, uint8_t count) {
         ch &= 0x0F;
         CONV_DIGIT(ch);
         write(ch);
-        g_int16_count++;
+        g_n++;
         if((g_n % dump_line_size) == 0)
           write('\n');
         else
