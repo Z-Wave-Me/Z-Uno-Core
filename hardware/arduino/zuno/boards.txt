@@ -62,9 +62,12 @@ zuno.menu.Frequency.Jp.build.rf_freq = JP
 zuno.menu.Frequency.Kr.build.rf_freq = KR
 
 zuno.menu.Security.Off = Disabled
-zuno.menu.Security.On = Enabled
+zuno.menu.Security.On = "S0"
+zuno.menu.Security.On2 = "S2"
+
 zuno.menu.Security.Off.build.security = 0
 zuno.menu.Security.On.build.security = 1
+zuno.menu.Security.On2.build.security = 2
 
 zuno.menu.MuliCommand.Off = Disabled
 zuno.menu.MuliCommand.On = Enabled
