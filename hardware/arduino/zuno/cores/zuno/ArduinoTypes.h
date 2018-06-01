@@ -18,6 +18,7 @@ typedef unsigned char   BYTE;
 typedef unsigned int  	WORD;
 typedef unsigned long   DWORD;
 typedef unsigned char   XBYTE;
+typedef unsigned char   CCBYTE;
 
 typedef unsigned char   byte;
 typedef unsigned int    word;

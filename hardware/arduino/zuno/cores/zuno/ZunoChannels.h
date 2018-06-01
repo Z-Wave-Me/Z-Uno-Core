@@ -34,8 +34,36 @@ typedef struct ZUNOChannelHandler_s
 {
 	byte 				type;
 	ZUNOChannelParam_t	param;
+	// Extended data for thermostat/color channels & reports  
+	// -----------------------------------------------
+	BYTE command_class; // CC_BASIS/CC_SENSOR_MULTILEVEL/CC_SENSOR_BINARY/CC_METER
+	BYTE sub_type;
+	BYTE scale;
+	BYTE groupId; // Group where NodeId was added
+	BYTE nodeId; // for debugging
+	// -----------------------------------------------
 }ZUNOChannelHandler_t;
 
+typedef union ZUNOReportParam_u
+{
+	byte 	bParam;
+	word	wParam;
+	DWORD 	dwParam;
+	byte    buffParam[4];
+}ZUNOReportParam_t;
+
+typedef struct ZUNOReportValue
+{
+	ZUNOReportParam_t	param;
+	// Extra data, used for reports
+	// -----------------------------------------------
+	BYTE main_type; // CC_BASIS/CC_SENSOR_MULTILEVEL/CC_SENSOR_BINARY/CC_METER
+	BYTE sub_type;
+	BYTE scale;
+	BYTE groupId;// To identify the report 
+	BYTE nodeId; // Z-Wave NodeID (for Debug/Experimental purposes)
+	// -----------------------------------------------
+}ZUNOReportValue_t;
 extern ZUNOChannelHandler_t * callback_data;
 extern zuno_sketch_t * g_user_sketch;
 extern byte * g_ptr_config;

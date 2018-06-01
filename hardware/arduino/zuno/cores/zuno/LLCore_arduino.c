@@ -9,9 +9,69 @@ __xdata __at (SKETCH_USERSTRUCT_ADDRESS)                _xd_zuno_sketch_t       
 __xdata __at (ZUNO_GLOBAL_CFG_ADDR)                     unsigned char               g_ptr_config[MAX_GLOBAL_CFG];
 __xdata __at (ZUNO_DELAY_SAFE_STACK_ADDRESS)            unsigned char               stack_pointer_outside;
 __xdata __at (ZUNO_DELAY_USER_STACK_DELTA_ADDRESS)      unsigned char               user_stack_pointer_delta;
+__xdata __at (ZUNO_NZRAM_ADRR)                          unsigned char               g_nzram_data[MAX_USER_NZRAM];
 
 __sbit __at (0x20) ea_save;
 
+#ifdef ZUNO_REV1
+__code unsigned char  _cc_zuno_pinmap[] = {
+  0x27,
+  0x26,
+  0x25,
+  0x30,
+  0x31,
+  0x34,
+  0x35,
+  0x36,
+  0x37,
+  0x00,
+  0x01,
+  0x02,
+  0x03,
+  0x04,
+  0x05,
+  0x06,
+  0x07,
+  0x10,
+  0x11,
+  0x12,
+  0x13,
+  0x14,
+  0x15,
+  0x16,
+  0x21,
+  0x20
+};                                  
+#else
+__code unsigned char  _cc_zuno_pinmap[] = {
+  0x27,
+  0x26,
+  0x25,
+  0x37,
+  0x36,
+  0x35,
+  0x34,
+  0x31,
+  0x30,
+  0x00,
+  0x01,
+  0x02,
+  0x03,
+  0x04,
+  0x05,
+  0x06,
+  0x07,
+  0x10,
+  0x11,
+  0x12,
+  0x13,
+  0x14,
+  0x15,
+  0x16,
+  0x21,
+  0x20
+};                                  
+#endif
 void zunoCallback(void);
 void __zuno_autosetup(void);
 

@@ -2,12 +2,20 @@
 #define ARDUINO_ZUNO_C_API
 #include "ArduinoTypes.h"
 // C-prototypes
+
 // GPIO
+void rawAnalogWrite();
+WORD rawAnalogRead(BYTE pin);
+BYTE rawDigitalRead(BYTE pin);
+void rawDigitalWrite();
+void rawPinMode();
+// ---
 void pinMode(BYTE pin, BYTE mode);
 BYTE digitalRead(BYTE pin);
 void digitalWrite(BYTE pin, BYTE value);
 void digitalToggle(byte pin);
-WORD analogRead(BYTE pin);
+//WORD analogRead(BYTE pin);
+//WORD rawAnalogRead(BYTE pin);
 BYTE zunoGetWakeReason(void);
 // Time
 DWORD millis();
@@ -38,6 +46,8 @@ void zunoSysCall(byte syscall_vector, ...);
 void zunoLCALL(word address);
 byte zunoGI(char * name);
 void zunoSI(char * name, byte value);
+byte zunoORI(char * name, byte value);
+void zunoANDI(char * name, byte value);
 void zunoPushSysParam(int offset, ...);
 void zunoASM(char * code);
 void zunoCall();

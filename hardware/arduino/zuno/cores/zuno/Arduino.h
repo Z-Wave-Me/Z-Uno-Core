@@ -14,6 +14,9 @@
 
 // To reduce code & stack usage
 // we use macroses instead of functions
+//#define analogRead(P,V)                                                    g_gpio_pin=P;g_gpio_wval=V;rawAnalogWrite()
+
+#define analogWrite(P,V)                                                    g_gpio_pin=P;g_gpio_wval=V;rawAnalogWrite()
 #define analogWriteResolution(B) 											g_ptr_config[ZUNO_CFG_BYTE_PWM_RES] = B	
 #define analogReference(B)													g_ptr_config[ZUNO_CFG_BYTE_ADC_REF] = B
 #define analogReadResolution(B) 											g_ptr_config[ZUNO_CFG_BYTE_ADC_RES] = B	
@@ -25,13 +28,14 @@
 // Z-Wave communication
 #define zunoSendUncolicitedReport(channel) 									zunoSysCall(ZUNO_FUNC_UNSOLICITED_REPORT, byte(channel))
 #define zunoSendAssociationCommand(group, assoc_type, param1, param2) 		zunoSysCall(ZUNO_FUNC_ASSOCIATION_SEND, byte(group), byte(assoc_type), byte(param1), byte(param2))
-#define	zunoStartLearn(timeout)												zunoSysCall(ZUNO_FUNC_LEARN, byte(timeout))
+#define	zunoStartLearn(timeout, secure)										zunoSysCall(ZUNO_FUNC_LEARN, byte(timeout), byte(secure))
 #define	zunoSendDbgData(group, data, data_size)								zunoSysCall(ZUNO_FUNC_DBGSENDDATA, byte(group), byte(data_size), data)
 // OTA cofirmation
-#define	zunoConfigFWUpdate(my_version,	unlock_pin) 						zunoSysCall(ZUNO_FUNC_SETUP_FWUPGRADE, word(my_versio), dword(unlock_pin))
+#define	zunoConfigFWUpdate(my_version,	unlock_pin) 						zunoSysCall(ZUNO_FUNC_SETUP_FWUPGRADE, word(my_version), dword(unlock_pin))
 #define zunoSetWUOptions(options)											zunoSysCall(ZUNO_FUNC_INT0_WUP_LEVEL, byte(options))
 #define zunoSetBeamCountWU(count)											zunoSysCall(ZUNO_FUNC_BEAMCOUNT, byte(count))
-#define analogWrite(pin, value)												zunoSysCall(ZUNO_FUNC_ANALOG_WRITE, byte(pin), word(value))
+//#define analogWrite(pin, value)												rawAnalogWrite(pin, value)//zunoSysCall(ZUNO_FUNC_ANALOG_WRITE, byte(pin), word(value))
+#define analogRead(pin)                                                     rawAnalogRead(pin)
 // Z-Wave helpers
 #define zunoSendReport(CHANNEL) 							zunoSendUncolicitedReport(CHANNEL)
 #define zunoSendToGroupSetValueCommand(GROUP,VALUE) 		zunoSendAssociationCommand(GROUP,ZUNO_ASSOC_BASIC_SET_NUMBER,VALUE,0)

@@ -31,11 +31,34 @@ typedef union ZUNOChannelParam_u
 	dword 	dwParam;
 	byte    buffParam[4];
 }ZUNOChannelParam_t;
-
+/*
+typedef struct ZunoCallbackData_s
+{
+	BYTE callback_vector; // number << 1 + 0/1 (1 == setter, 0 == getter)
+	ZunoParamData_t param;
+	// Используется для репортов
+	// дополнительные данные
+	// -----------------------------------------------
+	BYTE type; // CC_BASIS/CC_SENSOR_MULTILEVEL/CC_SENSOR_BINARY/CC_METER
+	BYTE sub_type;
+	BYTE scale;
+	BYTE groupId; // Для идентификации репорта внутри кода Z-Uno
+	BYTE nodeId; // Для отладки/экспериментов
+	// -----------------------------------------------
+}ZunoCallbackData_t;
+*/
 typedef struct ZUNOChannelHandler_s
 {
 	byte 				type;
 	ZUNOChannelParam_t	param;
+	// Extra data, used for reports
+	// -----------------------------------------------
+	BYTE main_type; // CC_BASIS/CC_SENSOR_MULTILEVEL/CC_SENSOR_BINARY/CC_METER
+	BYTE sub_type;
+	BYTE scale;
+	BYTE groupId;// To identify the report 
+	BYTE nodeId; // Z-Wave NodeID (for Debug/Experimental purposes)
+	// -----------------------------------------------
 }_xd_ZUNOChannelHandler_t;
 
 typedef struct ZUNOSysCallData_s

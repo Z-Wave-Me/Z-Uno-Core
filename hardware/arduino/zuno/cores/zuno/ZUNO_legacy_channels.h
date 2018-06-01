@@ -13,8 +13,10 @@ typedef struct _ZUNO_CHANNEL_PROPERTIES_DESCRIPTION
 	BYTE channel_cmd_class;
 	BYTE channel_sensor_type;
 	BYTE channel_multilevel_properties;
-	GENERIC_POINTER getter;
-	GENERIC_POINTER setter;
+	GENERIC_POINTER getter1;
+	GENERIC_POINTER setter1;
+	GENERIC_POINTER getter2;
+	GENERIC_POINTER setter2;
 } ZUNO_CHANNEL_PROPERTIES_DESCRIPTION;
 
 
@@ -60,6 +62,10 @@ typedef struct _ZUNO_SLEEPING_MODE_PROPERTIES_DESCRIPTION
 								GENERIC_POINTER zunoCFGHandler = ((void*)H)
 #define ZUNO_SETUP_BATTERY_HANDLER(H) 		\
 								GENERIC_POINTER zunoBatteryHandler = ((void*)H)
+#define ZUNO_REPORTS_HANDLER(H) 		\
+								GENERIC_POINTER zunoReportsHandler = ((void*)H)
+
+
 
 #endif // ZUNO_LEGACY_CHANNELS
 // -----------------------
