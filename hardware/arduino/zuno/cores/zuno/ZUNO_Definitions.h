@@ -361,6 +361,8 @@ enum
 #define SENSOR_MULTILEVEL_SCALE_CELSIUS 											0x00 
 //General purpose
 #define SENSOR_MULTILEVEL_SCALE_PERCENTAGE_VALUE									0x00 
+#define SENSOR_MULTILEVEL_SCALE_DIMENSIONLESS_VALUE									0x01 
+
 //Luminance
 #define SENSOR_MULTILEVEL_SCALE_LUX													0x01
 //Power

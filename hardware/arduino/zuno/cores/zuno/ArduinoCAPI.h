@@ -39,8 +39,8 @@ long map(long x, long in_min, long in_max, long out_min, long out_max);
 void zunoAddChannel(byte type, byte st, byte p);
 void zunoAddAssociation(byte t);
 // Configuration parameters
-void zunoLoadCFGParam(byte param_number, dword * value);
-void zunoSaveCFGParam(byte param_number, dword * value);
+void zunoLoadCFGParam(byte param_number, word * value);
+void zunoSaveCFGParam(byte param_number, word * value);
 // SysCall
 void zunoSysCall(byte syscall_vector, ...);
 void zunoLCALL(word address);

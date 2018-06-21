@@ -187,15 +187,15 @@ void zunoAddAssociation(byte t) {
 /* ----------------------------------------------------------------------------
 							Z-Uno config parameters
 -------------------------------------------------------------------------------*/
-void zunoLoadCFGParam(byte param_number, dword * value) {
+void zunoLoadCFGParam(byte param_number, word * value) {
 	param_number -= 64;
-	param_number <<= 2;
-	zunoSysCall(ZUNO_FUNC_EEPROM_READ, dword(START_CONFIGPARAM_EEPROM_ADDR + param_number), word(4), value);
+	param_number <<= 1;
+	zunoSysCall(ZUNO_FUNC_EEPROM_READ, dword(START_CONFIGPARAM_EEPROM_ADDR + param_number), word(2), value);
 }
-void zunoSaveCFGParam(byte param_number, dword * value) {
+void zunoSaveCFGParam(byte param_number, word * value) {
 	param_number -= 64;
-	param_number <<= 2;
-	zunoSysCall(ZUNO_FUNC_EEPROM_WRITE, dword(START_CONFIGPARAM_EEPROM_ADDR + param_number), word(4), value); 
+	param_number <<= 1;
+	zunoSysCall(ZUNO_FUNC_EEPROM_WRITE, dword(START_CONFIGPARAM_EEPROM_ADDR + param_number), word(2), value); 
 }
 /* ----------------------------------------------------------------------------
 									GPIO
