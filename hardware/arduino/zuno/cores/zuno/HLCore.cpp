@@ -242,8 +242,8 @@ void rawDigitalWrite() {
 }
 BYTE rawDigitalRead(BYTE pin) {
 	zunoSI("PG",1);
-	BYTE bpin = 1 << (_cc_zuno_pinmap[g_gpio_pin] & 0x0F);
-	switch((_cc_zuno_pinmap[g_gpio_pin] & 0xF0)){
+	BYTE bpin = 1 << (_cc_zuno_pinmap[pin] & 0x0F);
+	switch((_cc_zuno_pinmap[pin] & 0xF0)){
 		case 0:
 			return ((zunoGI("P0") & bpin) != 0);
 		case 0x10:
@@ -350,6 +350,13 @@ WORD rawAnalogRead(BYTE pin) {
   zunoANDI("ACN0", 0x7F);
   return val;
 
+}
+void zunoReboot() {
+	zunoSI("PG",2);
+	zunoSI("WD",0x04);
+	zunoSI("WD",0x01);
+	zunoSI("WD",0x02);
+	while(1);
 }
 void rawAnalogWrite() {
 	BYTE tmp;

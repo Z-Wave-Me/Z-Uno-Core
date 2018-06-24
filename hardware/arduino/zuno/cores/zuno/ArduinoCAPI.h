@@ -32,7 +32,8 @@ void interrupts();
 // Force versions that setting up EA_SAVE bit
 void interrupts_F();
 void noInterrupts_F();
-
+// WD
+void zunoReboot();
 // Math
 long map(long x, long in_min, long in_max, long out_min, long out_max);
 // Dynamic configuration
