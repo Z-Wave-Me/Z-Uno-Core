@@ -19,7 +19,7 @@ typedef struct zuno_sketch_s
 	byte n_channels;
 	byte n_assocs; 
 	zuno_channel_t channels[ZUNO_MAX_MULTI_CHANNEL_NUMBER];
-	byte asociations[ZUNO_MAX_ASSOC_NUMBER];
+	byte asociations[ZUNO_MAX_ASSOC_NUMBER+1];
 	word crc16;
 }zuno_sketch_t;
 typedef union ZUNOChannelParam_u

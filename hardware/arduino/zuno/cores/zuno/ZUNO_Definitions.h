@@ -19,6 +19,7 @@
 #define CALLBACK_TRANSLATION_ADDR   			0x3800  // At the high addresses of user XDATA
 #define SYSCALL_TRANSLATION_ADDR				0x3810
 #define ZUNO_NZRAM_ADRR             			0x125E
+#define ZUNO_NID_ADRR							0x1255
 #define MAX_USER_NZRAM							0x10
 
 // CODE SPACE
@@ -650,7 +651,7 @@ enum {
 
 
 // DYNAMIC CHANNELS
-#define ZUNO_MAX_ASSOC_NUMBER		5
+#define ZUNO_MAX_ASSOC_NUMBER		31
 #define SKETCH_FLAG_DEBUG 			0x80
 #define SKETCH_FLAG_FLIRS			0x03
 #define SKETCH_FLAG_SLEEPING		0x01

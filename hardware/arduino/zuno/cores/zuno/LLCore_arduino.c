@@ -10,7 +10,7 @@ __xdata __at (ZUNO_GLOBAL_CFG_ADDR)                     unsigned char           
 __xdata __at (ZUNO_DELAY_SAFE_STACK_ADDRESS)            unsigned char               stack_pointer_outside;
 __xdata __at (ZUNO_DELAY_USER_STACK_DELTA_ADDRESS)      unsigned char               user_stack_pointer_delta;
 __xdata __at (ZUNO_NZRAM_ADRR)                          unsigned char               g_nzram_data[MAX_USER_NZRAM];
-
+__xdata __at (ZUNO_NID_ADRR)                            unsigned char               g_nzram_NID;
 __sbit __at (0x20) ea_save;
 
 #ifdef ZUNO_REV1

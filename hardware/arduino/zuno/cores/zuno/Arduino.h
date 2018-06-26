@@ -15,7 +15,8 @@
 // To reduce code & stack usage
 // we use macroses instead of functions
 //#define analogRead(P,V)                                                    g_gpio_pin=P;g_gpio_wval=V;rawAnalogWrite()
-
+#define zunoNID()                                                           (g_nzram_NID)
+#define zunoInNetwork()                                                     (g_nzram_NID != 0)        
 #define analogWrite(P,V)                                                    g_gpio_pin=P;g_gpio_wval=V;rawAnalogWrite()
 #define analogWriteResolution(B) 											g_ptr_config[ZUNO_CFG_BYTE_PWM_RES] = B	
 #define analogReference(B)													g_ptr_config[ZUNO_CFG_BYTE_ADC_REF] = B
