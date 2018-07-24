@@ -1,6 +1,6 @@
 #include <Tone.h>
 s_pin  g_tone_pin_ch1 = 11;
-
+dword  g_tone_tmp;
 ZUNO_SETUP_ISR_GPTIMER(tone_gpt_handler);
 
 void toneDelayed(s_pin pin, word freq, word duration){
@@ -10,13 +10,15 @@ void toneDelayed(s_pin pin, word freq, word duration){
 }
 
 void tone(s_pin pin, word freq){
-    dword ticks = 2000000L/freq;
-    g_tone_pin_ch1 = pin;
     zunoGPTEnable(0); 
+    g_tone_tmp = 2000000L;
+    g_tone_tmp /= freq;
+    g_tone_pin_ch1 = pin;
+    
     pinMode(pin, OUTPUT);
     digitalWrite(pin, LOW);
     zunoGPTInit(ZUNO_GPT_CYCLIC);   
-    zunoGPTSet(word(ticks)); 
+    zunoGPTSet(word(g_tone_tmp)); 
     zunoGPTEnable(1); 
 }
 void noTone(s_pin pin){
@@ -25,7 +27,6 @@ void noTone(s_pin pin){
 }
 void tone_gpt_handler()
 {
-   byte ts = !digitalRead(g_tone_pin_ch1);
-   digitalWrite(g_tone_pin_ch1, ts);
+   digitalToggle(g_tone_pin_ch1);
 
 }

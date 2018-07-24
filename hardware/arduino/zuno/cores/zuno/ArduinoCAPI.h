@@ -29,6 +29,10 @@ void zunoGPTEnable(byte bEnable);
 void zunoGPTSet(word interval);
 void noInterrupts();
 void interrupts();
+// fast PWM
+void zunoFastPWMInit(byte flags);
+void zunoFastPWMSet(byte lo, byte hi);
+void zunoFastPWMEnable(byte bEnable);
 // Force versions that setting up EA_SAVE bit
 void interrupts_F();
 void noInterrupts_F();
@@ -49,6 +53,7 @@ byte zunoGI(char * name);
 void zunoSI(char * name, byte value);
 byte zunoORI(char * name, byte value);
 void zunoANDI(char * name, byte value);
+void zunoDSI(char * name1, char * name2);
 void zunoPushSysParam(int offset, ...);
 void zunoASM(char * code);
 void zunoCall();

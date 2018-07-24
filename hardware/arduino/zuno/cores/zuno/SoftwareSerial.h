@@ -2,7 +2,7 @@
 
 #include "Stream.h"
 
-#define MAX_RCV_BUFFER 32 // !!! HAVE to be 2^n
+#define MAX_RCV_BUFFER 64 // !!! HAVE to be 2^n
 class SoftwareSerial: public Stream
 {
     private:

@@ -19,12 +19,17 @@
 
 #define FLAGS_REQSTOP               1
 
-
+// Simple clock stratching implementation
+#define SCL_TIME_STRATCHING()\
+                                pinMode(_scl, INPUT_PULLUP); \
+                                while(!digitalRead(_scl)); \
+                                digitalWrite(_scl, HIGH);\
+                                pinMode(_scl, OUTPUT)
 
 
 // I2C Driver to use it with spins
 // AUXILARY CLASS
-I2CDriver::I2CDriver(s_pin scl, s_pin sda): _scl(scl), _sda(sda), twi_start(false)
+I2CDriver::I2CDriver(s_pin scl, s_pin sda): _scl(scl), _sda(sda), twi_start(false), _tse(false)
 {
 
 }
@@ -55,7 +60,8 @@ void I2CDriver::stop(void)
 
 byte I2CDriver::write(byte b)
 {
-    byte i = 8;    
+    byte i = 8;  
+    byte tsei =  _tse; 
     noInterrupts();
     
     if(twi_start)
@@ -84,28 +90,34 @@ byte I2CDriver::write(byte b)
         {
             digitalWrite(_scl, LOW);
             digitalWrite(_sda, HIGH);
-        }
-        else
-        {
-            NOPS(1);
+        } else {
             digitalWrite(_scl, LOW);
             digitalWrite(_sda, LOW);
         }
-        NOPS(30); 
-        digitalWrite(_scl, HIGH);
-        NOPS(5);
         b <<= 1;
-        i--;
-    }
-            
+        if(tsei){
+            i--;
+            SCL_TIME_STRATCHING();    
+        } else {
+            NOPS(6);
+            digitalWrite(_scl, HIGH);
+            NOPS(10);
+            i--; 
+        }
+        
+    }          
     // Receiving ACK
-    NOPS(12);
+    NOPS(7);
     digitalWrite(_scl, LOW);
     pinMode(_sda, INPUT_PULLUP);
-    NOPS(23);
-    digitalWrite(_scl, HIGH);
+    if(tsei){
+        SCL_TIME_STRATCHING();
+    } else { 
+        NOPS(3);
+        digitalWrite(_scl, HIGH);
+    }
     i = (digitalRead(_sda) == 0);
-    NOPS(12);
+    NOPS(21);
     digitalWrite(_scl, LOW);
     if(!twi_start)
     {
@@ -122,33 +134,38 @@ byte I2CDriver::write(byte b)
 byte I2CDriver::read(byte ack)
 {
     byte i = 8, input = 0;
+    byte tsei =  _tse; 
 
     noInterrupts();
-    digitalWrite(_scl, LOW);
-
     // reading input bits
     while(i)
     {
-
         digitalWrite(_scl, LOW);
-        NOPS(30);
-        digitalWrite(_scl, HIGH);
-        input <<= 1;
-        input |= digitalRead(_sda) > 0;
-        NOPS(5);
         i--;
+        input <<= 1;
+        NOPS(23);
+        if(tsei){
+            SCL_TIME_STRATCHING();
+        } else {  
+            digitalWrite(_scl, HIGH);
+            NOPS(22);
+        }
+        if(digitalRead(_sda))
+            input |= 0x01;
+        
     }
    
     // Writing ACK/NACK
     digitalWrite(_scl, LOW);
-    NOPS(3); 
     pinMode(_sda, OUTPUT);
     digitalWrite(_sda, LOW);
     if(!ack)
         digitalWrite(_sda, HIGH); 
-    NOPS(15);
+    else{
+        NOPS(5);
+    }
     digitalWrite(_scl, HIGH);
-    NOPS(18);
+    NOPS(32);
     digitalWrite(_scl, LOW); 
     pinMode(_sda, INPUT_PULLUP); 
     interrupts();

@@ -201,24 +201,31 @@ void zunoSaveCFGParam(byte param_number, word * value) {
 									GPIO
 -------------------------------------------------------------------------------*/
 #define STRING_IT(S) #S
-#define PORT_WRITE(PORT) if(g_gpio_val == 1) {zunoORI(#PORT, bpin);} else {zunoANDI(#PORT, ~(bpin));}
-#define PORT_MODE(PORT) if(g_gpio_val){zunoORI(STRING_IT(PORT##DIR), bpin); PORT_WRITE(PORT) }else{zunoANDI(STRING_IT(PORT##DIR), ~(bpin));}
+#define PORT_WRITE_I(PORT) if(g_gpio_val == 1) {zunoORI(STRING_IT(PORT##I), bpin);} else {zunoANDI(STRING_IT(PORT##I), ~(bpin));}
+#define PORT_MODE_I(PORT) if(g_gpio_val){zunoORI(STRING_IT(PORT##DIR##I), bpin); PORT_WRITE_I(PORT) }else{zunoANDI(STRING_IT(PORT##DIR##I), ~(bpin));}
+
+#define PORT_UPD(PORT) zunoDSI(#PORT,STRING_IT(PORT##I))
+#define PORTDIR_UPD(PORT) zunoDSI(STRING_IT(PORT##DIR),STRING_IT(PORT##DIR##I));PORT_UPD(PORT)
 
 void rawPinMode() {
 	zunoSI("PG",1);
 	BYTE bpin = 1 << (_cc_zuno_pinmap[g_gpio_pin] & 0x0F);
 	switch((_cc_zuno_pinmap[g_gpio_pin] & 0xF0)){
 		case 0:
-			PORT_MODE(P0);
+			PORT_MODE_I(P0);
+			PORTDIR_UPD(P0);
 			break;
 		case 0x10:
-			PORT_MODE(P1);
+			PORT_MODE_I(P1);
+			PORTDIR_UPD(P1);
 			break;
 		case 0x20:
-			PORT_MODE(P2);
+			PORT_MODE_I(P2);
+			PORTDIR_UPD(P2);
 			break;
 		case 0x30:
-			PORT_MODE(P3);
+			PORT_MODE_I(P3);
+			PORTDIR_UPD(P3);
 			break;
 	}
 }
@@ -227,16 +234,20 @@ void rawDigitalWrite() {
 	BYTE bpin = 1 << (_cc_zuno_pinmap[g_gpio_pin] & 0x0F);
 	switch((_cc_zuno_pinmap[g_gpio_pin] & 0xF0)){
 		case 0:
-			PORT_WRITE(P0);
+			PORT_WRITE_I(P0);
+			PORT_UPD(P0);
 			break;
 		case 0x10:
-			PORT_WRITE(P1);
+			PORT_WRITE_I(P1);
+			PORT_UPD(P1);
 			break;
 		case 0x20:
-			PORT_WRITE(P2);
+			PORT_WRITE_I(P2);
+			PORT_UPD(P2);
 			break;
 		case 0x30:
-			PORT_WRITE(P3);
+			PORT_WRITE_I(P3);
+			PORT_UPD(P3);
 			break;
 	}
 }
@@ -363,20 +374,27 @@ void rawAnalogWrite() {
 	BYTE i;
 	// use the same pin number for GPIO & PWM
 	g_gpio_pin -= PWM1;
-	g_gpio_pin &= 0x03;
-	tmp = ~(0x10 << g_gpio_pin);
+	tmp = g_gpio_pin;
+	tmp &= 0x03;
+	tmp = (0x10 << tmp);
 
-	zunoSI("PG",1);
-	zunoANDI("P0DIR", tmp);
-	if(g_gpio_wval == 0) {
-		zunoANDI("P0", tmp);
-		g_pwm_pinmap &= (tmp >> 4);
-		return;
+	// Set pin to output if we need it
+	if(zunoGI("P0DIRI") & tmp) {
+		zunoSI("PG",1);
+		zunoANDI("P0DIRI", ~(tmp));
+		zunoDSI("P0DIR","P0DIRI");
 	}
-	g_pwm_pinmap |= (1 << g_gpio_pin);
-	if(g_ptr_config[ZUNO_CFG_BYTE_PWM_RES] < 16)
-		g_gpio_wval <<= (16-g_ptr_config[ZUNO_CFG_BYTE_PWM_RES]);
-	g_pwm_data[g_gpio_pin] = g_gpio_wval;
+	tmp >>= 4; // to match PWM pinmap
+	if(g_gpio_wval != 0) {
+		g_pwm_pinmap |= (tmp);
+		if(g_ptr_config[ZUNO_CFG_BYTE_PWM_RES] < 16)
+			g_gpio_wval <<= (16-g_ptr_config[ZUNO_CFG_BYTE_PWM_RES]);
+		g_pwm_data[g_gpio_pin] = g_gpio_wval;
+	} else {
+		g_pwm_pinmap &= ~(tmp);
+	}
+	//Serial0.println(g_pwm_pinmap,HEX);
+    // Update PWM data
 	zunoSI("PG",0);
 	zunoSI("LD0", g_pwm_pinmap);
 	zunoSI("LD1", 0);
@@ -385,6 +403,13 @@ void rawAnalogWrite() {
 		zunoSI("LDD",g_pwm_data[i] >> 8);
 	}
 	zunoORI("LD0", 0x10);
+	// FULL OFF
+	if(g_gpio_wval == 0) {
+		tmp <<= 4;
+		zunoSI("PG",1);
+		zunoANDI("P0I", ~(tmp));
+		zunoDSI("P0","P0I");
+	}
 }
 // Broken subroutine
 // Memset was broken in stdlibrary of SDCC

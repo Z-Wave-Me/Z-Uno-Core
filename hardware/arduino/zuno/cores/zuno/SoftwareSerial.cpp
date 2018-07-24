@@ -9,9 +9,6 @@ extern byte   g_write_pos;
 extern byte   g_read_pos;
 extern byte   g_rcv_mask;
 
-
-//extern byte   g_u_start;
-
 ZUNO_SETUP_ISR_GPTIMER(softserial_gpt_handler);
 
 #define CONST_USECONDS_OFFSET 10 // uS
@@ -22,16 +19,15 @@ ZUNO_SETUP_ISR_GPTIMER(softserial_gpt_handler);
 
 
 void softserial_gpt_handler() {
+   
    if(g_rcv_state == START_BIT_1HALF){
         if(!digitalRead(g_rx_pin)) {
             g_cb = 0;
             g_rcv_state++;
-            //g_u_start++;
         }
         return;
    }
    if(g_rcv_state == START_BIT_2HALF){
-      g_rcv_mask = 0x01;
       g_rcv_state++;
       return;
    }
@@ -41,16 +37,17 @@ void softserial_gpt_handler() {
         return;
    }
    if(g_rcv_state == STOP_BIT_2HALF){
-       g_write_pos = (g_write_pos + 1) & (MAX_RCV_BUFFER-1);
+       g_write_pos++;
+       g_write_pos &= (MAX_RCV_BUFFER-1);
        g_rcv_state = 0;
        return;
 
    }
    if(!(g_rcv_state & 0x01)){
+    g_cb >>= 1;
     if(digitalRead(g_rx_pin)){
-        g_cb |= g_rcv_mask;//0x01;
+        g_cb |= 0x80;
     }
-    g_rcv_mask <<= 1;
    }
    g_rcv_state++;
 }
@@ -103,7 +100,8 @@ uint8_t SoftwareSerial::read(void) {
       return 0;
     byte val = g_rcv_buff[g_read_pos];
     // We use cyclic buffer here
-    g_read_pos = (g_read_pos + 1) & (MAX_RCV_BUFFER-1);
+    g_read_pos ++;
+    g_read_pos &= (MAX_RCV_BUFFER-1);
     return val;
 
 }
@@ -140,6 +138,4 @@ byte   g_cb;
 byte   g_rcv_buff[MAX_RCV_BUFFER];
 byte   g_write_pos = 0;
 byte   g_read_pos = 0;
-//byte   g_u_start = 0;
-byte   g_rcv_mask;
 

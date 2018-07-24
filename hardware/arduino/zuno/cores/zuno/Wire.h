@@ -54,11 +54,13 @@ class I2CDriver
     void stop(void);   
     byte write(byte b);
     byte read(byte ack);
+    void setupTS(bool enable) {_tse = enable;};
 
   private:
       byte twi_start;
       s_pin _scl;
       s_pin _sda;
+      byte _tse;
      
 };
 class TwoWire 
@@ -85,6 +87,7 @@ class TwoWire
     uint8_t write(uint8_t);
     uint8_t available(void);
     uint8_t read(void);
+    void enableTS(bool en) {p_driver->setupTS(en); };
     // Sometimes we have to know the status of connection before we 
     // call endTransmission. getStatus() routine do it right way.
     uint8_t getStatus(){return sucess_code; };
