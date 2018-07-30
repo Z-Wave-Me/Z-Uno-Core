@@ -12,7 +12,7 @@
 
 //initial period of the blink is 1 second
 byte dimmerValue=100;
-dword coef;
+word coef;
 byte changed = FALSE;
 byte count = 0;
 byte type = 0;
@@ -43,7 +43,7 @@ void loop() {
   delay(dimmerValue*byte(coef));           // wait for timeout
 
 }
-void config_parameter_changed(byte param, dword * value)
+void config_parameter_changed(byte param, word * value)
 {
     // Here we get the new vaue of our prameters
     if(param == 64) // The first user-defined parameter 
