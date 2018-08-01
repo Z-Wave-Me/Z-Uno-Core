@@ -92,13 +92,19 @@ void begin_callback_code(void) __naked {
           .org 0x8040        // YOUR FUNCTION'S DESIRED ADDRESS HERE.
     __endasm;
 }
+byte g_usercode_inited = 0;
+
 void zunoJumpTable(void) {
     switch(syscall_data.syscall_num) {
-        case ZUNO_JUMP_TABLE_SETUP:
+        /*case ZUNO_JUMP_TABLE_SETUP:
         InitArduinoEnvironment();
-        break;
+        break;*/
         case ZUNO_JUMP_TABLE_LOOP:
         ea_save = 1;
+        if(!g_usercode_inited){
+          InitArduinoEnvironment();
+          g_usercode_inited = 1;
+        }
         loop();
         break;
         case ZUNO_JUMP_TABLE_CALLBACK:

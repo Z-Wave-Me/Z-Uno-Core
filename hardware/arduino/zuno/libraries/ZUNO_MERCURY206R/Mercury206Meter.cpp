@@ -82,6 +82,8 @@ void send_modbus_cmd(byte dir_pin){
   while(MERCURY_SERIAL.available()){
     g_modbus_buff[g_modbus_len] = MERCURY_SERIAL.read();
     g_modbus_len++;
+    if(g_modbus_len >= MAX_MODBUS_BUFF)
+      return; // to avoid an overflow
   }
   #ifdef MODBUS_DBG
   DEBUG_SERIAL.print("\n<<< ");
