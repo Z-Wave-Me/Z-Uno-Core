@@ -100,10 +100,23 @@ bool  Stream::findUntil(char *target, char *terminator)
 bool Stream::findUntil(char *target, size_t targetLen, char *terminator, size_t termLen)
 {
   if (!terminator) {
-    MultiTarget t[1] = {{target, targetLen, 0}};
+    MultiTarget t[1];
+    
+    strcpy(t[0].str, target);
+    t[0].len = targetLen;
+    t[0].index = 0;
+    
     return findMulti(t, 1) == 0 ? true : false;
   } else {
-    MultiTarget t[2] = {{target, targetLen, 0}, {terminator, termLen, 0}};
+    MultiTarget t[2];
+    
+    strcpy(t[0].str, target);
+    t[0].len = targetLen;
+    t[0].index = 0;
+    strcpy(t[1].str, terminator);
+    t[1].len = termLen;
+    t[1].index = 0;
+   
     return findMulti(t, 2) == 0 ? true : false;
   }
 }
