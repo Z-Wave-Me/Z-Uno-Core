@@ -73,6 +73,7 @@ byte DHT::read(bool force) {
   byte cb =0;
   
 
+
   
   //pinMode(tp, OUTPUT);
   //digitalWrite(tp, 0);
@@ -88,6 +89,7 @@ byte DHT::read(bool force) {
   // Посылаем стартовый импульс 
   // 0 на 1 мс и болльше
   //noInterrupts();
+
   pinMode(_pin, OUTPUT);
   digitalWrite(_pin, LOW); // Send start signal
   switch(_type)
@@ -101,6 +103,7 @@ byte DHT::read(bool force) {
   }
   pinMode(_pin, INPUT_PULLUP);
 
+  sysClockSet(SYSCLOCK_NORMAL);
   noInterrupts();
   time_i1 = 0; 
   while(digitalRead(_pin))//digitalRead(_pin))
@@ -109,6 +112,7 @@ byte DHT::read(bool force) {
     if(!wi) 
     {
       interrupts();  
+      sysClockNormallize();
       return DHT_RESULT_ERROR_NOSYNC;
     }
     NOPS(8);
@@ -132,6 +136,7 @@ byte DHT::read(bool force) {
   {
 
       interrupts();
+      sysClockNormallize();
       return DHT_RESULT_ERROR_NOSYNC;  
   }
 
@@ -175,6 +180,7 @@ byte DHT::read(bool force) {
   }
 
   interrupts();
+  sysClockNormallize();
   
 
   
@@ -228,13 +234,13 @@ byte DHT::read(bool force) {
        
       humidity = data_ptr[0];
       humidity <<= 8;
-      humidity += data_ptr[1];
+      humidity |= data_ptr[1];
 
       temperature = data_ptr[2] & ~(0x80);
       temperature <<= 8;
-      temperature += data_ptr[3];       
+      temperature |= data_ptr[3];       
       if ( data_ptr[2] & 0x80) 
-          temperature -= temperature;       
+          temperature = -temperature;       
 
         
   }

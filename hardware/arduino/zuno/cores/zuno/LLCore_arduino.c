@@ -6,13 +6,52 @@
 __xdata __at (CALLBACK_TRANSLATION_ADDR)                _xd_ZUNOChannelHandler_t    callback_data;
 __xdata __at (SYSCALL_TRANSLATION_ADDR)                 _xd_ZUNOSysCallData_t       syscall_data;
 __xdata __at (SKETCH_USERSTRUCT_ADDRESS)                _xd_zuno_sketch_t           g_user_sketch;
+__xdata __at (SKETCH_ACCEPTEDSTRUCT_ADDRESS)            _xd_zuno_sketch_t           g_accepted_sketch;
 __xdata __at (ZUNO_GLOBAL_CFG_ADDR)                     unsigned char               g_ptr_config[MAX_GLOBAL_CFG];
 __xdata __at (ZUNO_DELAY_SAFE_STACK_ADDRESS)            unsigned char               stack_pointer_outside;
 __xdata __at (ZUNO_DELAY_USER_STACK_DELTA_ADDRESS)      unsigned char               user_stack_pointer_delta;
 __xdata __at (ZUNO_NZRAM_ADRR)                          unsigned char               g_nzram_data[MAX_USER_NZRAM];
 __xdata __at (ZUNO_NID_ADRR)                            unsigned char               g_nzram_NID;
+__xdata __at (ZUNO_BEAMCOUNT_ADRR)                      unsigned char               g_nzram_BeamCount;
+__xdata __at (ZUNO_WUOPTIONS_ADRR)                      unsigned char               g_nzram_WUOpts;
+__xdata __at (ZUNO_MSCOUNTER_ADDR)                      unsigned long               g_ms_counter;
+__xdata __at (TXBUFF_ADDRESS)                           unsigned char *             g_txbuff;
+__xdata __at (PCMD_ADDRESS)                             unsigned char *             g_cmd;
+
 __sbit __at (0x20) ea_save;
 
+#ifdef ZUNO_PRODREV
+__code unsigned char  _cc_zuno_pinmap[] = {
+  0x27,
+  0x26,
+  0x25,
+  0x37,
+  0x36,
+  0x35,
+  0x34,
+  0x31,
+  0x30,
+  0x00,
+  0x01,
+  0x02,
+  0x03,
+  0x04,
+  0x05,
+  0x06,
+  0x07,
+  0x10,
+  0x11,
+  0x12,
+  0x13,
+  0x14,
+  0x15,
+  0x16,
+  0x21,
+  0x20,
+  0x22,
+  0x24
+};           
+#else             
 #ifdef ZUNO_REV1
 __code unsigned char  _cc_zuno_pinmap[] = {
   0x27,
@@ -71,6 +110,7 @@ __code unsigned char  _cc_zuno_pinmap[] = {
   0x21,
   0x20
 };                                  
+#endif
 #endif
 void zunoCallback(void);
 void __zuno_autosetup(void);
@@ -157,9 +197,16 @@ CYCLE: clr a
 EXIT:
   __endasm;
 }
-
+void zunoInitEvent(void) {
+  callback_data.type = ZUNO_CALLBACK_LOG_EVENT;
+  callback_data.param1.bParam = 0x00;
+  callback_data.param2.bParam = g_ptr_config[ZUNO_CFG_BYTE_WUP_REASON];
+  zunoCallback();
+}
 void InitArduinoEnvironment(void) {
   xdata8051_init();
   __zuno_autosetup();
+  zunoInitEvent();
   setup();
 }
+

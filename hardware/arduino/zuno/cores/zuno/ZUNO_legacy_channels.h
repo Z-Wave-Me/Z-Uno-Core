@@ -62,10 +62,33 @@ typedef struct _ZUNO_SLEEPING_MODE_PROPERTIES_DESCRIPTION
 								GENERIC_POINTER zunoCFGHandler = ((void*)H)
 #define ZUNO_SETUP_BATTERY_HANDLER(H) 		\
 								GENERIC_POINTER zunoBatteryHandler = ((void*)H)
-#define ZUNO_REPORTS_HANDLER(H) 		\
-								GENERIC_POINTER zunoReportsHandler = ((void*)H)
+#define ZUNO_REPORTS_HANDLER(N, H) 		\
+								GENERIC_POINTER zunoReportsHandler_##N = ((void*)H)
+#define ZUNO_SETUP_SYSEVENT_HANDLER(H)\
+								GENERIC_POINTER zunoEventHandler = ((void*)H)
+#define ZUNO_SETUP_SYSTIMER_HANDLER(H)\
+								GENERIC_POINTER zunoSysTimerHandler = ((void*)H)
 
+#define ZUNO_SETUP_PRODUCT_AUTO() \
+								BYTE zunoProductType = 1
+#define ZUNO_SETUP_PRODUCT_ID(MAJ,MIN) \
+								BYTE zunoProductType = 2;\
+								BYTE zunoProductIDMaj = MAJ;\
+								BYTE zunoProductIDMin = MIN
 
-
+#define ZUNO_REMAP_SPINS(PROFILE) \
+								char zunoREMAPProfile[] = #PROFILE
+#define ZUNO_SETUP_S2ACCESS(B) \
+								BYTE zunoS2Access = B
+#define ZUNO_SETUP_FWUPGRADE(COUNT, READY_HANDLER, META_HANDLER) \
+								char zunoFWUpgradeCount = COUNT;\
+								GENERIC_POINTER zunoFWUpgradeReadyH = ((void*)READY_HANDLER);\
+								GENERIC_POINTER zunoFWUpgradeMetaH = ((void*)META_HANDLER);
+#define ZUNO_DISABLE(VAR_NAMES)\
+								char zunoDisableList[] = #VAR_NAMES
+#define ZUNO_ENABLE(VAR_NAMES)\
+								char zunoEnableList[] = #VAR_NAMES
+#define ZUNO_DYNAMIC_CHANNELS(NUM_CHANNELS)\
+								char zunoMaxDynamicChannels = NUM_CHANNELS;
 #endif // ZUNO_LEGACY_CHANNELS
 // -----------------------

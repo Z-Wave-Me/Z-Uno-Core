@@ -110,7 +110,10 @@ void SoftwareSerial::flush(void) {
 }
 void SoftwareSerial::write(uint8_t d){
   byte i = 8;
+  
   noInterrupts();
+  // to be shure that timing is right
+  sysClockSet(SYSCLOCK_NORMAL);
   // Start Bit
   digitalWrite(m_tx_pin, 0);
   delayMicroseconds(bit_time);
@@ -130,6 +133,8 @@ void SoftwareSerial::write(uint8_t d){
   digitalWrite(m_tx_pin, 1);
   delayMicroseconds(bit_time);
   delayMicroseconds(4);
+  // revert back system frequency
+  sysClockNormallize();
   interrupts();
 }
 s_pin  g_rx_pin = 12;

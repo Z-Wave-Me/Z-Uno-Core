@@ -27,7 +27,6 @@ private:
 	byte  LastDiscrepancy;
 	byte  LastFamilyDiscrepancy;
 	bool  LastDeviceFlag; 
-
 	bool  read_bit();
 	void  write_bit(bool bit);
 

@@ -25,10 +25,9 @@
 #include "Stream.h"
 
 
-
 // DEFAULT I2C PINS
-#define SCL_PIN  9
-#define SDA_PIN  10
+#define SCL_PIN  SPIN_PIN0
+#define SDA_PIN  SPIN_PIN1
 
 
 #define NACK_ON_ADDRESS             2

@@ -134,7 +134,7 @@ extern byte ows_ROM_NO[8];
 // ---------------------------------------------------------------
 
 
-void interupts_on(unsigned char en);
+//void interupts_on(unsigned char en);
 
 OneWire::OneWire(s_pin pin): bus_pin(pin)
 {
@@ -155,10 +155,11 @@ byte OneWire::reset(void)
 	byte retries = 125;
 
 	noInterrupts();
+  sysClockSet(SYSCLOCK_NORMAL);
 	pinMode(bus_pin, INPUT);
 	// wait until the wire is high... just in case
 	do {
-		if (--retries == 0) return 0;
+		if ((--retries) == 0) return 0;
 		delayMicroseconds(2);
 	} while ( !digitalRead(bus_pin));
 	pinMode(bus_pin, OUTPUT);
@@ -173,13 +174,14 @@ byte OneWire::reset(void)
 	interrupts();
 
 	delayMicroseconds(410);
+  sysClockNormallize();
 	return r == 0;
 }
 
 void OneWire::write(byte v, byte power) 
 {
     byte bitMask;
-
+    sysClockSet(SYSCLOCK_NORMAL);
     pinMode(bus_pin, OUTPUT);
     	
     for (bitMask = 0x01; bitMask; bitMask <<= 1) 
@@ -206,6 +208,7 @@ void OneWire::write(byte v, byte power)
     {
 		pinMode(bus_pin, INPUT);
     }
+    sysClockNormallize();
 }
 byte OneWire::read() 
 {
@@ -213,6 +216,7 @@ byte OneWire::read()
     byte r;
     byte res = 0;
 
+    sysClockSet(SYSCLOCK_NORMAL);
 
     for (bitMask = 0x01; bitMask; bitMask <<= 1)
     {
@@ -228,6 +232,7 @@ byte OneWire::read()
 		  if (r) 
 			 res |= bitMask;
     }
+    sysClockNormallize();
     return res;
 }
 
@@ -264,6 +269,7 @@ void OneWire::readROM(byte * rom)
 bool   OneWire::read_bit()
 {
     bool r;
+    sysClockSet(SYSCLOCK_NORMAL);
     noInterrupts(); 
     pinMode(bus_pin, OUTPUT);
     digitalWrite(bus_pin, 0);
@@ -272,12 +278,15 @@ bool   OneWire::read_bit()
     delayMicroseconds(7);
     r = digitalRead(bus_pin);
     delayMicroseconds(53);
+    sysClockNormallize();
     interrupts();
+    
     return r != 0;
 }
 void   OneWire::write_bit(bool bit)
 {
       //Serial0.println("BIT");
+      sysClockSet(SYSCLOCK_NORMAL);
       noInterrupts();
       pinMode(bus_pin, OUTPUT);
       digitalWrite(bus_pin, 0);
@@ -293,6 +302,7 @@ void   OneWire::write_bit(bool bit)
         digitalWrite(bus_pin, 1);
         delayMicroseconds(5);
       }
+      sysClockNormallize();
       interrupts();
 }
 

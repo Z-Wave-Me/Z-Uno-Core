@@ -1,0 +1,837 @@
+// This file represents Z-Wave Command classes support routine
+// It will be translate automaticaly to .cpp during compilation
+// *.ucxt -> *.cpp -> _ucxx.c 
+// DO NOT MODIFY IT! You could broke device behaviour if you don't know what you do!
+
+////@@ GLOBAL_AUTOMACROSES
+
+//@@ $CODE_ADD:WITH_CC_NOTIFICATION:EEPROM.cpp
+#include <Arduino.h>
+#if WITH_CC_NOTIFICATION 
+#include <EEPROM.h>
+#define NOTIFICATION_EE_ADDR 0x2000
+#endif
+
+#ifndef LOGGING_EVENTS
+#define LOGGING_EVENTS 0
+#endif
+#ifndef LOGGING_DBG
+#define LOGGING_DBG  0
+#endif
+#ifndef LOGGING_UART
+#define LOGGING_UART Serial0
+#endif
+#ifndef MAX_SWITCHML_SLOTS
+#define MAX_SWITCHML_SLOTS 3
+#endif
+
+byte g_ci;
+byte g_cj;
+byte g_additional_mode;
+ZUNOChannelParam_t g_channel_value;
+BYTE                g_channel_value_update = FALSE;
+#if !WITH_CUSTOM_BATTERYHANDLER
+BYTE g_old_res;
+#endif
+byte g_mem_shsz = 0;
+void aux_ZMEsetBM(){
+    memset(g_txbuff + (g_mem_shsz & 0x0F), 0, g_mem_shsz >> 4);
+    g_txbuff[(g_mem_shsz & 0x0F) + (g_ci >> 3)] = (1 << (g_ci & 0x07));
+}
+
+void zunoGeneralGetter();
+void zunoGeneralSetter();
+// Prototypes from the sketch...
+//@@ USER_GS_PROTOTYPES
+//@@ USER_GS_EXTERNS
+#if WITH_GENERAL_CHANNEL_VALUES
+ZUNOGeneralChannelData_t g_channels_data[MAX_GENERAL_DATA_CHANNELS];
+#endif
+#if WITH_CC_SWITCH_BINARY || WITH_CC_SWITCH_MULTILEVEL || WITH_CC_SWITCH_COLOR || WITH_CC_DOORLOCK || WITH_CC_THERMOSTAT
+byte g_update_chmap[4];
+void auxUpdateChannelMap(){
+    g_update_chmap[callback_data.channel >> 3] |= 1 << (callback_data.channel & 0x07);
+}
+bool zunoIsChannelUpdated(byte ch){
+    ch -= 1; // zerobased index...
+    if(g_update_chmap[ch >> 3] & (1 << (ch & 0x07))){
+        g_update_chmap[ch >> 3] &= ~(1 << (ch & 0x07));
+        return TRUE;
+    }
+    return FALSE;
+}
+#endif
+#if WITH_CC_SENSOR_MULTILEVEL
+void aux_MapSenMLCapsBM() {
+    byte i;
+    memset(g_txbuff + 2, 0, 6);
+    g_ci -= 1; 
+    if(callback_data.param2.bParam != 0) {
+        g_txbuff[2 + (g_ci >> 3)] = (1 << (g_ci & 0x07));
+        return;
+    }
+
+    for(i=0;i<g_accepted_sketch.n_channels;i++){
+        if(g_accepted_sketch.channels[i].main_type != 
+            ZUNO_SENSOR_MULTILEVEL_CHANNEL_NUMBER)
+            continue;
+        if( g_accepted_sketch.channels[i].channel & 0x80 ||  
+            g_accepted_sketch.channels[i].channel == 0) {
+            g_ci = g_accepted_sketch.channels[i].sub_type-1;
+            g_txbuff[2 + (g_ci >> 3)] |= (1 << (g_ci & 0x07));
+        }
+    }
+
+
+}
+/*
+void aux_MapSenMlScaleBM() {
+     g_txbuff[1] = 0x06;
+     g_txbuff[2] = g_cmd[2]; // SensorType
+     g_txbuff[3] = 0; 
+     if(callback_data.param2.bParam != 0) {
+        g_txbuff[3] =  1 << ((g_accepted_sketch.channels[callback_data.channel].prop >> SENSOR_MULTILEVEL_PROPERTIES_SCALE_SHIFT) & 0x03);
+        return;
+      }
+      for(i=0;i<g_accepted_sketch.n_channels;i++){
+        if(g_accepted_sketch.channels[i].main_type != 
+            ZUNO_SENSOR_MULTILEVEL_CHANNEL_NUMBER)
+            continue;
+        if( (g_accepted_sketch.channels[i].channel & 0x80 ||  
+            g_accepted_sketch.channels[i].channel == 0) && (g_accepted_sketch.channels[i].sub_type == g_cmd[2])) {
+            g_ci = g_accepted_sketch.channels[i].sub_type-1;
+            g_txbuff[2 + (g_ci >> 3)] |= (1 << (g_ci & 0x07));
+        }
+     }
+        if(g_cmd[2] == g_ci){
+                     // Fill the scale mask
+                     g_txbuff[3] = 1 << ((g_accepted_sketch.channels[callback_data.channel].prop >> SENSOR_MULTILEVEL_PROPERTIES_SCALE_SHIFT) & 0x03); 
+                }
+}*/
+#endif
+#if WITH_CC_SWITCH_MULTILEVEL || WITH_CC_SWITCH_COLOR
+// ----------------------------------------------
+// SWITCH ML
+BYTE g_timer_value;
+typedef struct SwitchMLAuxData_s {
+    byte channel;
+    char step;
+    byte tc; // in 100 ms
+    byte quant;
+    byte comp;
+}SwitchMLAuxData_t;
+SwitchMLAuxData_s g_aux_swmldata[MAX_SWITCHML_SLOTS];
+BYTE g_swml_val;
+bool g_swml_inited = FALSE;
+void SWMLTimerUpdate(){
+    BYTE i;
+    g_timer_value++;
+    if(!g_swml_inited){
+        memset((BYTE*)g_aux_swmldata, 0xFF, sizeof(g_aux_swmldata));
+        g_swml_inited = TRUE;
+    }
+    for(i=0;i<MAX_SWITCHML_SLOTS;i++){
+        callback_data.channel = g_aux_swmldata[i].channel;
+        if(callback_data.channel == 0xFF)
+            continue;
+        if((g_timer_value % g_aux_swmldata[i].quant) != 0)
+            continue;
+        zunoSendReport(callback_data.channel+1);
+        // Часть определяемая каналами
+        g_channel_value.buffParam[1] =  g_aux_swmldata[i].comp;
+        zunoGeneralGetter();
+        g_channel_value_update = TRUE;
+        if(g_aux_swmldata[i].step < 0){
+            if(g_channel_value.bParam < (-g_aux_swmldata[i].step)){
+                g_channel_value.bParam = 0;
+                g_aux_swmldata[i].channel = 0xFF;
+            }
+            else
+                g_channel_value.bParam += g_aux_swmldata[i].step;
+
+        } else {
+            if((g_channel_value.bParam+g_aux_swmldata[i].step) >= 99){
+                g_channel_value.bParam = 99;
+                g_aux_swmldata[i].channel = 0xFF;
+             }  
+             else
+                g_channel_value.bParam += g_aux_swmldata[i].step; 
+        }
+        g_aux_swmldata[i].tc--;
+        if(!g_aux_swmldata[i].tc)
+            g_aux_swmldata[i].channel = 0xFF;
+        zunoGeneralSetter();
+
+    }
+}
+byte g_swml_slot = 0xFF;
+void SWMLFindSlot(byte comp){
+    BYTE i;
+    g_swml_slot = 0xFF;
+    for(i=0;i<MAX_SWITCHML_SLOTS;i++) {
+        if((g_aux_swmldata[i].channel == callback_data.channel) &&
+            (g_aux_swmldata[i].comp == comp)) {
+           g_swml_slot = 0xFF;
+           return;
+        }
+        if(g_aux_swmldata[i].channel == 0xFF)
+           g_swml_slot = i;
+   }
+   g_aux_swmldata[g_swml_slot].channel = callback_data.channel;
+   g_aux_swmldata[g_swml_slot].step = 1;
+   g_aux_swmldata[g_swml_slot].tc = 255;
+   g_aux_swmldata[g_swml_slot].quant = 10;
+   g_aux_swmldata[g_swml_slot].comp = comp;
+                
+}
+void SWMLStopSlot(byte comp){
+    BYTE i;
+    for(i=0;i<MAX_SWITCHML_SLOTS;i++) {
+        if((g_aux_swmldata[i].channel == callback_data.channel) &&
+            (g_aux_swmldata[i].comp == comp)
+            ){
+           g_aux_swmldata[i].channel = 0xFF;
+           break;
+        }
+    }
+
+}
+#endif
+// -----------------------------------------------------------------------
+// -----------------------------------------------------------------------
+// NOTIFICATION
+#if WITH_CC_NOTIFICATION
+CCBYTE NOTIFICATION_MAPPER[] = {
+    0,0,
+    NOTIFICATION_TYPE_BURGLAR_ALARM, NOTIFICATION_EVENT_INTRUSION_UL,   // SENSOR_BINARY_REPORT_TYPE_GENERAL_PURPOSE       
+    NOTIFICATION_TYPE_SMOKE_ALARM,   NOTIFICATION_EVENT_SMOKE_UL,       // SENSOR_BINARY_REPORT_TYPE_SMOKE                 
+    NOTIFICATION_TYPE_CO_ALARM,      NOTIFICATION_EVENT_CO_UL,          // SENSOR_BINARY_REPORT_TYPE_CO                  
+    NOTIFICATION_TYPE_CO2_ALARM,     NOTIFICATION_EVENT_CO2_UL,         // SENSOR_BINARY_REPORT_TYPE_CO2                     
+    NOTIFICATION_TYPE_HEAT_ALARM,    NOTIFICATION_EVENT_OVERHEAT_UL,    // SENSOR_BINARY_REPORT_TYPE_HEAT                  
+    NOTIFICATION_TYPE_WATER_ALARM,   NOTIFICATION_EVENT_WATER_LEAK_UL,  // SENSOR_BINARY_REPORT_TYPE_WATER                 
+    NOTIFICATION_TYPE_HEAT_ALARM,    NOTIFICATION_EVENT_UNDERHEAT_UL,   // SENSOR_BINARY_REPORT_TYPE_FREEZE                 
+    NOTIFICATION_TYPE_BURGLAR_ALARM, NOTIFICATION_EVENT_TAMPER_REMOVED, // SENSOR_BINARY_REPORT_TYPE_TAMPER              
+    NOTIFICATION_TYPE_BURGLAR_ALARM,        NOTIFICATION_EVENT_INTRUSION_UL,       // SENSOR_BINARY_REPORT_TYPE_AUX                    
+    NOTIFICATION_TYPE_ACCESS_CONTROL_ALARM, NOTIFICATION_EVENT_WINDOW_DOOR_OPENED, // SENSOR_BINARY_REPORT_TYPE_DOOR_WINDOW         
+    NOTIFICATION_TYPE_BURGLAR_ALARM,        NOTIFICATION_EVENT_INTRUSION_UL,       // SENSOR_BINARY_REPORT_TYPE_TILT                   
+    NOTIFICATION_TYPE_BURGLAR_ALARM,        NOTIFICATION_EVENT_MOTION_DETECTION_UL,// SENSOR_BINARY_REPORT_TYPE_MOTION              
+    NOTIFICATION_TYPE_BURGLAR_ALARM,        NOTIFICATION_EVENT_GLASS_BREAK_UL      // SENSOR_BINARY_REPORT_TYPE_GLASSBREAK         
+};
+#endif
+#if WITH_CC_THERMOSTAT
+#define UNMAPPED_THERMO_MODE 0xFF
+CCBYTE THERMO_MODE_MAP[] = {0,                    0x01,                 0x02,                 UNMAPPED_THERMO_MODE, 
+                            UNMAPPED_THERMO_MODE, UNMAPPED_THERMO_MODE, UNMAPPED_THERMO_MODE, 0x03,
+                            0x04,                 0x05,                 0x06,                 UNMAPPED_THERMO_MODE,
+                            UNMAPPED_THERMO_MODE, UNMAPPED_THERMO_MODE, UNMAPPED_THERMO_MODE, 0x07};
+
+byte mapThermoMode(){
+    byte r;
+    // It's a ansocilicted report => forward the current mode, we don't need to check it
+    if(callback_data.result.bParam & 0x80) {
+        return TRUE;
+    }
+    r = THERMO_MODE_MAP[g_cmd[2]];
+    if(r == UNMAPPED_THERMO_MODE) // Z-Uno doesn't support it anyway
+        return FALSE; 
+    r = 1 << r;
+    if( (g_ci & r) != 0)
+        return TRUE;
+    return FALSE;
+}
+
+
+#endif
+// -----------------------------------------------------------------------
+//@@ $GENERALCALLBACKGETTER_RULE:ZUNO_SWITCH_BINARY_CHANNEL_NUMBER:g_channel_value.bParam=#GETTER1,#;
+//@@ $GENERALCALLBACKGETTER_RULE:ZUNO_SWITCH_MULTILEVEL_CHANNEL_NUMBER:g_channel_value.bParam=#GETTER1,#;
+//@@ $GENERALCALLBACKGETTER_RULE:ZUNO_SENSOR_BINARY_CHANNEL_NUMBER:g_channel_value.bParam=#GETTER1,#;
+//@@ $GENERALCALLBACKGETTER_RULE:ZUNO_SENSOR_MULTILEVEL_CHANNEL_NUMBER:g_channel_value.#PARAM#=#GETTER1,#;
+//@@ $GENERALCALLBACKGETTER_RULE:ZUNO_METER_CHANNEL_NUMBER:g_channel_value.#PARAM#=#GETTER1,#;
+//@@ $GENERALCALLBACKGETTER_RULE:ZUNO_DOORLOCK_CHANNEL_NUMBER:g_channel_value.bParam=#GETTER1,#;
+//@@ $GENERALCALLBACKGETTER_RULE:ZUNO_FLOWSTOP_CHANNEL_NUMBER:g_channel_value.bParam=#GETTER1,#;
+//@@ $GENERALCALLBACKGETTER_RULE:ZUNO_SIREN_CHANNEL_NUMBER:g_channel_value.bParam=#GETTER1,#;
+//@@ $GENERALCALLBACKGETTER_RULE:ZUNO_BLINDS_CHANNEL_NUMBER:g_channel_value.bParam=#GETTER1,#;
+//@@ $GENERALCALLBACKGETTER_RULE:ZUNO_THERMOSTAT_CHANNEL_NUMBER:if(callback_data.type == ZUNO_CALLBACK_COMMANDHANDLER_THERMOSTAT_SETPOINT_GET){ g_channel_value.wParam = #GETTER2,g_additional_mode#; return;} g_channel_value.bParam=#GETTER1,#;
+//@@ $GENERALCALLBACKGETTER_RULE:ZUNO_SWITCH_COLOR_CHANNEL_NUMBER:g_channel_value.bParam = #GETTER1,g_additional_mode#;
+void zunoGeneralGetter(){
+    //@@ GENERAL_GETTER_BODY
+    #if WITH_GENERAL_CHANNEL_VALUES
+    switch(g_accepted_sketch.channels[callback_data.channel].main_type) {
+        #if WITH_CC_SWITCH_BINARY || WITH_CC_SWITCH_MULTILEVEL || WITH_CC_SENSOR_BINARY || WITH_CC_NOTIFICATION ||WITH_CC_DOORLOCK
+        case ZUNO_SWITCH_BINARY_CHANNEL_NUMBER:
+        case ZUNO_SWITCH_MULTILEVEL_CHANNEL_NUMBER:
+        case ZUNO_SENSOR_BINARY_CHANNEL_NUMBER:
+        case ZUNO_DOORLOCK_CHANNEL_NUMBER:
+        case ZUNO_FLOWSTOP_CHANNEL_NUMBER:
+        case ZUNO_SIREN_CHANNEL_NUMBER:
+        case ZUNO_BLINDS_CHANNEL_NUMBER:
+            g_channel_value.bParam = g_channels_data[callback_data.channel].bParam;
+            break;
+        #endif
+        #if WITH_CC_METER || WITH_CC_SENSOR_MULTILEVEL
+        case ZUNO_SENSOR_MULTILEVEL_CHANNEL_NUMBER:
+        case ZUNO_METER_CHANNEL_NUMBER:
+            g_channel_value.dwParam = g_channels_data[callback_data.channel].dwParam;
+            break;
+        #endif
+        #if WITH_CC_THERMOSTAT
+        case ZUNO_THERMOSTAT_CHANNEL_NUMBER:
+            if(callback_data.type == ZUNO_CALLBACK_COMMANDHANDLER_THERMOSTAT_SETPOINT_GET){
+                g_channel_value.wParam =  g_channels_data[callback_data.channel].thermoParam.temperature[g_additional_mode];
+                break;
+            }
+            g_channel_value.bParam = g_channels_data[callback_data.channel].thermoParam.mode;
+            break;
+        #endif
+        #if WITH_CC_SWITCH_COLOR
+        case ZUNO_SWITCH_COLOR_CHANNEL_NUMBER:
+            g_channel_value.bParam = g_channels_data[callback_data.channel].buffParam[g_additional_mode];
+            break;
+        #endif
+    }
+    #endif
+}
+//@@ $GENERALCALLBACKSETTER_RULE:ZUNO_SWITCH_BINARY_CHANNEL_NUMBER:#SETTER1,g_channel_value.bParam#;
+//@@ $GENERALCALLBACKSETTER_RULE:ZUNO_SWITCH_MULTILEVEL_CHANNEL_NUMBER:#SETTER1,g_channel_value.bParam#;
+//@@ $GENERALCALLBACKSETTER_RULE:ZUNO_DOORLOCK_CHANNEL_NUMBER:#SETTER1,g_channel_value.bParam#;
+//@@ $GENERALCALLBACKSETTER_RULE:ZUNO_FLOWSTOP_CHANNEL_NUMBER:#SETTER1,g_channel_value.bParam#;
+//@@ $GENERALCALLBACKSETTER_RULE:ZUNO_METER_CHANNEL_NUMBER:#SETTER1,#;
+//@@ $GENERALCALLBACKSETTER_RULE:ZUNO_SIREN_CHANNEL_NUMBER:#SETTER1,g_channel_value.bParam#;
+//@@ $GENERALCALLBACKSETTER_RULE:ZUNO_BLINDS_CHANNEL_NUMBER:#SETTER1,g_channel_value.bParam#;
+//@@ $GENERALCALLBACKSETTER_RULE:ZUNO_THERMOSTAT_CHANNEL_NUMBER:if(callback_data.type == ZUNO_CALLBACK_COMMANDHANDLER_THERMOSTAT_SETPOINT_SET){ #SETTER2,g_additional_mode,g_channel_value.wParam#; return;} #SETTER1,g_channel_value.bParam#;
+//@@ $GENERALCALLBACKSETTER_RULE:ZUNO_SWITCH_COLOR_CHANNEL_NUMBER:#SETTER1,g_additional_mode,g_channel_value.bParam#;
+void zunoGeneralSetter(){
+    if(!g_channel_value_update)
+        return;
+    #if WITH_CC_SWITCH_BINARY || WITH_CC_SWITCH_MULTILEVEL || WITH_CC_SWITCH_COLOR || WITH_CC_DOORLOCK || WITH_CC_THERMOSTAT
+    auxUpdateChannelMap();
+    #endif
+    //@@ GENERAL_SETTER_BODY
+    #if WITH_CC_SWITCH_BINARY || WITH_CC_SWITCH_MULTILEVEL || WITH_CC_SWITCH_COLOR || WITH_CC_DOORLOCK || WITH_CC_THERMOSTAT
+    zunoSendReport(callback_data.channel + 1);
+    #endif
+    #if WITH_GENERAL_CHANNEL_VALUES
+    switch(g_accepted_sketch.channels[callback_data.channel].main_type) {
+        #if WITH_CC_SWITCH_BINARY || WITH_CC_SWITCH_MULTILEVEL || WITH_CC_DOORLOCK
+        case ZUNO_SWITCH_BINARY_CHANNEL_NUMBER:
+        case ZUNO_SWITCH_MULTILEVEL_CHANNEL_NUMBER:
+        case ZUNO_DOORLOCK_CHANNEL_NUMBER:
+        case ZUNO_FLOWSTOP_CHANNEL_NUMBER:
+        case ZUNO_SIREN_CHANNEL_NUMBER:
+        case ZUNO_BLINDS_CHANNEL_NUMBER:
+            g_channels_data[callback_data.channel].bParam = g_channel_value.bParam;
+            break;
+        #endif
+        #if WITH_CC_THERMOSTAT
+        case ZUNO_THERMOSTAT_CHANNEL_NUMBER:
+            if(callback_data.type == ZUNO_CALLBACK_COMMANDHANDLER_THERMOSTAT_SETPOINT_GET){
+                g_channels_data[callback_data.channel].thermoParam.temperature[g_additional_mode] = g_channel_value.wParam;
+                break;
+            }
+            g_channel_value.bParam = g_channels_data[callback_data.channel].thermoParam.mode;
+            break;
+        #endif
+        #if WITH_CC_SWITCH_COLOR
+        case ZUNO_SWITCH_COLOR_CHANNEL_NUMBER:
+            g_channels_data[callback_data.channel].buffParam[g_additional_mode] = g_channel_value.bParam;
+            break;
+        #endif
+    }
+    #endif
+}
+
+#if !WITH_CUSTOM_ZUNOCALLBACK
+#if WITH_CC_BATTERY
+#if !WITH_CUSTOM_BATTERYHANDLER
+void zunoDefaultBatteryGetter(){
+    g_old_res = g_ptr_config[ZUNO_CFG_BYTE_ADC_RES];
+    g_ptr_config[ZUNO_CFG_BYTE_ADC_RES] = 8; // ADC_RESOLUTION=8bits
+    callback_data.result.wParam = 30743;
+    callback_data.result.wParam /= analogRead(BATTERY);
+    if(callback_data.result.wParam < BATTERYHANDLER_AUTO_MIN){
+        callback_data.result.bParam = 0xFF; // Critical level!
+    } else if(callback_data.result.wParam > BATTERYHANDLER_AUTO_MAX){
+        callback_data.result.bParam = 100; // Battery is full
+    } else {
+        callback_data.result.wParam -= BATTERYHANDLER_AUTO_MIN;
+        callback_data.result.wParam *= 100;
+        callback_data.result.wParam /= (BATTERYHANDLER_AUTO_MAX - BATTERYHANDLER_AUTO_MIN); 
+        callback_data.result.bParam = callback_data.result.wParam;
+    }
+    g_ptr_config[ZUNO_CFG_BYTE_ADC_RES] = g_old_res;
+}
+#endif
+#endif
+void zunoCallback(void) {
+    BYTE i;
+    if(callback_data.type < ZUNO_CALLBACK_COMMANDHANDLER_MAX)
+    {
+        g_channel_value_update = FALSE;
+        #if LOGGING_DBG
+        LOGGING_UART.print(">> MSG (");
+        LOGGING_UART.print(callback_data.type, HEX);
+        LOGGING_UART.print(',');
+        LOGGING_UART.print(callback_data.channel, HEX);
+        LOGGING_UART.print("):");
+        LOGGING_UART.dumpPrint(g_cmd, callback_data.param1.bParam);
+        LOGGING_UART.print("\n");
+        #endif
+        // Для большинства репортов указанный ниже код не нужно модифицировать
+        g_txbuff[0] = g_cmd[0];     // Класс остается прежним
+        g_txbuff[1] = g_cmd[1] + 1; // Отчет всегда get + 1
+        // Часто нужные значения
+        g_ci = g_accepted_sketch.channels[callback_data.channel].sub_type;
+        zunoGeneralGetter();
+    }
+
+    switch(callback_data.type){
+            #if WITH_CC_SWITCH_MULTILEVEL || WITH_CC_SWITCH_BINARY || WITH_CC_THERMOSTAT || WITH_CC_METER
+            case ZUNO_CALLBACK_COMMANDHANDLER_BASIC_GET:
+            case ZUNO_CALLBACK_COMMANDHANDLER_SWITCHB_GET:
+            case ZUNO_CALLBACK_COMMANDHANDLER_SWITCHM_GET:
+            case ZUNO_CALLBACK_COMMANDHANDLER_THERMOSTAT_MODE_GET:
+                g_txbuff[2] = g_channel_value.bParam;
+                callback_data.result.bParam = 3;
+                break;
+            #endif
+            #if  WITH_CC_SWITCH_MULTILEVEL || WITH_CC_SWITCH_BINARY || WITH_CC_THERMOSTAT || WITH_CC_METER
+            case ZUNO_CALLBACK_COMMANDHANDLER_BASIC_SET:
+            case ZUNO_CALLBACK_COMMANDHANDLER_SWITCHB_SET:
+            case ZUNO_CALLBACK_COMMANDHANDLER_THERMOSTAT_MODE_SET:
+            case ZUNO_CALLBACK_COMMANDHANDLER_METER_RESET:
+            case ZUNO_CALLBACK_COMMANDHANDLER_SWITCHM_SET:
+                g_channel_value.bParam = g_cmd[2];
+                #if WITH_CC_SWITCH_MULTILEVEL
+                if((callback_data.type == ZUNO_CALLBACK_COMMANDHANDLER_SWITCHM_SET)  &&  (g_cmd[2] == 0xFF))
+                     g_channel_value.bParam = 99; // The simpliest way => turn it to the high limit
+                #endif
+                g_channel_value_update = TRUE;
+                break;
+            #endif
+            #if WITH_CC_SWITCH_MULTILEVEL
+            case ZUNO_CALLBACK_COMMANDHANDLER_SWITCHM_START_LC:
+                SWMLFindSlot(0);
+                if(g_cmd[2] & 0x40)
+                   g_aux_swmldata[g_swml_slot].step = -g_aux_swmldata[g_swml_slot].step;
+                if((g_cmd[2] & 0x20) == 0){
+                    g_channel_value.bParam = g_cmd[3];
+                    g_channel_value_update = TRUE;
+                }
+                break;
+            case ZUNO_CALLBACK_COMMANDHANDLER_SWITCHM_STOP_LC:
+                SWMLStopSlot(0);
+                break;
+            #endif
+            #if WITH_CC_SENSOR_BINARY
+            case ZUNO_CALLBACK_COMMANDHANDLER_SENSORB_SUPPORTED_GET:
+                g_txbuff[1] = 0x04; // Прицип репорт+1 не выполняется!!!
+                g_mem_shsz = 0x22;
+                aux_ZMEsetBM();
+                callback_data.result.bParam = 4;
+                break;
+            case ZUNO_CALLBACK_COMMANDHANDLER_SENSORB_GET:
+                if((callback_data.param1.bParam > 2) && g_ci != g_cmd[2] && (g_cmd[2] != 0xFF)) // Not supported
+                    break;
+                g_txbuff[2] = g_channel_value.bParam ? 0xFF : 0; // <-  Подстановка значения
+                g_txbuff[3] = g_ci;
+                callback_data.result.bParam = 4;
+                break;
+            #endif
+            #if WITH_CC_NOTIFICATION
+            case ZUNO_CALLBACK_COMMANDHANDLER_NOTIFICATION_SET:
+                g_ci <<= 1;
+                if(NOTIFICATION_MAPPER[g_ci] !=  g_cmd[2])
+                    break;
+                if((g_cmd[3] != 0) && (g_cmd[3] != 0xFF))
+                    break;
+                EEPROM.write(NOTIFICATION_EE_ADDR + callback_data.channel, g_cmd[3]);
+                break;
+            case ZUNO_CALLBACK_COMMANDHANDLER_NOTIFICATION_GET:
+                g_cj = EEPROM.read(NOTIFICATION_EE_ADDR + callback_data.channel);
+                if((callback_data.result.bParam & 0x80) && (!g_cj)){
+                   callback_data.result.bParam = 0;
+                   break;
+                }
+                g_ci <<= 1;
+                memset(g_txbuff+2, 0, 11-2);
+                if(callback_data.result.bParam == 0){ 
+                    if((NOTIFICATION_MAPPER[g_ci] !=  g_cmd[3]) && (g_cmd[3] != 0xFF))
+                        break;
+                    if(g_cmd[2] == 0xFF){
+                        g_txbuff[7] = 0xFE;
+                    }
+                } 
+                if( g_txbuff[7] != 0xFE){
+                    g_txbuff[5] = g_cj; 
+                    g_txbuff[6] = NOTIFICATION_MAPPER[g_ci];
+                    if(g_channel_value.bParam)
+                        g_txbuff[7] =  NOTIFICATION_MAPPER[g_ci+1];
+                    else{
+                        if(NOTIFICATION_MAPPER[g_ci+1] == NOTIFICATION_EVENT_WINDOW_DOOR_OPENED){
+                            g_txbuff[7] = NOTIFICATION_EVENT_WINDOW_DOOR_CLOSED;
+                            break;
+                        }
+                        g_txbuff[7] = NOTIFICATION_OFF_VALUE;
+                        g_txbuff[8] = 1;
+                        g_txbuff[9] = NOTIFICATION_MAPPER[g_ci+1];     
+                    }
+                }
+                callback_data.result.bParam = 11;
+                break;
+            case ZUNO_CALLBACK_COMMANDHANDLER_NOTIFICATION_SUPPORTED_GET: 
+                g_ci <<= 1;
+                g_ci = NOTIFICATION_MAPPER[g_ci];
+                g_txbuff[2] = 2;
+                g_mem_shsz = 0x23;
+                aux_ZMEsetBM();
+                callback_data.result.bParam = 5;
+                break;
+            case ZUNO_CALLBACK_COMMANDHANDLER_NOTIFICATION_SUPPORTED_GET_EVENT:
+                g_ci <<= 1;
+                if((NOTIFICATION_MAPPER[g_ci] !=  g_cmd[2]) && (
+                    g_cmd[2] != 0xFF))
+                    break;
+                g_ci = NOTIFICATION_MAPPER[g_ci + 1];
+                g_txbuff[2] = g_cmd[2];
+                g_txbuff[3] = 3;
+                g_mem_shsz = 0x34;
+                aux_ZMEsetBM();
+                callback_data.result.bParam = 7;
+                break;
+            #endif
+            #if WITH_CC_SENSOR_MULTILEVEL
+            case ZUNO_CALLBACK_COMMANDHANDLER_SENSORM_SUPPORTED_GET:
+                aux_MapSenMLCapsBM();
+                callback_data.result.bParam = 8;
+                break;
+            case ZUNO_CALLBACK_COMMANDHANDLER_SENSORM_SUPPORTED_GET_SCALE:
+                g_txbuff[1] = 0x06;
+                g_txbuff[2] = g_cmd[2]; // SensorType
+                g_txbuff[3] = 0; 
+                if(g_ci == g_cmd[2]){
+                    g_txbuff[3] = 1 << ((g_accepted_sketch.channels[callback_data.channel].prop & SENSOR_MULTILEVEL_PROPERTIES_SCALE_MASK) >> SENSOR_MULTILEVEL_PROPERTIES_SCALE_SHIFT);  
+                }
+                callback_data.result.bParam = 4;
+                break;
+            case ZUNO_CALLBACK_COMMANDHANDLER_SENSORM_GET:
+                g_txbuff[2] = g_ci; // SensorType
+                g_cj = g_accepted_sketch.channels[callback_data.channel].prop;
+                g_txbuff[3] = g_cj;
+                g_cj &= SENSOR_MULTILEVEL_PROPERTIES_SIZE_MASK;
+                _zme_memcpy(g_txbuff+4, g_channel_value.buffParam,  g_cj); 
+                callback_data.result.bParam = 4 + (g_cj);
+                break;
+            #endif
+            #if WITH_CC_METER
+            case ZUNO_CALLBACK_COMMANDHANDLER_METER_GET:
+                g_cmd[2] >>= 3;
+                g_cmd[2] &= 0x07;
+                g_cj = g_accepted_sketch.channels[callback_data.channel].prop;
+                if(((callback_data.result.bParam & 0x80) == 0) &&
+                    (g_cmd[2] != 
+                    (g_cj & 0x07))){
+                    callback_data.result.bParam = 0;
+                    break;
+                }
+                g_txbuff[2] = 0x60;
+                if(g_cmd[2] & 0x04)
+                    g_txbuff[2] |= 0x80;
+                g_txbuff[2] |= g_ci & 0x1F;
+                g_txbuff[3]  = (g_cj  & 0x03) << 3;
+                g_txbuff[3] |= (g_cj << 2) & 0xE0;
+                g_cj >>= 6;
+                g_cj += 1;
+                g_txbuff[3] |= g_cj;
+                _zme_memcpy(g_txbuff+4, g_channel_value.buffParam,  g_cj); 
+                g_txbuff[4 + g_cj]      = 0;
+                g_txbuff[4 + g_cj+1]    = 0;
+                callback_data.result.bParam = 6+g_cj;                
+                break;
+            case ZUNO_CALLBACK_COMMANDHANDLER_METER_SUPPORTED_GET:
+                g_txbuff[2] = g_ci | 0x20; // RATE ALWAYS == IMPORT
+                g_txbuff[3] = 1 << (g_accepted_sketch.channels[callback_data.channel].prop & 0x07);
+                callback_data.result.bParam = 4;
+                break;
+            #endif
+            #if WITH_CC_DOORLOCK
+            case ZUNO_CALLBACK_COMMANDHANDLER_DOORLOCK_SET:
+                g_channel_value.bParam = g_cmd[2];
+                g_channel_value_update = TRUE;
+                break;
+            case ZUNO_CALLBACK_COMMANDHANDLER_DOORLOCK_GET:
+                g_txbuff[2] =  g_channel_value.bParam;
+                g_txbuff[3] =  0x01;
+                g_txbuff[4] =  (g_channel_value.bParam) ? 0x01 : 0x00;
+                g_txbuff[5] =  0xFE;
+                g_txbuff[6] =  0xFE;
+                callback_data.result.bParam = 7;
+                break;
+            case ZUNO_CALLBACK_COMMANDHANDLER_DOORLOCK_CONFIG_GET:
+                g_txbuff[2] =  0x01;
+                g_txbuff[3] =  0x01;
+                g_txbuff[4] =  0xFE;
+                g_txbuff[5] =  0xFE;
+                callback_data.result.bParam = 6;
+                break;
+            #endif
+            #if WITH_CC_THERMOSTAT
+            case ZUNO_CALLBACK_COMMANDHANDLER_THERMOSTAT_MODE_SUPPORTED_GET:
+                g_txbuff[2] =  (g_ci & 0x07) |  ((g_ci & 0x08) << 4);
+                g_ci >>= 4;
+                g_txbuff[3] =  (g_ci & 0x07) | ((g_ci & 0x08) << 4);
+                callback_data.result.bParam = 4;
+                break;
+            case ZUNO_CALLBACK_COMMANDHANDLER_THERMOSTAT_SETPOINT_SUPPORTED_GET:
+                g_txbuff[2] =  (g_ci & 0x7E);
+                g_txbuff[3] =  ((g_ci & 0x80) >> 4);
+                callback_data.result.bParam = 4;
+                break;
+            
+            case ZUNO_CALLBACK_COMMANDHANDLER_THERMOSTAT_SETPOINT_SET:
+                if(!mapThermoMode())
+                    break;
+                // Temperature
+                g_channel_value.buffParam[0] = g_cmd[5];
+                g_channel_value.buffParam[1] = g_cmd[4];
+                // Type
+                g_additional_mode = g_cmd[2];
+                g_channel_value_update = TRUE;
+                break;
+            case ZUNO_CALLBACK_COMMANDHANDLER_THERMOSTAT_SETPOINT_GET:
+                if(!mapThermoMode())
+                    break;
+                g_cj = g_accepted_sketch.channels[callback_data.channel].prop;
+               
+                g_txbuff[3] = 0x22; // precision == 1, size == 2
+                if(g_cj & THERMOSTAT_UNITS_FAHRENHEIT)
+                    g_txbuff[3] |= 0x08;
+                g_additional_mode = g_cmd[2];
+                if(callback_data.result.bParam & 0x80){
+                    callback_data.type = ZUNO_CALLBACK_COMMANDHANDLER_THERMOSTAT_MODE_GET;
+                    zunoGeneralGetter();
+                    g_additional_mode = g_channel_value.bParam;
+                    if(g_additional_mode == 0){
+                        callback_data.result.bParam = 0;
+                        break; // OFF => NO REPORT
+                    }
+                    callback_data.type = ZUNO_CALLBACK_COMMANDHANDLER_THERMOSTAT_SETPOINT_GET;
+                }
+                g_txbuff[2] = g_additional_mode;
+                zunoGeneralGetter();
+                g_txbuff[4] = g_channel_value.buffParam[1];
+                g_txbuff[5] = g_channel_value.buffParam[0];
+                callback_data.result.bParam = 6;
+                break;
+            
+            case ZUNO_CALLBACK_COMMANDHANDLER_THERMOSTAT_SETPOINT_CAPABILITIES_GET:
+                g_ci &= 0xFE;
+                if(!mapThermoMode())
+                    break;
+                memset(g_txbuff+2,0,7);
+                g_cj = g_accepted_sketch.channels[callback_data.channel].prop;
+                g_txbuff[2] =  g_cmd[2];
+                // precision == 1, size == 2
+                g_txbuff[3] = g_txbuff[6] = 0x22; 
+                callback_data.param2.wParam = g_cj & THERMOSTAT_LIMITS_MASK;
+                callback_data.param2.wParam *= 100;
+                if(g_cj & THERMOSTAT_RANGE_POS){
+                    g_txbuff[7] = callback_data.param2.buffParam[1]; // precision == 1, size == 2
+                    g_txbuff[8] = callback_data.param2.buffParam[0];
+                }
+                if(g_cj & THERMOSTAT_RANGE_NEG){
+                    callback_data.param2.wParam = 65536 - callback_data.param2.wParam;
+                    g_txbuff[4] = callback_data.param2.buffParam[1]; // precision == 1, size == 2
+                    g_txbuff[5] = callback_data.param2.buffParam[0];
+                }
+                if(g_cj & THERMOSTAT_UNITS_FAHRENHEIT){
+                    g_txbuff[3] = g_txbuff[6] = 0x2A; 
+                }
+                callback_data.result.bParam = 9;
+                break;
+            #endif
+            #if WITH_CC_SWITCH_COLOR
+            case ZUNO_CALLBACK_COMMANDHANDLER_SWITCHC_SUPPORTED_GET:
+                g_txbuff[2] = g_ci;
+                g_txbuff[3] = 0;
+                callback_data.result.bParam = 4;
+                break;
+            case ZUNO_CALLBACK_COMMANDHANDLER_SWITCHC_GET:  
+                if(callback_data.result.bParam & 0x80) { // Report of all channels
+                    //byte i;
+                    #if LOGGING_DBG
+                    LOGGING_UART.println("UNSOLICITED COLOR REPORT >>>");
+                    LOGGING_UART.println(millis());
+                    #endif 
+                    callback_data.result.bParam = 0;
+                    for(i=0;i<7;i++) {
+                        if(((1 << i) & (g_ci)) == 0)
+                            continue;
+                        zunoCreatePacket();
+                        g_txbuff[0] = 0x33; // CC=SWITCH_COLOR
+                        g_txbuff[1] = 0x04; // REPORT
+                        g_additional_mode = g_txbuff[2] = i; // #COMPONENT
+                        //g_channel_value.buffParam[1] = i; 
+                        zunoGeneralGetter();
+                        g_txbuff[3] = g_channel_value.bParam;
+                        zunoSendDirectReport(0, 4);
+                    }
+                    #if LOGGING_DBG
+                    LOGGING_UART.println(millis());
+                    LOGGING_UART.println("<<UNSOLICITED COLOR REPORT");
+                    #endif 
+                    break;
+                }
+                if(((1 << g_cmd[2]) & (g_ci)) == 0)
+                    break; // We don't support this component
+                // Only one component
+                //g_channel_value.buffParam[0] = g_cmd[2]; 
+                g_additional_mode = g_cmd[2];
+                g_txbuff[2] = g_cmd[2];
+                zunoGeneralGetter();
+                g_txbuff[3] = g_channel_value.bParam;
+                callback_data.result.bParam = 4;
+                break;
+            case ZUNO_CALLBACK_COMMANDHANDLER_SWITCHC_SET:
+                for(i=3;i<(3+2*g_cmd[2]);i+=2) {
+                    g_channel_value_update = TRUE;
+                    g_additional_mode = g_cmd[i];
+                    //g_channel_value.buffParam[1] = g_cmd[i];    // Component
+                    g_channel_value.bParam = g_cmd[i+1];  // Value
+                    zunoGeneralSetter();
+                }
+                break;
+            case ZUNO_CALLBACK_COMMANDHANDLER_SWITCHC_START_LC:
+                SWMLFindSlot(g_cmd[3]);
+                if(g_cmd[2] & 0x40)
+                   g_aux_swmldata[g_swml_slot].step = -g_aux_swmldata[g_swml_slot].step;
+                if(!(g_cmd[2] & 0x20)){
+                    g_channel_value.bParam = g_cmd[4];
+                    g_channel_value_update = TRUE;
+                }
+                break;
+            case ZUNO_CALLBACK_COMMANDHANDLER_SWITCHC_STOP_LC:
+                SWMLStopSlot(0);
+                break;    
+            #endif
+            #if WITH_CUSTOM_REPORTHANDLER_BASIC
+            case ZUNO_CALLBACK_COMMANDHANDLER_BASIC_REPORT:
+                //@@ HANDLER:ZUNO_SYSTEM_REPORT_BASIC:::
+                return;
+            #endif
+            #if WITH_CUSTOM_REPORTHANDLER_SWITCHBINARY
+            case ZUNO_CALLBACK_COMMANDHANDLER_SWITCHB_REPORT:
+                //@@ HANDLER:ZUNO_SYSTEM_REPORT_SWITCHBINARY:::
+                return;
+            #endif
+            #if WITH_CUSTOM_REPORTHANDLER_SWITCHMULTILEVEL
+            case ZUNO_CALLBACK_COMMANDHANDLER_SWITCHM_REPORT:
+                //@@ HANDLER:ZUNO_SYSTEM_REPORT_SWITCHMULTILEVEL:::
+                return;
+            #endif
+            #if WITH_CUSTOM_REPORTHANDLER_SENSORBINARY
+            case ZUNO_CALLBACK_COMMANDHANDLER_SENSORB_REPORT:
+                //@@ HANDLER:ZUNO_SYSTEM_REPORT_SENSORBINARY:::
+                return;
+            #endif
+            #if WITH_CUSTOM_REPORTHANDLER_NOTIFICATION
+            case ZUNO_CALLBACK_COMMANDHANDLER_NOTIFICATION_REPORT:
+                //@@ HANDLER:ZUNO_SYSTEM_REPORT_NOTIFICATION:::
+                return;
+            #endif
+            #if WITH_CUSTOM_REPORTHANDLER_SENSORMULTILEVEL
+            case ZUNO_CALLBACK_COMMANDHANDLER_SENSORM_REPORT:
+                //@@ HANDLER:ZUNO_SYSTEM_REPORT_SENSORMULTILEVEL:::
+                return;
+            #endif
+            #if WITH_CUSTOM_REPORTHANDLER_METER
+            case ZUNO_CALLBACK_COMMANDHANDLER_METER_REPORT:
+                //@@ HANDLER:ZUNO_SYSTEM_REPORT_METER:::
+                return;
+            #endif
+            // ------------------- SYSTEM EVENTS --------------------------
+            case ZUNO_CALLBACK_LOG_EVENT:
+               #if LOGGING_EVENTS
+               if(callback_data.param1.bParam == 0x00){
+                    LOGGING_UART.begin(115200);
+               }
+               LOGGING_UART.print(millis());
+               LOGGING_UART.print(':');
+               LOGGING_UART.print(callback_data.param1.bParam,HEX);
+               LOGGING_UART.print(' ');
+               LOGGING_UART.println(callback_data.param2.bParam,HEX);
+               #endif
+               #if WITH_CC_NOTIFICATION
+               if((callback_data.param1.bParam == ZUNO_LOGGING_EVENT_LEARNCOMPLETE) && (callback_data.param2.bParam == 0x00)){
+                    g_ci = 0;
+                    while(g_ci < 32){
+                        EEPROM.write(NOTIFICATION_EE_ADDR + g_ci, 0xFF);
+                        g_ci++;
+                    }
+                    #if LOGGING_DBG
+                    LOGGING_UART.println("***NOTIFICATION_RESET***");
+                    #endif
+               }
+               #endif
+               //@@ HANDLER:ZUNO_SYSTEM_EVENT:::callback_data.param1.bParam:callback_data.param2.bParam
+              return;
+            case ZUNO_CALLBACK_TIMER:
+              #if WITH_CC_SWITCH_MULTILEVEL || WITH_CC_SWITCH_COLOR
+              SWMLTimerUpdate();
+              #endif
+              //@@ HANDLER:ZUNO_SYSTEM_TIMER:::
+              return;
+            #if WITH_CUSTOM_CONFIG_PARAMETERS
+            case ZUNO_CALLBACK_CUSTOM_PARAMETER_SET:
+               //@@ HANDLER:ZUNO_SYSTEM_PARAMETER::;rawSaveCFGParam():callback_data.param1.bParam:callback_data.param2.wParam
+               return;
+            case ZUNO_CALLBACK_CUSTOM_PARAMETER_GET:
+               //@@ HANDLER::zunoLoadCFGParam(callback_data.param1.bParam)::
+               return;
+            #endif
+            #if WITH_CC_BATTERY
+            case ZUNO_CALLBACK_CUSTOM_BATTERY_GET:
+                #if WITH_CUSTOM_BATTERYHANDLER
+                //@@ HANDLER:ZUNO_SYSTEM_BATTERY:callback_data.result.bParam=::
+                #else
+                zunoDefaultBatteryGetter();
+                #endif
+               return;
+            #endif
+            #if WITH_CUSTOM_REPORTHANDLER_BATTERY
+            case ZUNO_CALLBACK_CUSTOM_BATTERY_REPORT:
+                //@@ HANDLER:ZUNO_SYSTEM_REPORT_BATTERY:::
+                return;
+            #endif
+            #if WITH_CUSTOM_FWUPGRADE
+            case ZUNO_CALLBACK_CUSTOM_FWUPDATE_META:
+                //@@ HANDLER:ZUNO_SYSTEM_FWMETA:callback_data.result.dwParam=(dword)::
+                return;
+            case ZUNO_CALLBACK_CUSTOM_FWUPDATE_READY:
+                //@@ HANDLER:ZUNO_SYSTEM_FWREADY:::callback_data.param1.bParam:callback_data.param2.wParam
+                return;
+            #endif
+
+    }
+    #if LOGGING_DBG
+    if(callback_data.result.bParam) {
+        LOGGING_UART.print("<< MSG:");
+        LOGGING_UART.dumpPrint(g_txbuff, callback_data.result.bParam);
+        LOGGING_UART.print("\n");
+    }
+    #endif
+    zunoGeneralSetter();
+    return;
+}
+#endif //
+// Modules init code prototypes
+// -----------------------------
+//@@@GLOB_MODULES_METHODS_DECL@@@
+// -----------------------------
+
+void __zuno_autosetup(){
+    // Fill global variables/call constructors/initialize uCxx environment
+    //@@@GLOB_MODULES_METHODS_IMPL@@@
+
+    //@@ AUTOSETUP_BODY
+}

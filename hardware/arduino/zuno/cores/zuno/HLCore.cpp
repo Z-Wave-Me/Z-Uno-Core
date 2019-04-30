@@ -16,6 +16,8 @@ BYTE g_gpio_pin;
 BYTE g_gpio_val;
 WORD g_gpio_wval;
 
+BYTE g_current_channel = 0;
+
 
 
 /* ----------------------------------------------------------------------------
@@ -75,9 +77,11 @@ DWORD pulseIn(s_pin pin, byte level, DWORD timeout) {
 	if(!level)
 		port_mask = 0;	
 	noInterrupts();
+    sysClockSet(SYSCLOCK_NORMAL);
 	// wait for any previous pulse to end
 	while(digitalRead(pin) == port_mask) {
 		if(!timeout) {	
+            sysClockNormallize();
 			interrupts();
 			return 0;
 		}
@@ -86,6 +90,7 @@ DWORD pulseIn(s_pin pin, byte level, DWORD timeout) {
 	// wait for the pulse to start
 	while(digitalRead(pin) != port_mask) {
 		if(!timeout) {	
+            sysClockNormallize();
 			interrupts();
 			return 0;
 		}	
@@ -97,10 +102,12 @@ DWORD pulseIn(s_pin pin, byte level, DWORD timeout) {
 	while(digitalRead(pin) == port_mask) {
 		width--;
 		if(!width) {	
+            sysClockNormallize();
 			interrupts();
 			return 0;
 		}	
 	}
+    sysClockNormallize();
 	interrupts();
 
 	timeout -= width;
@@ -147,10 +154,11 @@ void delayMicroseconds(word us) {
 		NOPS(DELAYUS_STATIC_LOOP_CYCLES);
 	}
 }
+/*
 DWORD millis(void) {
 	zunoSysCall(ZUNO_FUNC_MILLIS);
 	return SYSRET_DW;
-}
+}*/
 void delay(dword value) {
 	zunoLCALL(SAVE_SKETCHCONTENT_SUBROUTINE);
 	zunoSysCall(ZUNO_FUNC_DELAY_MS, value); // We have to setup value of before we call this function to avoid stack loss
@@ -176,6 +184,7 @@ void zunoAddChannel(byte type, byte st, byte p) {
 	g_user_sketch.channels[g_user_sketch.n_channels].main_type = type;
 	g_user_sketch.channels[g_user_sketch.n_channels].sub_type = st;
 	g_user_sketch.channels[g_user_sketch.n_channels].prop = p;
+    g_user_sketch.channels[g_user_sketch.n_channels].channel = g_current_channel;
 	g_user_sketch.n_channels++;
 }
 void zunoAddAssociation(byte t) {
@@ -187,15 +196,17 @@ void zunoAddAssociation(byte t) {
 /* ----------------------------------------------------------------------------
 							Z-Uno config parameters
 -------------------------------------------------------------------------------*/
-void zunoLoadCFGParam(byte param_number, word * value) {
-	param_number -= 64;
-	param_number <<= 1;
-	zunoSysCall(ZUNO_FUNC_EEPROM_READ, dword(START_CONFIGPARAM_EEPROM_ADDR + param_number), word(2), value);
+word zunoLoadCFGParam(byte param) {
+    param -= 64;
+    param <<= 1; 
+    callback_data.param1.bParam = param;
+	zunoSysCall(ZUNO_FUNC_EEPROM_READ, dword(START_CONFIGPARAM_EEPROM_ADDR + callback_data.param1.bParam), word(2), callback_data.result.buffParam);
+    return callback_data.result.wParam;
 }
-void zunoSaveCFGParam(byte param_number, word * value) {
-	param_number -= 64;
-	param_number <<= 1;
-	zunoSysCall(ZUNO_FUNC_EEPROM_WRITE, dword(START_CONFIGPARAM_EEPROM_ADDR + param_number), word(2), value); 
+void rawSaveCFGParam() {
+	callback_data.param1.bParam -= 64;
+    callback_data.param1.bParam <<= 1;
+	zunoSysCall(ZUNO_FUNC_EEPROM_WRITE, dword(START_CONFIGPARAM_EEPROM_ADDR + callback_data.param1.bParam), word(2), callback_data.param2.buffParam); 
 }
 /* ----------------------------------------------------------------------------
 									GPIO
@@ -411,6 +422,57 @@ void rawAnalogWrite() {
 		zunoDSI("P0","P0I");
 	}
 }
+void rawSendUnsolicitedReport(byte ch){
+    ch--;
+    g_ptr_config[ZUNO_CFG_BYTE_REPORTMAP1 + (ch >> 3)] |= 1 << (ch & 0x07);
+}
+dword millis() {
+    g_ms_counter += zunoGI("TMR");
+    zunoSI("TMR",0);
+    return g_ms_counter;
+}
+// Associations
+void zunoSendDbgData(byte group, byte * data, byte len) {
+     zunoCreatePacket();
+     memcpy(g_txbuff, data, len);
+     zunoSendDirectReport(group, len);
+}
+void zunoSendToGroupSetValueCommand(byte group, byte val) {
+     zunoCreatePacket();
+     g_txbuff[0] = CC_BASIC;
+     g_txbuff[1] = 0x01; // BASIC_SET
+     g_txbuff[2] = val;
+     zunoSendDirectReport(group, 3);
+}
+void zunoSendToGroupDimmingCommand(byte group, byte dir, byte start_stop){
+     byte sz = 2;
+     zunoCreatePacket();
+     g_txbuff[0] = CC_SWITCH_MULTILEVEL;
+     if(start_stop){
+         g_txbuff[1] = 0x04; // START_LEVEL_CHANGE
+         g_txbuff[2] = dir ? 0x60:0x20;
+         g_txbuff[3] = 0;
+         sz = 4;
+     } else {
+         g_txbuff[1] = 0x05;
+     }
+     zunoSendDirectReport(group, sz);
+     
+}
+void zunoSendToGroupScene(byte group, byte scene) {
+     zunoCreatePacket();
+     g_txbuff[0] = 0x2B;
+     g_txbuff[1] = 0x01; // SET
+     g_txbuff[2] = scene;
+     zunoSendDirectReport(group, 3);
+}
+void zunoSendToGroupDoorlockControl(byte group, byte open_close) {
+     zunoCreatePacket();
+     g_txbuff[0] = 0x62;
+     g_txbuff[1] = 0x01; // SET
+     g_txbuff[2] = open_close ? 0x00 : 0xFF;
+     zunoSendDirectReport(group, 3);
+}
 // Broken subroutine
 // Memset was broken in stdlibrary of SDCC
 void _zme_memset(byte * ptr, byte val, int count)
@@ -420,4 +482,12 @@ void _zme_memset(byte * ptr, byte val, int count)
 		*ptr = val;
 		ptr++;
 	}
+}
+void _zme_memcpy(XBYTE * dst, byte * src, byte count){
+    src += (count-1);
+    while(count--) {
+        *dst = *src; 
+        src --;
+        dst ++;
+    }
 }

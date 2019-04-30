@@ -24,8 +24,7 @@ class DS18B20Sensor
 		// one by one
 		// Returns:
 		//  number of found sensors
-		
-		byte findAllSensors(byte * rom);
+		byte findAllSensors(byte * rom,byte max_sensors=128);
 		
 		// Search for alone sensor. 
 		// Copies found sensor's address (ROM) to buffer

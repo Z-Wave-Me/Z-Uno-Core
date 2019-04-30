@@ -76,12 +76,8 @@ zuno.menu.MuliCommand.On.build.multicmd = 1
 
 zuno.menu.LogOutput.Off = Disabled
 zuno.menu.LogOutput.Radio = Radio
-zuno.menu.LogOutput.UART0 = UART0
-zuno.menu.LogOutput.RUART = Radio + UART0
 zuno.menu.LogOutput.Off.build.log_mode 		= 0
 zuno.menu.LogOutput.Radio.build.log_mode 	= 1
-zuno.menu.LogOutput.UART0.build.log_mode 	= 2
-zuno.menu.LogOutput.RUART.build.log_mode 	= 3
 
 zuno.menu.NVMClean.Off=Disabled
 zuno.menu.NVMClean.User=User Space

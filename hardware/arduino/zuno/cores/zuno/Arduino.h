@@ -12,9 +12,13 @@
 #include "math.h"
 #include "stdlib.h"
 
+#include "Custom_pins.h"
+#include "Custom_defs.h"
+
 // To reduce code & stack usage
 // we use macroses instead of functions
 //#define analogRead(P,V)                                                    g_gpio_pin=P;g_gpio_wval=V;rawAnalogWrite()
+//#define millis()                                                            (g_ms_counter += zunoGI("TMR")),zunoSI("TMR",0);
 #define zunoNID()                                                           (g_nzram_NID)
 #define zunoInNetwork()                                                     (g_nzram_NID != 0)        
 #define analogWrite(P,V)                                                    g_gpio_pin=P;g_gpio_wval=V;rawAnalogWrite()
@@ -24,25 +28,38 @@
 #define zunoADCAdvConfig(B)													g_ptr_config[ZUNO_CFG_BYTE_ADC_ADV] = B
 #define zunoSendDeviceToSleep()												g_ptr_config[ZUNO_CFG_BYTE_SLEEPLOCK] = FALSE
 #define zunoGetWakeReason()													g_ptr_config[ZUNO_CFG_BYTE_WUP_REASON] 
+// Create a new Tx-packet
+#define zunoCreatePacket()                                                  zunoSysCall(ZUNO_FUNC_CREATEPACKET)
 // Update device channels/associations
 #define zunoCommitConfig() 													zunoSysCall(ZUNO_FUNC_COMMIT_CONFIG)
 // Z-Wave communication
-#define zunoSendUncolicitedReport(channel) 									zunoSysCall(ZUNO_FUNC_UNSOLICITED_REPORT, byte(channel))
+#define zunoSendUncolicitedReport(channel) 									rawSendUnsolicitedReport((byte)(long long)((void*)dword(channel))) 
+
+#define zunoSendDirectReport(group, length)                                 zunoSysCall(ZUNO_FUNC_ASSOCIATION_SEND, byte(group), byte(length))                                                                            //zunoSysCall(ZUNO_FUNC_UNSOLICITED_REPORT, byte(channel))
 #define zunoSendAssociationCommand(group, assoc_type, param1, param2) 		zunoSysCall(ZUNO_FUNC_ASSOCIATION_SEND, byte(group), byte(assoc_type), byte(param1), byte(param2))
 #define	zunoStartLearn(timeout, secure)										zunoSysCall(ZUNO_FUNC_LEARN, byte(timeout), byte(secure))
-#define	zunoSendDbgData(group, data, data_size)								zunoSysCall(ZUNO_FUNC_DBGSENDDATA, byte(group), byte(data_size), data)
 // OTA cofirmation
 #define	zunoConfigFWUpdate(my_version,	unlock_pin) 						zunoSysCall(ZUNO_FUNC_SETUP_FWUPGRADE, word(my_version), dword(unlock_pin))
-#define zunoSetWUOptions(options)											zunoSysCall(ZUNO_FUNC_INT0_WUP_LEVEL, byte(options))
-#define zunoSetBeamCountWU(count)											zunoSysCall(ZUNO_FUNC_BEAMCOUNT, byte(count))
+/*
+extern XBYTE g_nzram_BeamCount;
+extern XBYTE g_nzram_WUOpts;
+*/
+#define zunoSetWUOptions(options)											g_nzram_WUOpts = options// zunoSysCall(ZUNO_FUNC_INT0_WUP_LEVEL, byte(options))
+#define zunoSetBeamCountWU(count)											g_nzram_BeamCount = count//zunoSysCall(ZUNO_FUNC_BEAMCOUNT, byte(count))
 //#define analogWrite(pin, value)												rawAnalogWrite(pin, value)//zunoSysCall(ZUNO_FUNC_ANALOG_WRITE, byte(pin), word(value))
 #define analogRead(pin)                                                     rawAnalogRead(pin)
 // Z-Wave helpers
-#define zunoSendReport(CHANNEL) 							zunoSendUncolicitedReport(CHANNEL)
+#define zunoSendReport(CHANNEL)                                             zunoSendUncolicitedReport(CHANNEL)
+#define zunoSaveCFGParam(CHANNEL, VAL)                                      callback_data.param1.bParam = CHANNEL; callback_data.param2.wParam = VAL; rawSaveCFGParam();
+
+#define zunoAcceptFirmware()                                                g_ptr_config[ZUNO_CFG_BYTE_FWAUTH] = TRUE
+/*
+#define zunoSendDbgData(group, data, data_size)                             zunoSysCall(ZUNO_FUNC_DBGSENDDATA, byte(group), byte(data_size), data)
 #define zunoSendToGroupSetValueCommand(GROUP,VALUE) 		zunoSendAssociationCommand(GROUP,ZUNO_ASSOC_BASIC_SET_NUMBER,VALUE,0)
 #define zunoSendToGroupDimmingCommand(GROUP,DIRECTION,START_STOP) 	zunoSendAssociationCommand(GROUP,ZUNO_ASSOC_BASIC_SET_AND_DIM_NUMBER,DIRECTION,START_STOP)
 #define zunoSendToGroupScene(GROUP,SCENE_NUMBER) 			zunoSendAssociationCommand(GROUP,ZUNO_ASSOC_SCENE_ACTIVATION_NUMBER,SCENE_NUMBER,0)
 #define zunoSendToGroupDoorlockControl(GROUP,OPEN_CLOSE) 	zunoSendAssociationCommand(GROUP,ZUNO_ASSOC_DOORLOCK_CONTROL_NUMBER,OPEN_CLOSE,0)	
+*/
 // Backward compatibility			
 // Deprecated functions
 #define zunoSetupKeyScannerWU(W) 	zunoSetWUOptions( W > 0 ? ZUNO_WUPFLAGS_INT1_KEYSCAN : 0x00)				
@@ -108,8 +125,12 @@
 // Memset was broken in stdlibrary of SDCC
 void _zme_memset(byte * ptr, byte val, int count);
 
+
 //**********************************************
 void setup(void);
 void loop(void);
 
+//#if WITH_GENERAL_CHANNEL_VALUES
+extern ZUNOGeneralChannelData_t g_channels_data[];
+//#endif
 

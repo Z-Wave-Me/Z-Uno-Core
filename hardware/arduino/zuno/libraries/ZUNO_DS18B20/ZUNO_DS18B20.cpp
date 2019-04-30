@@ -20,7 +20,7 @@ byte DS18B20Sensor::scanAloneSensor(byte * rom)
 }
 
 
-byte DS18B20Sensor::findAllSensors(byte * rom)
+byte DS18B20Sensor::findAllSensors(byte * rom, byte max_sensors)
 {
     byte count = 0;
     my_ow->reset_search();
@@ -34,6 +34,8 @@ byte DS18B20Sensor::findAllSensors(byte * rom)
             continue;
         rom += 8;
         count++;
+        if(count >= max_sensors)
+            break;
     }
 
     return count;
@@ -73,10 +75,10 @@ void DS18B20Sensor::setResolution(byte res, byte * addr)
     
 
 }
+byte dallas_data[9];
 int DS18B20Sensor::getTempC100(byte * addr)
 {
 	int temp = BAD_TEMP;
-	byte dallas_data[9];
 	byte i;
 
 	if (!my_ow->reset())

@@ -3,8 +3,7 @@
 #pragma preproc_asm +
 
 // Signature
-__code __at (0x8000) char lookupString[] = "ZMEZUNO";
-
+__code __at (0x8000) char lookupString[] = {'Z','M','E','Z','U','N','O', ZUNO_CORES_SW_VERSION_MAJOR, ZUNO_CORES_SW_VERSION_MINOR};
 void InitArduinoEnvironment(void);
 void setup();
 void loop();

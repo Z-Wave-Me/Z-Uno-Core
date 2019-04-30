@@ -9,8 +9,7 @@
 #define Print_h
 
 #include "ArduinoTypes.h"
-#include "c_lib_minimal.h"  
-
+#include "Custom_pins.h"
 
 #define DEC 10
 #define HEX 16
