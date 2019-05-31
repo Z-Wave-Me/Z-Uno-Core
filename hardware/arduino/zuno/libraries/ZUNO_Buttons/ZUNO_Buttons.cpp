@@ -85,7 +85,7 @@ void SimpleButton::update() {
     case STATE_LONGCLICK:       
         if(!pressed){
             g_btn_next =  STATE_OTHERUP; 
-            _event_map |= EVENT_SINGLE_CLICK;
+            _event_map |= EVENT_RELEASE;
         }
         break;
     case STATE_OTHERUP:              

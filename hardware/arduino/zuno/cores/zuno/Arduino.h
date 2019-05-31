@@ -33,7 +33,7 @@
 // Update device channels/associations
 #define zunoCommitConfig() 													zunoSysCall(ZUNO_FUNC_COMMIT_CONFIG)
 // Z-Wave communication
-#define zunoSendUncolicitedReport(channel) 									rawSendUnsolicitedReport((byte)(long long)((void*)dword(channel))) 
+#define zunoSendUncolicitedReport(channel) 									rawSendUnsolicitedReport((byte)(long long)(channel)) 
 
 #define zunoSendDirectReport(group, length)                                 zunoSysCall(ZUNO_FUNC_ASSOCIATION_SEND, byte(group), byte(length))                                                                            //zunoSysCall(ZUNO_FUNC_UNSOLICITED_REPORT, byte(channel))
 #define zunoSendAssociationCommand(group, assoc_type, param1, param2) 		zunoSysCall(ZUNO_FUNC_ASSOCIATION_SEND, byte(group), byte(assoc_type), byte(param1), byte(param2))

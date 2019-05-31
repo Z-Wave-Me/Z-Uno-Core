@@ -2,6 +2,7 @@
 #include "LLCore_arduino.h"
 #include "ZUNO_Channels.h"
 #include "Custom.h"
+#include "Custom_defs.h"
 
 __xdata __at (CALLBACK_TRANSLATION_ADDR)                _xd_ZUNOChannelHandler_t    callback_data;
 __xdata __at (SYSCALL_TRANSLATION_ADDR)                 _xd_ZUNOSysCallData_t       syscall_data;
@@ -49,6 +50,7 @@ __code unsigned char  _cc_zuno_pinmap[] = {
   0x21,
   0x20,
   0x22,
+  0x23,
   0x24
 };           
 #else             

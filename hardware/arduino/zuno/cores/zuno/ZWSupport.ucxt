@@ -462,6 +462,7 @@ void zunoCallback(void) {
                         g_txbuff[7] = 0xFE;
                     }
                 } 
+                callback_data.result.bParam = 11;
                 if( g_txbuff[7] != 0xFE){
                     g_txbuff[5] = g_cj; 
                     g_txbuff[6] = NOTIFICATION_MAPPER[g_ci];
@@ -477,7 +478,7 @@ void zunoCallback(void) {
                         g_txbuff[9] = NOTIFICATION_MAPPER[g_ci+1];     
                     }
                 }
-                callback_data.result.bParam = 11;
+                
                 break;
             case ZUNO_CALLBACK_COMMANDHANDLER_NOTIFICATION_SUPPORTED_GET: 
                 g_ci <<= 1;

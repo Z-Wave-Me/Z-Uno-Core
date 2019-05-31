@@ -78,6 +78,7 @@ typedef struct _ZUNO_SLEEPING_MODE_PROPERTIES_DESCRIPTION
 
 #define ZUNO_REMAP_SPINS(PROFILE) \
 								char zunoREMAPProfile[] = #PROFILE
+
 #define ZUNO_SETUP_S2ACCESS(B) \
 								BYTE zunoS2Access = B
 #define ZUNO_SETUP_FWUPGRADE(COUNT, READY_HANDLER, META_HANDLER) \
@@ -90,5 +91,6 @@ typedef struct _ZUNO_SLEEPING_MODE_PROPERTIES_DESCRIPTION
 								char zunoEnableList[] = #VAR_NAMES
 #define ZUNO_DYNAMIC_CHANNELS(NUM_CHANNELS)\
 								char zunoMaxDynamicChannels = NUM_CHANNELS;
+
 #endif // ZUNO_LEGACY_CHANNELS
 // -----------------------
