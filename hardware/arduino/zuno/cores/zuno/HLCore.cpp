@@ -427,8 +427,10 @@ void rawSendUnsolicitedReport(byte ch){
     g_ptr_config[ZUNO_CFG_BYTE_REPORTMAP1 + (ch >> 3)] |= 1 << (ch & 0x07);
 }
 dword millis() {
+    noInterrupts();
     g_ms_counter += zunoGI("TMR");
     zunoSI("TMR",0);
+    interrupts();
     return g_ms_counter;
 }
 // Associations

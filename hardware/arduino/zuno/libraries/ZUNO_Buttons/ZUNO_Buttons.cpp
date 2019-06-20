@@ -6,7 +6,9 @@ extern byte g_btn_next;
 #define EVENT_SINGLE_CLICK 0x01
 #define EVENT_LONG_CLICK   0x02
 #define EVENT_DOUBLE_CLICK 0x04
-#define EVENT_RELEASE      0x08
+#define EVENT_TRIPLE_CLICK 0x08
+
+#define EVENT_RELEASE      0x80
 
 
 
@@ -74,14 +76,39 @@ void SimpleButton::update() {
         if(pressed){
             if (g_btn_diff >= _debounce_time){
                 g_btn_next = STATE_DOUBLECLICK;
-                _event_map |= EVENT_DOUBLE_CLICK;
             }
         } else {
             g_btn_next = STATE_CLICKUP;
             //g_btn_next =  STATE_CLICKIDLE;
         }
         break;
-    case STATE_DOUBLECLICK:       
+    case STATE_DOUBLECLICK: 
+        if(!pressed){
+            g_btn_next =  STATE_TRIPLECLICKIDLE; 
+        } 
+        break; 
+    case STATE_TRIPLECLICKIDLE:
+        if(pressed){
+            g_btn_next =  STATE_TRIPLECLICKDEBOUNCE; 
+            break;
+        } 
+        if (g_btn_diff >= _single_time){
+            g_btn_next = STATE_IDLE;
+            _event_map |= EVENT_DOUBLE_CLICK;
+        }
+        break;
+    case STATE_TRIPLECLICKDEBOUNCE:
+        if(pressed){
+            if(g_btn_diff > _debounce_time){
+                g_btn_next = STATE_TRIPLECLICK;
+                _event_map |= EVENT_TRIPLE_CLICK;
+            }
+        } else {
+            g_btn_next = STATE_IDLE;
+            _event_map |= EVENT_DOUBLE_CLICK;
+        }
+        break;
+    case STATE_TRIPLECLICK:    
     case STATE_LONGCLICK:       
         if(!pressed){
             g_btn_next =  STATE_OTHERUP; 
@@ -123,7 +150,9 @@ bool SimpleButton::isReleased(void){
 bool SimpleButton::isFree(void){
     return (_state == STATE_IDLE) && (!_release_counter);
 }
-
+bool SimpleButton::isTripleClick(void){
+    return (_event_map & (EVENT_TRIPLE_CLICK)) != 0;
+}
 bool PinButton::isPressed() { 
     byte val = digitalRead(_pin_num);
     if(_inverted) 

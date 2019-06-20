@@ -29,6 +29,9 @@ enum State {
       STATE_SINGLECLICK,
       STATE_DOUBLECLICKDEBOUNCE,
       STATE_DOUBLECLICK,
+      STATE_TRIPLECLICKIDLE,
+      STATE_TRIPLECLICKDEBOUNCE,
+      STATE_TRIPLECLICK,
       STATE_LONGCLICK,
       STATE_OTHERUP
 };
@@ -40,6 +43,7 @@ class SimpleButton {
     bool isClick(void);
     bool isSingleClick(void);
     bool isDoubleClick(void);
+    bool isTripleClick(void);
     bool isLongClick(void);
     bool isReleased(void);
     bool isFree(void);
