@@ -148,6 +148,9 @@ void zunoJumpTable(void) {
           g_usercode_inited = 1;
         }
         loop();
+        #ifndef NO_LOOP_MINIMALDELAY
+        delay(20);
+        #endif
         break;
         case ZUNO_JUMP_TABLE_CALLBACK:
         zunoCallback();
