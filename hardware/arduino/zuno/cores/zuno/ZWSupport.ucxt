@@ -301,7 +301,7 @@ byte __aux_map_swbinary_value(){
 //@@ $GENERALCALLBACKSETTER_RULE:ZUNO_SWITCH_MULTILEVEL_CHANNEL_NUMBER:#SETTER1,g_channel_value.bParam#;
 //@@ $GENERALCALLBACKSETTER_RULE:ZUNO_DOORLOCK_CHANNEL_NUMBER:#SETTER1,g_channel_value.bParam#;
 //@@ $GENERALCALLBACKSETTER_RULE:ZUNO_FLOWSTOP_CHANNEL_NUMBER:#SETTER1,__aux_map_swbinary_value()#;
-//@@ $GENERALCALLBACKSETTER_RULE:ZUNO_METER_CHANNEL_NUMBER:#SETTER1,#;
+//@@ $GENERALCALLBACKSETTER_RULE:ZUNO_METER_CHANNEL_NUMBER:#SETTER1,0#;
 //@@ $GENERALCALLBACKSETTER_RULE:ZUNO_SIREN_CHANNEL_NUMBER:#SETTER1,g_channel_value.bParam#;
 //@@ $GENERALCALLBACKSETTER_RULE:ZUNO_BLINDS_CHANNEL_NUMBER:#SETTER1,g_channel_value.bParam#;
 //@@ $GENERALCALLBACKSETTER_RULE:ZUNO_THERMOSTAT_CHANNEL_NUMBER:if(callback_data.type == ZUNO_CALLBACK_COMMANDHANDLER_THERMOSTAT_SETPOINT_SET){ #SETTER2,g_additional_mode,g_channel_value.wParam#; return;} #SETTER1,g_channel_value.bParam#;
@@ -533,6 +533,8 @@ void zunoCallback(void) {
             case ZUNO_CALLBACK_COMMANDHANDLER_METER_GET:
                 g_cmd[2] >>= 3;
                 g_cmd[2] &= 0x07;
+                
+                
                 g_cj = g_accepted_sketch.channels[callback_data.channel].prop;
                 if(((callback_data.result.bParam & 0x80) == 0) &&
                     (g_cmd[2] != 
@@ -540,7 +542,7 @@ void zunoCallback(void) {
                     callback_data.result.bParam = 0;
                     break;
                 }
-                g_txbuff[2] = 0x60;
+                g_txbuff[2] = 0x20; // RATE ALWAYS == IMPORT
                 if(g_cmd[2] & 0x04)
                     g_txbuff[2] |= 0x80;
                 g_txbuff[2] |= g_ci & 0x1F;
@@ -556,7 +558,7 @@ void zunoCallback(void) {
                 break;
             case ZUNO_CALLBACK_COMMANDHANDLER_METER_SUPPORTED_GET:
                 g_txbuff[2] = g_ci | 0x20; // RATE ALWAYS == IMPORT
-                g_txbuff[3] = 1 << (g_accepted_sketch.channels[callback_data.channel].prop & 0x07);
+                g_txbuff[3] = 1 << ((g_accepted_sketch.channels[callback_data.channel].prop) & 0x07);
                 callback_data.result.bParam = 4;
                 break;
             #endif
