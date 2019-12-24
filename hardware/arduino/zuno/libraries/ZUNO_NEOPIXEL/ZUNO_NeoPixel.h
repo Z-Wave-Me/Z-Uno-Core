@@ -39,6 +39,7 @@ class NeoPixel
 	public:
 		void begin();
 		void clear();
+		void setPixelWhite(byte index, byte brightness);
 		void setPixelColor(byte index, byte r, byte g, byte b);
 		void setPixelColor(byte index, uint32_t color);
 		void show();
