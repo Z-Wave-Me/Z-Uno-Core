@@ -39,6 +39,10 @@ void aux_ZMEsetBM(){
     g_txbuff[(g_mem_shsz & 0x0F) + (g_ci >> 3)] = (1 << (g_ci & 0x07));
 }
 
+#ifdef USER_STARTSTOPCALLBACK
+void zunoSWMLCallback(byte dir,byte channel);
+#endif
+
 void zunoGeneralGetter();
 void zunoGeneralSetter();
 // Prototypes from the sketch...
@@ -56,6 +60,13 @@ bool zunoIsChannelUpdated(byte ch){
     ch -= 1; // zerobased index...
     if(g_update_chmap[ch >> 3] & (1 << (ch & 0x07))){
         g_update_chmap[ch >> 3] &= ~(1 << (ch & 0x07));
+        return TRUE;
+    }
+    return FALSE;
+}
+bool zunoIsChannelModified(byte ch){
+    ch -= 1; // zerobased index...
+    if(g_update_chmap[ch >> 3] & (1 << (ch & 0x07))){
         return TRUE;
     }
     return FALSE;
@@ -215,7 +226,14 @@ CCBYTE NOTIFICATION_MAPPER[] = {
     NOTIFICATION_TYPE_ACCESS_CONTROL_ALARM, NOTIFICATION_EVENT_WINDOW_DOOR_OPENED, // SENSOR_BINARY_REPORT_TYPE_DOOR_WINDOW         
     NOTIFICATION_TYPE_BURGLAR_ALARM,        NOTIFICATION_EVENT_INTRUSION_UL,       // SENSOR_BINARY_REPORT_TYPE_TILT                   
     NOTIFICATION_TYPE_BURGLAR_ALARM,        NOTIFICATION_EVENT_MOTION_DETECTION_UL,// SENSOR_BINARY_REPORT_TYPE_MOTION              
-    NOTIFICATION_TYPE_BURGLAR_ALARM,        NOTIFICATION_EVENT_GLASS_BREAK_UL      // SENSOR_BINARY_REPORT_TYPE_GLASSBREAK         
+    NOTIFICATION_TYPE_BURGLAR_ALARM,        NOTIFICATION_EVENT_GLASS_BREAK_UL ,     // SENSOR_BINARY_REPORT_TYPE_GLASSBREAK         
+    NOTIFICATION_TYPE_HOME_HEALTH,          0x02,
+    NOTIFICATION_TYPE_SIREN,                0x02,
+    NOTIFICATION_TYPE_WATER_VALVE,          0x02,
+    NOTIFICATION_TYPE_WEATHER_ALAR,         0x02,
+    NOTIFICATION_TYPE_IRRIGATION,           0x02,
+    NOTIFICATION_TYPE_GAS_ALARM,            NOTIFICATION_EVENT_GAS_COMBUSTIBLE,
+    NOTIFICATION_TYPE_GAS_ALARM,            NOTIFICATION_EVENT_GAS_TOXIC
 };
 #endif
 #if WITH_CC_THERMOSTAT
@@ -396,6 +414,10 @@ void zunoCallback(void) {
             case ZUNO_CALLBACK_COMMANDHANDLER_SWITCHB_GET:
             case ZUNO_CALLBACK_COMMANDHANDLER_SWITCHM_GET:
             case ZUNO_CALLBACK_COMMANDHANDLER_THERMOSTAT_MODE_GET:
+                #ifdef USER_UPDATE_REQUEST
+                if((callback_data.result.bParam & 0x80) == 0)
+                    USER_UPDATE_REQUEST(callback_data.channel);
+                #endif 
                 g_txbuff[2] = g_channel_value.bParam;
                 callback_data.result.bParam = 3;
                 break;
@@ -416,6 +438,9 @@ void zunoCallback(void) {
             #endif
             #if WITH_CC_SWITCH_MULTILEVEL
             case ZUNO_CALLBACK_COMMANDHANDLER_SWITCHM_START_LC:
+                #ifdef SWML_STARTSTOPCALLBACK
+                SWML_STARTSTOPCALLBACK(0x80|(g_cmd[2]&0x7F), callback_data.channel);
+                #endif 
                 SWMLFindSlot(0);
                 if(g_cmd[2] & 0x40)
                    g_aux_swmldata[g_swml_slot].step = -g_aux_swmldata[g_swml_slot].step;
@@ -425,6 +450,9 @@ void zunoCallback(void) {
                 }
                 break;
             case ZUNO_CALLBACK_COMMANDHANDLER_SWITCHM_STOP_LC:
+                #ifdef SWML_STARTSTOPCALLBACK
+                SWML_STARTSTOPCALLBACK(0, callback_data.channel);
+                #endif 
                 SWMLStopSlot(0);
                 break;
             #endif
@@ -436,6 +464,10 @@ void zunoCallback(void) {
                 callback_data.result.bParam = 4;
                 break;
             case ZUNO_CALLBACK_COMMANDHANDLER_SENSORB_GET:
+                #ifdef USER_UPDATE_REQUEST
+                if((callback_data.result.bParam & 0x80) == 0)
+                    USER_UPDATE_REQUEST(callback_data.channel);
+                #endif 
                 if((callback_data.param1.bParam > 2) && g_ci != g_cmd[2] && (g_cmd[2] != 0xFF)) // Not supported
                     break;
                 g_txbuff[2] = g_channel_value.bParam ? 0xFF : 0; // <-  Подстановка значения
@@ -521,6 +553,10 @@ void zunoCallback(void) {
                 callback_data.result.bParam = 4;
                 break;
             case ZUNO_CALLBACK_COMMANDHANDLER_SENSORM_GET:
+                #ifdef USER_UPDATE_REQUEST
+                if((callback_data.result.bParam & 0x80) == 0)
+                    USER_UPDATE_REQUEST(callback_data.channel);
+                #endif 
                 g_txbuff[2] = g_ci; // SensorType
                 g_cj = g_accepted_sketch.channels[callback_data.channel].prop;
                 g_txbuff[3] = g_cj;
@@ -531,17 +567,28 @@ void zunoCallback(void) {
             #endif
             #if WITH_CC_METER
             case ZUNO_CALLBACK_COMMANDHANDLER_METER_GET:
-                g_cmd[2] >>= 3;
-                g_cmd[2] &= 0x07;
+                 g_cj = g_accepted_sketch.channels[callback_data.channel].prop;
+                if((callback_data.result.bParam & 0x80) == 0) {
+                    #ifdef USER_UPDATE_REQUEST
+                    USER_UPDATE_REQUEST(callback_data.channel);
+                    #endif 
+                    g_cmd[2] >>= 3;
+                    g_cmd[2] &= 0x07;
+                    if(g_cmd[2] != (g_cj & 0x07)) {
+                      callback_data.result.bParam = 0;
+                      break;
+                    }
+                } else {
+                    g_cmd[2] = g_cj & 0x07;
+                }
                 
-                
-                g_cj = g_accepted_sketch.channels[callback_data.channel].prop;
+                /*
                 if(((callback_data.result.bParam & 0x80) == 0) &&
                     (g_cmd[2] != 
                     (g_cj & 0x07))){
                     callback_data.result.bParam = 0;
                     break;
-                }
+                }*/
                 g_txbuff[2] = 0x20; // RATE ALWAYS == IMPORT
                 if(g_cmd[2] & 0x04)
                     g_txbuff[2] |= 0x80;
@@ -554,7 +601,7 @@ void zunoCallback(void) {
                 _zme_memcpy(g_txbuff+4, g_channel_value.buffParam,  g_cj); 
                 g_txbuff[4 + g_cj]      = 0;
                 g_txbuff[4 + g_cj+1]    = 0;
-                callback_data.result.bParam = 6+g_cj;                
+                callback_data.result.bParam = 6+g_cj;    
                 break;
             case ZUNO_CALLBACK_COMMANDHANDLER_METER_SUPPORTED_GET:
                 g_txbuff[2] = g_ci | 0x20; // RATE ALWAYS == IMPORT
@@ -784,6 +831,8 @@ void zunoCallback(void) {
                //@@ HANDLER:ZUNO_SYSTEM_EVENT:::callback_data.param1.bParam:callback_data.param2.bParam
               return;
             case ZUNO_CALLBACK_TIMER:
+              if(zunoGI("TMR") > 200)
+                millis();
               #if WITH_CC_SWITCH_MULTILEVEL || WITH_CC_SWITCH_COLOR
               SWMLTimerUpdate();
               #endif

@@ -299,6 +299,21 @@ enum{
 #define ZUNO_SENSOR_BINARY_TYPE_TILT 					0x0b
 #define ZUNO_SENSOR_BINARY_TYPE_MOTION 					0x0c
 #define ZUNO_SENSOR_BINARY_TYPE_GLASSBREAK 				0x0d
+#define ZUNO_SENSOR_BINARY_TYPE_HOME_HEALTH 			0x0e
+#define ZUNO_SENSOR_BINARY_TYPE_SIREN	 				0x0f
+#define ZUNO_SENSOR_BINARY_TYPE_WATER_VALVE 			0x10
+#define ZUNO_SENSOR_BINARY_TYPE_WEATHER_ALARM 			0x11
+#define ZUNO_SENSOR_BINARY_TYPE_IRRIGATION 				0x12
+#define ZUNO_SENSOR_BINARY_TYPE_GAS_COMBUSTIBLE 		0x13
+#define ZUNO_SENSOR_BINARY_TYPE_GAS_TOXIC 				0x14
+/*
+#define NOTIFICATION_SET_HOME_HEALTH_V7                                                  0x0D
+#define NOTIFICATION_SET_SIREN_V7                                                        0x0E
+#define NOTIFICATION_SET_WATER_VALVE_V7                                                  0x0F
+#define NOTIFICATION_SET_WEATHER_ALARM_V7                                                0x10
+#define NOTIFICATION_SET_IRRIGATION_V7                                                   0x11
+#define NOTIFICATION_SET_GAS_ALARM_V7
+*/
 
 // Notifications
 //Notification types
@@ -314,6 +329,21 @@ enum{
 #define NOTIFICATION_TYPE_EMERGENCY_ALARM				0x0a
 #define NOTIFICATION_TYPE_CLOCK_ALARM					0x0b
 #define NOTIFICATION_TYPE_APPLIANCE_ALARM				0x0c
+#define NOTIFICATION_TYPE_HOME_HEALTH					0x0d
+#define NOTIFICATION_TYPE_SIREN							0x0e
+#define NOTIFICATION_TYPE_WATER_VALVE					0x0f
+#define NOTIFICATION_TYPE_WEATHER_ALAR					0x10
+#define NOTIFICATION_TYPE_IRRIGATION					0x11
+#define NOTIFICATION_TYPE_GAS_ALARM						0x12
+
+/*
+#define NOTIFICATION_SET_HOME_HEALTH_V7                                                  0x0D
+#define NOTIFICATION_SET_SIREN_V7                                                        0x0E
+#define NOTIFICATION_SET_WATER_VALVE_V7                                                  0x0F
+#define NOTIFICATION_SET_WEATHER_ALARM_V7                                                0x10
+#define NOTIFICATION_SET_IRRIGATION_V7                                                   0x11
+#define NOTIFICATION_SET_GAS_ALARM_V7                                                    0x12
+*/
 #define NOTIFICATION_ON_VALUE							0xff
 #define NOTIFICATION_OFF_VALUE							0x00
 //Notification events (UL=Unknown Location)
@@ -398,7 +428,9 @@ enum{
 //CLOCK
 #define NOTIFICATION_EVENT_WAKE_UP_ALERT				0x01
 #define NOTIFICATION_EVENT_TIMER_ENDED					0x02
-
+// GAS
+#define NOTIFICATION_EVENT_GAS_COMBUSTIBLE				0x02
+#define NOTIFICATION_EVENT_GAS_TOXIC					0x04
 
 // Meter
 #define ZUNO_METER_TYPE_ELECTRIC	                    0x01

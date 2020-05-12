@@ -15,6 +15,11 @@
 #define HEX 16
 #define OCT 8
 #define BIN 2
+#define MKFORMAT(NUM,BASE) (((NUM-1) << 5)|(BASE & 0x1F))
+#define MKFORMAT10(NUM) (MKFORMAT(NUM, 10))
+#define MKFORMAT16(NUM) (MKFORMAT(NUM, 16))
+#define MKFORMAT8(NUM) (MKFORMAT(NUM, 8))
+#define MKFORMAT2(NUM) (MKFORMAT(NUM, 2))
 
 class Print
 {
@@ -46,6 +51,7 @@ class Print
     uint8_t fixPrint(long, uint8_t  = 2);
     uint8_t fixPrint(int n, uint8_t precision);
     word    dumpPrint(uint8_t *, uint8_t);
+    uint8_t formatPrint(int n, uint8_t num_symbols);
    
 
 
