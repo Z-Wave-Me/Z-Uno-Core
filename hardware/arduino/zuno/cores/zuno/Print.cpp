@@ -200,7 +200,19 @@ word Print::dumpPrint(uint8_t * b, uint8_t count) {
     g_int16_count *= 3;
     return g_int16_count;
 } 
-
+uint8_t Print::formatPrint(int n, uint8_t format) {
+    g_n = 0;
+    CHECH_SIGN(n, format & 0x1F);
+    WORD2STR(n, format & 0x1F);
+    format >>= 5;
+    format++;
+    while(g_n < format){
+      write('0');
+      g_n++;
+    }
+    WRITE_CHARS();
+    return g_n;           
+}
 uint8_t Print::println(void) {
   JUST_NEW_LINE;
   return NEW_LINE_ADDN;
