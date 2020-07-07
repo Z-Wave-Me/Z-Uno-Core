@@ -306,6 +306,7 @@ enum{
 #define ZUNO_SENSOR_BINARY_TYPE_IRRIGATION 				0x12
 #define ZUNO_SENSOR_BINARY_TYPE_GAS_COMBUSTIBLE 		0x13
 #define ZUNO_SENSOR_BINARY_TYPE_GAS_TOXIC 				0x14
+#define ZUNO_SENSOR_BINARY_TYPE_SYSTEM_HARDWARE_FAILURE	0x15
 /*
 #define NOTIFICATION_SET_HOME_HEALTH_V7                                                  0x0D
 #define NOTIFICATION_SET_SIREN_V7                                                        0x0E
