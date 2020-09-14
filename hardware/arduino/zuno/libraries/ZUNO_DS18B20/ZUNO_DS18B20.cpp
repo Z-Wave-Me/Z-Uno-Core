@@ -76,32 +76,45 @@ void DS18B20Sensor::setResolution(byte res, byte * addr)
 
 }
 byte dallas_data[9];
+
 int DS18B20Sensor::getTempC100(byte * addr)
 {
-	int temp = BAD_TEMP;
-	byte i;
-
-	if (!my_ow->reset())
-        return temp;
+    int temp;
+    byte i;
+	
+    //my_ow->reset();
+	if (!my_ow->reset()){
+        #if DEBUG_TEMP_CONV
+        Serial0.print( " RST (1) FAILED!");
+        #endif
+        return BAD_TEMP;
+    }
    
+    
    	if(addr)
     	my_ow->select(addr);
     else
     	my_ow->skip();
-
+    
     my_ow->write(0x44);
-
+     
+    
     #if DEBUG_TEMP_CONV
     Serial0.print( " Current delay:");
     Serial0.print(current_delay);
     Serial0.print( " Current resolution:");
     Serial0.print(current_resolution);
     #endif
-
-    delay(int(current_delay*10)); 
-
-    if(!my_ow->reset())
-    	return temp;
+    temp = current_delay;
+    temp *= 10;
+    delay(temp); 
+    
+    if(!my_ow->reset()){
+         #if DEBUG_TEMP_CONV
+        Serial0.print( " RST (2) FAILED!");
+        #endif
+    	return BAD_TEMP;
+    }
 
     if(addr)
     	my_ow->select(addr);
@@ -109,7 +122,7 @@ int DS18B20Sensor::getTempC100(byte * addr)
     	my_ow->skip();
         
     my_ow->write(0xBE);         // Read Scratchpad
-
+    
     #if DEBUG_TEMP_CONV
     Serial0.print( " RAW:{ ");
     #endif
@@ -147,7 +160,6 @@ int DS18B20Sensor::getTempC100(byte * addr)
     // 16/100 => 4/25 => temp *= 25; tem/=4;
     temp *= 25;
     temp >>= 2;
-    
 
     return temp;
 }

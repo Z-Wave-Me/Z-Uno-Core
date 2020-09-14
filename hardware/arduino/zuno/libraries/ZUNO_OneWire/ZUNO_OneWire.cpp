@@ -152,30 +152,21 @@ OneWire::OneWire(s_pin pin): bus_pin(pin)
 byte OneWire::reset(void)
 {
 	byte r;
-	byte retries = 125;
-
-	noInterrupts();
-  sysClockSet(SYSCLOCK_NORMAL);
-	pinMode(bus_pin, INPUT);
+	byte retries = 125;	
+  pinMode(bus_pin, INPUT);
 	// wait until the wire is high... just in case
 	do {
 		if ((--retries) == 0) return 0;
-		delayMicroseconds(2);
+		delayMicroseconds(10);
 	} while ( !digitalRead(bus_pin));
-	pinMode(bus_pin, OUTPUT);
+  pinMode(bus_pin, OUTPUT);
 	digitalWrite(bus_pin, 0);
-	interrupts();
-	delayMicroseconds(480);
-	
-	noInterrupts();
-	pinMode(bus_pin, INPUT);	// allow it to float
-	delayMicroseconds(70);
+	delayMicroseconds(960); // 480
+  pinMode(bus_pin, INPUT);	// allow it to float
+	delayMicroseconds(70); // 70
 	r = digitalRead(bus_pin);
-	interrupts();
-
-	delayMicroseconds(410);
-  sysClockNormallize();
-	return r == 0;
+	delayMicroseconds(820); // 410
+  return r == 0;
 }
 
 void OneWire::write(byte v, byte power) 
