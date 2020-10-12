@@ -466,7 +466,8 @@ void zunoSendToGroupScene(byte group, byte scene) {
      g_txbuff[0] = 0x2B;
      g_txbuff[1] = 0x01; // SET
      g_txbuff[2] = scene;
-     zunoSendDirectReport(group, 3);
+     g_txbuff[3] = 0x00;
+     zunoSendDirectReport(group, 4);
 }
 void zunoSendToGroupDoorlockControl(byte group, byte open_close) {
      zunoCreatePacket();
