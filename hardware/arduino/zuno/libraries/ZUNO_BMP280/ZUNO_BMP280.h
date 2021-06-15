@@ -112,6 +112,7 @@ class ZUNO_BMP280 {
   int32_t readPressureHgMM10(void);
   int16_t readHumidityH10(void);
   float   readHumidity(void);
+  void    setSensorMode(sensor_mode mode);
  private:
   uint8_t addr;
 
