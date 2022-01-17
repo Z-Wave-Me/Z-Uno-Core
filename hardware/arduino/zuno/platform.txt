@@ -29,7 +29,7 @@ compiler.path.windows={runtime.tools.zuno_toolchain.path}\zuno_toolchain\
 
 recipe.hooks.sketch.prebuild.1.pattern = "{runtime.tools.zuno_toolchain.path}/zuno_toolchain/compiler" build "{build.path}/{build.project_name}" -r "{runtime.platform.path}" -i1_8 -idv {runtime.ide.version}
 
-recipe.c.o.pattern=
+recipe.c.o.pattern="{runtime.tools.zuno_toolchain.path}/zuno_toolchain/compiler" dummy -t "{source_file}"
 recipe.cpp.o.pattern="{runtime.tools.zuno_toolchain.path}/zuno_toolchain/compiler" dummy -t "{source_file}"
 recipe.S.o.pattern=
 recipe.ar.pattern="{runtime.tools.zuno_toolchain.path}/zuno_toolchain/compiler" dummy
