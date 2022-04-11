@@ -72,7 +72,7 @@ typedef struct ZUNOSysCallData_s
 }_xd_ZUNOSysCallData_t;
 typedef struct ZUNOThermostatData_s{
 	byte mode;
-	word temperature[2];
+	word temperature[3];
 }ZUNOThermostatData_t;
 typedef union ZUNOGeneralChannelData_u
 {

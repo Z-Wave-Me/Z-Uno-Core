@@ -233,8 +233,7 @@ CCBYTE NOTIFICATION_MAPPER[] = {
     NOTIFICATION_TYPE_WEATHER_ALAR,         0x02,
     NOTIFICATION_TYPE_IRRIGATION,           0x02,
     NOTIFICATION_TYPE_GAS_ALARM,            NOTIFICATION_EVENT_GAS_COMBUSTIBLE,
-    NOTIFICATION_TYPE_GAS_ALARM,            NOTIFICATION_EVENT_GAS_TOXIC,
-    NOTIFICATION_TYPE_SYSTEM_ALARM,         NOTIFICATION_EVENT_HW_FAIL
+    NOTIFICATION_TYPE_GAS_ALARM,            NOTIFICATION_EVENT_GAS_TOXIC
 };
 #endif
 #if WITH_CC_THERMOSTAT
@@ -349,11 +348,11 @@ void zunoGeneralSetter(){
         #endif
         #if WITH_CC_THERMOSTAT
         case ZUNO_THERMOSTAT_CHANNEL_NUMBER:
-            if(callback_data.type == ZUNO_CALLBACK_COMMANDHANDLER_THERMOSTAT_SETPOINT_GET){
+            if(callback_data.type == ZUNO_CALLBACK_COMMANDHANDLER_THERMOSTAT_SETPOINT_SET){
                 g_channels_data[callback_data.channel].thermoParam.temperature[g_additional_mode] = g_channel_value.wParam;
                 break;
-            }
-            g_channel_value.bParam = g_channels_data[callback_data.channel].thermoParam.mode;
+            } 
+            g_channels_data[callback_data.channel].thermoParam.mode = g_channel_value.bParam;
             break;
         #endif
         #if WITH_CC_SWITCH_COLOR
@@ -647,9 +646,21 @@ void zunoCallback(void) {
             case ZUNO_CALLBACK_COMMANDHANDLER_THERMOSTAT_SETPOINT_SET:
                 if(!mapThermoMode())
                     break;
-                // Temperature
-                g_channel_value.buffParam[0] = g_cmd[5];
-                g_channel_value.buffParam[1] = g_cmd[4];
+                #ifdef FIBARO_HC_PATCH
+                if((g_cmd[3] & 0x07) == 1){
+                    g_channel_value.wParam = g_cmd[4];
+                } else 
+                #endif
+                {
+                  // Temperature
+                  g_channel_value.buffParam[0] = g_cmd[5];
+                  g_channel_value.buffParam[1] = g_cmd[4];
+                }
+                #ifdef FIBARO_HC_PATCH
+                if((g_cmd[3] >> 5) == 0){
+                    g_channel_value.wParam *= 10;
+                }
+                #endif
                 // Type
                 g_additional_mode = g_cmd[2];
                 g_channel_value_update = TRUE;
