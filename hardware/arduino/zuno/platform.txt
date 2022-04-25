@@ -1,4 +1,4 @@
-
+  
 # ZUNO Core and platform.
 # ------------------------------
 
@@ -18,7 +18,7 @@ compiler.sdccPath={runtime.tools.zuno_toolchain.path}/zuno_toolchain/sdcc/bin/
 tools.zprog.cmd.path={runtime.tools.zuno_toolchain.path}/zuno_toolchain/compiler
 tools.zprog.cmd.path.windows={runtime.tools.zuno_toolchain.path}\zuno_toolchain\compiler.exe
 
-tools.zprog.upload.pattern="{cmd.path}" prog "{build.path}/{build.project_name}" -d {serial.port} -fr {build.rf_freq} --param "sec={build.security}" --param "mcmd={build.multicmd}" --param "logging={build.log_mode}" -n {build.nvm_clean}
+tools.zprog.upload.pattern="{cmd.path}" prog "{build.path}/{build.project_name}" -d {serial.port} -fr {build.rf_freq} --param "sec={build.security}" --param "logging={build.log_mode}" -n {build.nvm_clean}
 
 # Default "compiler.path" is correct, change only if you want to overidde the initial value
 compiler.path={runtime.tools.zuno_toolchain.path}/zuno_toolchain/
