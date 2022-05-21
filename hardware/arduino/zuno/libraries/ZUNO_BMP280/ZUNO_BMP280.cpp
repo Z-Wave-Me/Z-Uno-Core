@@ -325,7 +325,13 @@ float  ZUNO_BMP280::readTemperature(void)
     return readTemperatureC100() / 100.0;
 }
 
-
+void    ZUNO_BMP280::setSensorMode(sensor_mode mode)
+{
+  uint8_t controlValue = aux_read8(BME280_REGISTER_CONTROL);
+  controlValue &= 0xFC;
+  controlValue |= mode;
+  aux_write8(BME280_REGISTER_CONTROL, controlValue);
+}
 
 /*********************************************************************/
 
